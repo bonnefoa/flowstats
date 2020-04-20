@@ -10,7 +10,7 @@
 namespace flowstats {
 
 struct AggregatedDnsFlow : Flow {
-    enum pcpp::DnsType dnsType;
+    enum Tins::DNS::QueryType dnsType;
     bool isTcp = false;
 
     int totalQueries = 0;
@@ -36,7 +36,7 @@ struct AggregatedDnsFlow : Flow {
     };
 
     AggregatedDnsFlow(FlowId& flowId, std::string fqdn,
-        enum pcpp::DnsType dnsType, bool isTcp)
+        enum Tins::DNS::QueryType dnsType, bool isTcp)
         : Flow(flowId, fqdn)
         , dnsType(dnsType)
         , isTcp(isTcp) {};
@@ -53,7 +53,7 @@ private:
 };
 
 struct AggregatedDnsKey : AggregatedKey {
-    AggregatedDnsKey(std::string _fqdn, pcpp::DnsType _dnsType, bool _isTcp)
+    AggregatedDnsKey(std::string _fqdn, Tins::DNS::QueryType _dnsType, bool _isTcp)
         : AggregatedKey(_fqdn)
         , dnsType(_dnsType)
         , isTcp(_isTcp) {};
@@ -64,7 +64,7 @@ struct AggregatedDnsKey : AggregatedKey {
     }
 
 private:
-    pcpp::DnsType dnsType;
+    Tins::DNS::QueryType dnsType;
     bool isTcp;
 };
 }

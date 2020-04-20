@@ -57,7 +57,7 @@ private:
     std::atomic_bool& shouldStop;
     bool shouldFreeze = false;
     bool noCurses;
-    int lastDuration{};
+    int lastDuration {};
     FlowstatsConfiguration& conf;
     DisplayConfiguration& displayConf;
     std::vector<Collector*> collectors;

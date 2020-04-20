@@ -2,6 +2,7 @@
 
 #include "FlowId.hpp"
 #include <map>
+#include <packet.h>
 
 namespace flowstats {
 
@@ -10,8 +11,8 @@ class Flow {
 public:
     FlowId flowId;
     uint8_t srvPos = 1;
-    timespec start = {};
-    timespec end = {};
+    timeval start = {};
+    timeval end = {};
 
     int packets[2] = {};
     int bytes[2] = {};
@@ -25,20 +26,20 @@ public:
     }
     virtual ~Flow() {}
 
-    Flow(pcpp::Packet* packet)
-        : flowId(packet)
+    Flow(Tins::PDU* pdu)
+        : flowId(pdu)
     {
         Flow();
     }
 
-    Flow(pcpp::IPv4Layer* ipv4Layer, pcpp::TcpLayer* tcpLayer)
-        : flowId(ipv4Layer, tcpLayer)
+    Flow(Tins::IP* ipv4, Tins::TCP* tcp)
+        : flowId(ipv4, tcp)
     {
         Flow();
     }
 
-    Flow(pcpp::IPv4Layer* ipv4Layer, pcpp::UdpLayer* udpLayer)
-        : flowId(ipv4Layer, udpLayer)
+    Flow(Tins::IP* ipv4, Tins::UDP* udp)
+        : flowId(ipv4, udp)
     {
         Flow();
     }
@@ -55,12 +56,12 @@ public:
     }
 
     uint16_t getSrvPort();
-    pcpp::IPv4Address getSrvIp();
-    pcpp::IPv4Address getCltIp();
+    Tins::IPv4Address getSrvIp();
+    Tins::IPv4Address getCltIp();
     IPv4 getCltIpInt();
     IPv4 getSrvIpInt();
 
-    void addPacket(pcpp::Packet* packet, const Direction direction);
+    void addPacket(Tins::PtrPacket* packet, const Direction direction);
     virtual void addFlow(Flow* flow);
     virtual void addAggregatedFlow(Flow* flow);
     virtual void resetFlow(bool resetTotal);

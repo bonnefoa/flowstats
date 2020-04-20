@@ -27,8 +27,8 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
 };
 
 auto SslStatsCollector::lookupSslFlow(
-    pcpp::IPv4Layer* ipv4Layer,
-    pcpp::TcpLayer* tcpLayer,
+    Tins::IPv4Layer* ipv4Layer,
+    Tins::TcpLayer* tcpLayer,
     FlowId& flowId) -> SslFlow&
 {
     uint32_t hashVal = hash5Tuple(ipv4Layer, tcpLayer);
@@ -46,7 +46,7 @@ auto SslStatsCollector::lookupSslFlow(
 }
 
 auto SslStatsCollector::lookupAggregatedFlows(
-    pcpp::TcpLayer*  /*tcpLayer*/, SslFlow& sslFlow, FlowId& flowId,
+    Tins::TcpLayer* /*tcpLayer*/, SslFlow& sslFlow, FlowId& flowId,
     const std::string& fqdn) -> std::vector<AggregatedSslFlow*>
 {
     std::vector<AggregatedSslFlow*> subflows;
@@ -69,16 +69,16 @@ auto SslStatsCollector::lookupAggregatedFlows(
     return subflows;
 }
 
-void SslStatsCollector::processPacket(pcpp::Packet* packet)
+void SslStatsCollector::processPacket(Tins::Packet* packet)
 {
     advanceTick(packet->getRawPacket()->getPacketTimeStamp());
-    if (!packet->isPacketOfType(pcpp::TCP) || packet->isPacketOfType(pcpp::IPv6) || !packet->isPacketOfType(pcpp::SSL)) {
+    if (!packet->isPacketOfType(Tins::TCP) || packet->isPacketOfType(Tins::IPv6) || !packet->isPacketOfType(Tins::SSL)) {
         return;
     }
 
-    auto* sslLayer = packet->getLayerOfType<pcpp::SSLLayer>(true);
-    auto* tcpLayer = packet->getPrevLayerOfType<pcpp::TcpLayer>(sslLayer);
-    auto* ipv4Layer = packet->getPrevLayerOfType<pcpp::IPv4Layer>(tcpLayer);
+    auto* sslLayer = packet->getLayerOfType<Tins::SSLLayer>(true);
+    auto* tcpLayer = packet->getPrevLayerOfType<Tins::TcpLayer>(sslLayer);
+    auto* ipv4Layer = packet->getPrevLayerOfType<Tins::IPv4Layer>(tcpLayer);
 
     FlowId flowId(ipv4Layer, tcpLayer);
     SslFlow& sslFlow = lookupSslFlow(ipv4Layer, tcpLayer, flowId);
@@ -122,7 +122,7 @@ auto SslStatsCollector::getAggregatedPairs() -> std::vector<AggregatedPairPointe
 
     for (auto& pair : aggregatedMap) {
         pair.second->connections.merge();
-        tempVector.emplace_back( pair.first, pair.second );
+        tempVector.emplace_back(pair.first, pair.second);
     }
 
     spdlog::info("Got {} ssl flows", tempVector.size());

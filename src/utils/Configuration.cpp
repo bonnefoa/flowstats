@@ -41,4 +41,4 @@ auto displayTypeToString(enum DisplayType displayType) -> std::string
         return "Unknown";
     }
 }
-}  // namespace flowstats
+} // namespace flowstats

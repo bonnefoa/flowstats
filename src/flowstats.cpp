@@ -15,7 +15,6 @@
 #include <spdlog/spdlog.h>
 
 using namespace flowstats;
-using namespace pcpp;
 
 #define EXIT_WITH_ERROR(reason, ...)                      \
     do {                                                  \
@@ -81,8 +80,6 @@ auto main(int argc, char* argv[]) -> int
 
     int optionIndex = 0;
     char opt = 0;
-
-    pcpp::LoggerPP::getInstance().supressErrors();
 
     while ((opt = getopt_long(argc, argv, "k:i:a:f:o:b:m:p:d:nuwhvl", FlowStatsOptions,
                 &optionIndex))
@@ -159,12 +156,12 @@ auto main(int argc, char* argv[]) -> int
         new TcpStatsCollector(conf, displayConf));
 
     if (!localhostIp.empty()) {
-        conf.ipToFqdn[pcpp::IPv4Address(localhostIp).toInt()] = "localhost";
+        conf.ipToFqdn[Tins::IPv4Address(localhostIp).toInt()] = "localhost";
     }
     if (conf.pcapFileName != "") {
         analyzePcapFile(conf, collectors);
     } else {
-        std::vector<pcpp::IPv4Address> localIps = getLocalIps();
+        std::vector<Tins::IPv4Address> localIps = getLocalIps();
         for (auto& ip : localIps) {
             conf.ipToFqdn[ip.toInt()] = "localhost";
         }
@@ -173,7 +170,7 @@ auto main(int argc, char* argv[]) -> int
             displayConf, collectors);
         screen.StartDisplay();
         PcapLiveDevice* dev = getLiveDevice(conf.interfaceNameOrIP);
-        analyzeLiveTraffic(dev, conf, displayConf, collectors,
+        analyzeLiveTraffic(dev, conf, collectors,
             shouldStop, screen);
     }
 

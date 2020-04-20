@@ -23,10 +23,10 @@ auto AggregatedDnsFlow::getTopClientIpsStr() -> std::string
     auto topIps = getTopClientIps();
     std::vector<std::string> topIpsStr;
     topIpsStr.reserve(topIps.size());
-for (auto& pair : topIps) {
+    for (auto& pair : topIps) {
         topIpsStr.push_back(fmt::format("{:<3} {:<" STR(IP_SIZE) "}",
             prettyFormatNumber(pair.second),
-            pcpp::IPv4Address(pair.first).toString()));
+            pair.first));
     }
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
@@ -38,7 +38,7 @@ void AggregatedDnsFlow::fillValues(std::map<std::string, std::string>& values,
     if (fqdn == "Total") {
         if (direction == FROM_SERVER) {
             return;
-}
+        }
         values["fqdn"] = fqdn;
         values["ip"] = "-";
         values["port"] = "-";
@@ -66,7 +66,7 @@ void AggregatedDnsFlow::fillValues(std::map<std::string, std::string>& values,
         values["fqdn"] = fqdn;
         values["proto"] = isTcp ? "Tcp" : "Udp";
         values["type"] = dnsTypeToString(dnsType);
-        values["ip"] = getSrvIp().toString();
+        values["ip"] = getSrvIp().to_string();
         values["timeouts_s"] = std::to_string(timeouts);
         values["timeouts"] = std::to_string(totalTimeouts);
         values["port"] = std::to_string(getSrvPort());
@@ -100,7 +100,7 @@ void AggregatedDnsFlow::addFlow(Flow* flow)
     records += dnsFlow->numberRecords;
     timeouts += !dnsFlow->hasResponse;
 
-    sourceIps[dnsFlow->getCltIp().toInt()]++;
+    sourceIps[dnsFlow->getCltIp()]++;
 
     totalQueries++;
     totalTimeouts += !dnsFlow->hasResponse;

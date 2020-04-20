@@ -24,11 +24,11 @@ public:
     SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf);
     ~SslStatsCollector();
 
-    void processPacket(pcpp::Packet* packet);
+    void processPacket(Tins::Packet* packet);
     void resetMetrics();
 
     std::string getFlowName() { return "SSL"; }
-    pcpp::ProtocolType getProtocol() { return pcpp::SSL; };
+    Tins::ProtocolType getProtocol() { return Tins::SSL; };
     std::string toString() { return "SslStatsCollector"; }
     std::vector<AggregatedPairPointer> getAggregatedPairs();
 
@@ -40,10 +40,10 @@ public:
 private:
     std::map<uint32_t, SslFlow> hashToSslFlow;
     std::map<AggregatedTcpKey, AggregatedSslFlow*> aggregatedMap;
-    SslFlow& lookupSslFlow(pcpp::IPv4Layer* ipv4Layer,
-        pcpp::TcpLayer* tcpLayer, FlowId& flowId);
+    SslFlow& lookupSslFlow(Tins::IPv4Layer* ipv4Layer,
+        Tins::TcpLayer* tcpLayer, FlowId& flowId);
 
-    std::vector<AggregatedSslFlow*> lookupAggregatedFlows(pcpp::TcpLayer* tcpLayer,
+    std::vector<AggregatedSslFlow*> lookupAggregatedFlows(Tins::TcpLayer* tcpLayer,
         SslFlow& sslFlow, FlowId& flowId,
         const std::string& fqdn);
 };

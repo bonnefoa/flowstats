@@ -14,7 +14,7 @@ struct AggregatedTcpFlow : Flow {
     int fins[2] = {};
     int rsts[2] = {};
     int zeroWins[2] = {};
-    int mtu[2] = {};
+    uint32_t mtu[2] = {};
 
     int closes = 0;
     int totalCloses = 0;
@@ -46,8 +46,8 @@ struct AggregatedTcpFlow : Flow {
         return syns[0] < b.syns[0];
     }
 
-    void updateFlow(pcpp::Packet* const packet, FlowId& flowId,
-        pcpp::TcpLayer* const tcpLayer);
+    void updateFlow(Tins::PDU* const pdu, FlowId& flowId,
+        Tins::TCP* const tcpLayer);
 
     void resetFlow(bool resetTotal);
     void fillValues(std::map<std::string, std::string>& map, Direction direction, int duration);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <DogFood.hpp> // for Configuration
-#include <ProtocolType.h> // for DNS, ProtocolType
 #include <map> // for map
 #include <mutex> // for mutex
 #include <optional> // for optional

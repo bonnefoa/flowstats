@@ -12,15 +12,15 @@ public:
     std::string domain;
 
     int tickets[2] = { 0, 0 };
-    timespec startHandshake = { 0, 0 };
+    timeval startHandshake = { 0, 0 };
 
-    void updateFlow(pcpp::Packet* const packet, Direction direction,
-        pcpp::SSLLayer* sslLayer);
+    void updateFlow(Tins::Packet* const packet, Direction direction,
+        Tins::SSLLayer* sslLayer);
     std::vector<AggregatedSslFlow*> aggregatedFlows;
 
 private:
-    std::string getDomain(pcpp::SSLClientHelloMessage* clientHelloMessage);
-    void processHandshake(pcpp::Packet* const packet, pcpp::SSLLayer* sslLayer,
+    std::string getDomain(Tins::SSLClientHelloMessage* clientHelloMessage);
+    void processHandshake(Tins::Packet* const packet, Tins::SSLLayer* sslLayer,
         Direction direction);
 };
 }

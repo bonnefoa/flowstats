@@ -17,16 +17,16 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
     updateDisplayType(0);
 };
 
-void DnsStatsCollector::processPacket(pcpp::Packet* packet)
+void DnsStatsCollector::processPacket(Tins::Packet* packet)
 {
-    timespec pktTs = packet->getRawPacket()->getPacketTimeStamp();
+    timeval pktTs = packet->getRawPacket()->getPacketTimeStamp();
     advanceTick(pktTs);
-    if (packet->isPacketOfType(pcpp::IPv6) || !packet->isPacketOfType(pcpp::DNS)) {
+    if (packet->isPacketOfType(Tins::IPv6) || !packet->isPacketOfType(Tins::DNS)) {
         return;
     }
-    auto* dnsLayer = packet->getLayerOfType<pcpp::DnsLayer>(true);
+    auto* dnsLayer = packet->getLayerOfType<Tins::DnsLayer>(true);
 
-    pcpp::dnshdr* hdr = dnsLayer->getDnsHeader();
+    Tins::dnshdr* hdr = dnsLayer->getDnsHeader();
     if (hdr->queryOrResponse == 0 && dnsLayer->getFirstQuery() != nullptr) {
         newDnsQuery(hdr, pktTs, dnsLayer, packet);
         return;
@@ -48,15 +48,15 @@ auto DnsStatsCollector::getFlows() -> std::vector<Flow*>
     return res;
 }
 
-void DnsStatsCollector::updateIpToFqdn(pcpp::DnsLayer* dnsLayer, const std::string& fqdn)
+void DnsStatsCollector::updateIpToFqdn(Tins::DnsLayer* dnsLayer, const std::string& fqdn)
 {
-    pcpp::DnsResource* answer = dnsLayer->getFirstAnswer();
+    Tins::DnsResource* answer = dnsLayer->getFirstAnswer();
     std::vector<int> ips;
     while (answer != nullptr) {
         answer->getData()->toString();
-        if (answer->getData()->isTypeOf<pcpp::IPv4DnsResourceData>()) {
+        if (answer->getData()->isTypeOf<Tins::IPv4DnsResourceData>()) {
             ips.push_back(answer->getData()
-                              ->castAs<pcpp::IPv4DnsResourceData>()
+                              ->castAs<Tins::IPv4DnsResourceData>()
                               ->getIpAddress()
                               .toInt());
         }
@@ -70,12 +70,12 @@ void DnsStatsCollector::updateIpToFqdn(pcpp::DnsLayer* dnsLayer, const std::stri
     }
 }
 
-void DnsStatsCollector::newDnsQuery(pcpp::dnshdr* hdr, timespec pktTs, pcpp::DnsLayer* dnsLayer, pcpp::Packet* packet)
+void DnsStatsCollector::newDnsQuery(Tins::dnshdr* hdr, timeval pktTs, Tins::DnsLayer* dnsLayer, Tins::Packet* packet)
 {
     DnsFlow flow(packet);
     flow.addPacket(packet, FROM_CLIENT);
     flow.m_StartTimestamp = pktTs;
-    flow.isTcp = packet->isPacketOfType(pcpp::TCP);
+    flow.isTcp = packet->isPacketOfType(Tins::TCP);
     flow.type = dnsLayer->getFirstQuery()->getDnsType();
     flow.fqdn = std::string(dnsLayer->getFirstQuery()->getName());
     flow.hasResponse = false;
@@ -86,8 +86,8 @@ void DnsStatsCollector::newDnsQuery(pcpp::dnshdr* hdr, timespec pktTs, pcpp::Dns
     transactionIdToDnsFlow[hdr->transactionID] = flow;
 }
 
-void DnsStatsCollector::newDnsResponse(pcpp::dnshdr* hdr, timespec pktTs,
-    pcpp::DnsLayer* dnsLayer, pcpp::Packet* packet, DnsFlow& flow)
+void DnsStatsCollector::newDnsResponse(Tins::dnshdr* hdr, timeval pktTs,
+    Tins::DnsLayer* dnsLayer, Tins::Packet* packet, DnsFlow& flow)
 {
     flow.addPacket(packet, FROM_SERVER);
     flow.m_EndTimestamp = pktTs;
@@ -124,7 +124,7 @@ void DnsStatsCollector::addFlowToAggregation(DnsFlow& flow)
     aggregatedFlow->addFlow(&flow);
 }
 
-void DnsStatsCollector::advanceTick(timespec now)
+void DnsStatsCollector::advanceTick(timeval now)
 {
     if (now.tv_sec <= lastTick) {
         return;

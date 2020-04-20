@@ -14,13 +14,13 @@ int readPcap(std::string pcap, Collector& collector, std::string filter = "",
     INFO("Checking file " << fullPath);
     REQUIRE(stat(fullPath.c_str(), &buffer) == 0);
 
-    pcpp::IFileReaderDevice* reader = getPcapReader(fullPath, filter);
+    Tins::IFileReaderDevice* reader = getPcapReader(fullPath, filter);
 
     int i = 0;
-    pcpp::RawPacket rawPacket;
+    Tins::RawPacket rawPacket;
     while (reader->getNextPacket(rawPacket)) {
         i++;
-        pcpp::Packet parsedPacket(&rawPacket);
+        Tins::Packet parsedPacket(&rawPacket);
         collector.processPacket(&parsedPacket);
     }
     spdlog::info("Processed {} packets", i);

@@ -29,8 +29,8 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
 };
 
 auto TcpStatsCollector::lookupTcpFlow(
-    pcpp::IPv4Layer* ipv4Layer,
-    pcpp::TcpLayer* tcpLayer,
+    Tins::IPv4Layer* ipv4Layer,
+    Tins::TcpLayer* tcpLayer,
     FlowId& flowId) -> TcpFlow&
 {
     uint32_t flowHash = hash5Tuple(ipv4Layer, tcpLayer);
@@ -73,14 +73,14 @@ auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcp, FlowId& flowId) -> s
     return aggregatedFlows;
 }
 
-void TcpStatsCollector::processPacket(pcpp::Packet* packet)
+void TcpStatsCollector::processPacket(Tins::Packet* packet)
 {
     advanceTick(packet->getRawPacket()->getPacketTimeStamp());
-    if (!packet->isPacketOfType(pcpp::TCP) || packet->isPacketOfType(pcpp::IPv6)) {
+    if (!packet->isPacketOfType(Tins::TCP) || packet->isPacketOfType(Tins::IPv6)) {
         return;
     }
-    auto* tcpLayer = packet->getLayerOfType<pcpp::TcpLayer>(true);
-    auto* ipv4Layer = packet->getPrevLayerOfType<pcpp::IPv4Layer>(tcpLayer);
+    auto* tcpLayer = packet->getLayerOfType<Tins::TcpLayer>(true);
+    auto* ipv4Layer = packet->getPrevLayerOfType<Tins::IPv4Layer>(tcpLayer);
     FlowId flowId(ipv4Layer, tcpLayer);
 
     TcpFlow& tcp = lookupTcpFlow(ipv4Layer, tcpLayer, flowId);
@@ -102,7 +102,7 @@ void TcpStatsCollector::processPacket(pcpp::Packet* packet)
     }
 }
 
-void TcpStatsCollector::advanceTick(timespec now)
+void TcpStatsCollector::advanceTick(timeval now)
 {
     std::map<uint32_t, TcpFlow>::iterator it;
     std::vector<uint32_t> toTimeout;

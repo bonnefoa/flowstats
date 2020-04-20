@@ -1,29 +1,28 @@
 #include "Utils.hpp"
-#include <IPv4Layer.h>
-#include <IpUtils.h>
 #include <arpa/inet.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <netdb.h>
+#include <pdu.h>
 #include <spdlog/spdlog.h>
 #include <sys/socket.h>
 
 namespace flowstats {
 
-auto getTimevalDeltaMs(timespec start, timespec end) -> uint32_t
+auto getTimevalDeltaMs(timeval start, timeval end) -> uint32_t
 {
-    return (end.tv_sec * 1000 + end.tv_nsec / 1000000) - (start.tv_sec * 1000 + start.tv_nsec / 1000000);
+    return (end.tv_sec * 1000 + end.tv_usec / 1000) - (start.tv_sec * 1000 + start.tv_usec / 1000000);
 }
 
-auto timevalInMs(timespec tv) -> uint64_t
+auto timevalInMs(timeval tv) -> uint64_t
 {
-    uint64_t ms = 1000 * tv.tv_sec + tv.tv_nsec / 1000000;
+    uint64_t ms = 1000 * tv.tv_sec + tv.tv_usec / 1000;
     return ms;
 }
 
-auto getTimevalDeltaS(timespec start, timespec end) -> uint32_t
+auto getTimevalDeltaS(timeval start, timeval end) -> uint32_t
 {
     return end.tv_sec - start.tv_sec;
 }
@@ -42,19 +41,6 @@ auto directionToString(uint8_t direction) -> std::string
         return "C->S";
     }
     return "S->C";
-}
-
-auto protocolToString(pcpp::ProtocolType protocolType) -> std::string
-{
-    switch (protocolType) {
-    case pcpp::DNS:
-        return "DNS";
-    case pcpp::TCP:
-        return "TCP";
-    case pcpp::SSL:
-        return "SSL";
-    }
-    return "Unknown";
 }
 
 auto split(const std::string& s, char delimiter) -> std::vector<std::string>
@@ -128,7 +114,7 @@ static void resolveDomains(std::vector<std::string>& initialDomains,
     for (auto& domain : initialDomains) {
         std::vector<std::string> ips = resolveDns(domain);
         for (auto& ip : ips) {
-            ipToFqdn[pcpp::IPv4Address(ip).toInt()] = domain;
+            ipToFqdn[Tins::IPv4Address(ip)] = domain;
         }
     }
 }
@@ -204,51 +190,9 @@ auto prettyFormatBytes(int bytes) -> std::string
 auto getIpToFqdn(std::vector<std::string>& initialDomains) -> std::map<uint32_t, std::string>
 {
     std::map<uint32_t, std::string> ipToFqdn;
-    ipToFqdn[pcpp::IPv4Address("127.0.0.1").toInt()] = "localhost";
+    ipToFqdn[Tins::IPv4Address("127.0.0.1")] = "localhost";
     resolveDomains(initialDomains, ipToFqdn);
     return ipToFqdn;
-}
-
-auto hash5Tuple(pcpp::IPv4Layer* ipv4Layer, pcpp::TcpLayer* tcpLayer) -> uint32_t
-{
-    uint16_t portSrc = tcpLayer->getTcpHeader()->portSrc;
-    uint16_t portDst = tcpLayer->getTcpHeader()->portDst;
-    return hash5Tuple(ipv4Layer, portSrc, portDst);
-}
-
-auto hash5Tuple(pcpp::IPv4Layer* ipv4Layer, pcpp::UdpLayer* udpLayer) -> uint32_t
-{
-    uint16_t portSrc = udpLayer->getUdpHeader()->portSrc;
-    uint16_t portDst = udpLayer->getUdpHeader()->portDst;
-    return hash5Tuple(ipv4Layer, portSrc, portDst);
-}
-
-auto hash5Tuple(pcpp::IPv4Layer* ipv4Layer, uint16_t portSrc, uint16_t portDst) -> uint32_t
-{
-    pcpp::ScalarBuffer<uint8_t> vec[5];
-
-    int srcPosition = 0;
-    if (portDst < portSrc) {
-        srcPosition = 1;
-    }
-
-    vec[0 + srcPosition].buffer = reinterpret_cast<uint8_t*>(&portSrc);
-    vec[0 + srcPosition].len = 2;
-    vec[1 - srcPosition].buffer = reinterpret_cast<uint8_t*>(&portDst);
-    vec[1 - srcPosition].len = 2;
-
-    if (portSrc == portDst && ipv4Layer->getIPv4Header()->ipDst < ipv4Layer->getIPv4Header()->ipSrc) {
-        srcPosition = 1;
-    }
-
-    vec[2 + srcPosition].buffer = reinterpret_cast<uint8_t*>(&ipv4Layer->getIPv4Header()->ipSrc);
-    vec[2 + srcPosition].len = 4;
-    vec[3 - srcPosition].buffer = reinterpret_cast<uint8_t*>(&ipv4Layer->getIPv4Header()->ipDst);
-    vec[3 - srcPosition].len = 4;
-    vec[4].buffer = &(ipv4Layer->getIPv4Header()->protocol);
-    vec[4].len = 1;
-
-    return pcpp::fnv_hash(vec, 5);
 }
 
 auto getFlowFqdn(FlowstatsConfiguration& conf, uint32_t srvIp) -> std::optional<std::string>

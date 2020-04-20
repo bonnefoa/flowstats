@@ -5,17 +5,17 @@
 #include <HttpLayer.h>
 #include <PcapPlusPlusVersion.h>
 #include <SystemUtils.h>
+#include <cstdlib>
+#include <cstring>
 #include <fmt/format.h>
 #include <getopt.h>
 #include <netinet/in.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
-#include <cstdlib>
-#include <cstring>
 
 namespace flowstats {
 
-using namespace pcpp;
+using namespace Tins;
 
 #define EXIT_WITH_ERROR(reason, ...)                      \
     do {                                                  \
@@ -101,7 +101,8 @@ struct CurlGeneratorConfiguration {
     std::string pcapFileName = "";
     std::string bpfFilter = "";
 
-    CurlGeneratorConfiguration() = default;;
+    CurlGeneratorConfiguration() = default;
+    ;
 };
 
 void handleHttp(Packet& packet, TcpLayer* tcpLayer, CurlGeneratorConfiguration& conf)
@@ -120,7 +121,7 @@ void handleHttp(Packet& packet, TcpLayer* tcpLayer, CurlGeneratorConfiguration& 
 
     std::string destinationIP;
     if (conf.destinationIP == "") {
-        auto* ipv4Layer = packet.getPrevLayerOfType<pcpp::IPv4Layer>(tcpLayer);
+        auto* ipv4Layer = packet.getPrevLayerOfType<Tins::IPv4Layer>(tcpLayer);
         destinationIP = ipv4Layer->getDstIpAddress().toString();
     } else {
         destinationIP = conf.destinationIP;
@@ -236,11 +237,11 @@ auto main(int argc, char* argv[]) -> int
 
     RawPacket rawPacket;
     while (reader->getNextPacket(rawPacket)) {
-        Packet packet(&rawPacket, pcpp::OsiModelTransportLayer);
-        if (packet.isPacketOfType(pcpp::TCP)) {
-            auto* tcpLayer = packet.getLayerOfType<pcpp::TcpLayer>();
+        Packet packet(&rawPacket, Tins::OsiModelTransportLayer);
+        if (packet.isPacketOfType(Tins::TCP)) {
+            auto* tcpLayer = packet.getLayerOfType<Tins::TcpLayer>();
             handleHttp(packet, tcpLayer, conf);
         }
     }
 }
-}  // namespace flowstats
+} // namespace flowstats

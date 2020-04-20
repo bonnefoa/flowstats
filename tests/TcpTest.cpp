@@ -180,7 +180,7 @@ TEST_CASE("Tcp 0 win", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> ipFlows = tcpStatsIp.getAggregatedMap();
         REQUIRE(ipFlows.size() == 1);
 
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", pcpp::IPv4Address("127.0.0.1").toInt(), 443);
+        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", Tins::IPv4Address("127.0.0.1").toInt(), 443);
         auto flow = ipFlows[tcpKey];
         REQUIRE(flow->zeroWins[FROM_SERVER] == 3);
         REQUIRE(flow->rsts[FROM_SERVER] == 1);
@@ -190,7 +190,7 @@ TEST_CASE("Tcp 0 win", "[tcp]")
 TEST_CASE("Tcp rst", "[tcp]")
 {
     FlowstatsConfiguration conf;
-    pcpp::IPv4Address ip("10.142.226.42");
+    Tins::IPv4Address ip("10.142.226.42");
     conf.ipToFqdn[ip.toInt()] = "whatever";
 
     conf.perIpAggr = true;

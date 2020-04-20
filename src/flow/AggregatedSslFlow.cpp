@@ -10,7 +10,7 @@ void AggregatedSslFlow::fillValues(std::map<std::string, std::string>& values,
     values["tickets"] = std::to_string(tickets[direction]);
     if (direction == FROM_CLIENT) {
         values["fqdn"] = fqdn;
-        values["ip"] = getSrvIp().toString();
+        values["ip"] = getSrvIp().to_string();
         values["port"] = std::to_string(getSrvPort());
         values["domain"] = domain;
 
@@ -31,4 +31,4 @@ void AggregatedSslFlow::resetFlow(bool resetTotal)
         totalConnections = 0;
     }
 }
-}  // namespace flowstats
+} // namespace flowstats

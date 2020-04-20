@@ -2,7 +2,6 @@
 
 #include "AggregatedFlow.hpp"
 #include "Stats.hpp"
-#include <SSLLayer.h>
 
 namespace flowstats {
 

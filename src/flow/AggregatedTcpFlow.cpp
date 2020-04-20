@@ -3,26 +3,26 @@
 
 namespace flowstats {
 
-void AggregatedTcpFlow::updateFlow(pcpp::Packet* packet, FlowId& flowId,
-    pcpp::TcpLayer* tcpLayer)
+void AggregatedTcpFlow::updateFlow(Tins::PDU* pdu, FlowId& flowId,
+    Tins::TCP* tcp)
 {
-    pcpp::tcphdr* tcphdr = tcpLayer->getTcpHeader();
+    auto flags = tcp->flags();
 
-    if (tcphdr->rstFlag > 0) {
+    if (flags & Tins::TCP::RST) {
         rsts[flowId.direction]++;
     }
-    if (tcphdr->windowSize == 0 && tcphdr->rstFlag == 0) {
+    if (tcp->window() == 0 && (flags == Tins::TCP::RST)) {
         zeroWins[flowId.direction]++;
     }
-    if (tcphdr->synFlag > 0 && tcphdr->ackFlag == 0) {
+    if (flags == Tins::TCP::SYN) {
         syns[flowId.direction]++;
-    } else if (tcphdr->synFlag > 0 && tcphdr->ackFlag > 0) {
+    } else if (flags == (Tins::TCP::SYN | Tins::TCP::ACK)) {
         synacks[flowId.direction]++;
-    } else if (tcphdr->finFlag > 0) {
+    } else if (flags == Tins::TCP::FIN) {
         fins[flowId.direction]++;
     }
     mtu[flowId.direction] = std::max(mtu[flowId.direction],
-        packet->getRawPacketReadOnly()->getFrameLength());
+        pdu->advertised_size());
 }
 
 void AggregatedTcpFlow::fillValues(std::map<std::string, std::string>& values,
@@ -54,7 +54,7 @@ void AggregatedTcpFlow::fillValues(std::map<std::string, std::string>& values,
         values["dsMax"] = prettyFormatBytes(requestSizes.getPercentile(1));
 
         values["fqdn"] = fqdn;
-        values["ip"] = getSrvIp().toString();
+        values["ip"] = getSrvIp().to_string();
         values["port"] = std::to_string(getSrvPort());
         if (duration) {
             values["conn_s"] = std::to_string(connections.getCount() / duration);
@@ -84,4 +84,4 @@ void AggregatedTcpFlow::resetFlow(bool resetTotal)
         totalSrts = 0;
     }
 }
-}  // namespace flowstats
+} // namespace flowstats

@@ -1,12 +1,11 @@
 #pragma once
 #include "Utils.hpp"
-#include <IPv4Layer.h>
-#include <Packet.h>
-#include <TcpLayer.h>
-#include <UdpLayer.h>
 #include <arpa/inet.h>
+#include <ip.h>
 #include <sstream>
 #include <stdint.h>
+#include <tcp.h>
+#include <udp.h>
 
 namespace flowstats {
 
@@ -14,16 +13,29 @@ using Port = uint16_t;
 using IPv4 = uint32_t;
 
 struct FlowId {
-    IPv4 ips[2] = { (uint32_t)0, (uint32_t)0 };
+    Tins::IPv4Address ips[2] = { Tins::IPv4Address((uint32_t)0),
+        Tins::IPv4Address((uint32_t)0) };
     Port ports[2] = { 0, 0 };
     Direction direction;
 
     FlowId() {}
     FlowId(uint16_t ports[2], IPv4 pktIps[2]);
-    FlowId(pcpp::IPv4Layer* ipv4Layer, pcpp::TcpLayer* tcpLayer);
-    FlowId(pcpp::IPv4Layer* ipv4Layer, pcpp::UdpLayer* udpLayer);
-    FlowId(pcpp::Packet* packet);
+    FlowId(Tins::IP* ipv4Layer, Tins::TCP* tcpLayer);
+    FlowId(Tins::IP* ipv4Layer, Tins::UDP* udpLayer);
+    FlowId(Tins::PDU* packet);
 
     std::string toString();
 };
 }
+
+namespace std {
+
+template <>
+struct hash<flowstats::FlowId> {
+    size_t operator()(const flowstats::FlowId& flowId) const
+    {
+        return std::hash<Tins::IPv4Address>()(flowId.ips[0]) + std::hash<Tins::IPv4Address>()(flowId.ips[1]) + std::hash<uint16_t>()(flowId.ports[0]) + std::hash<uint16_t>()(flowId.ports[1]) + std::hash<std::underlying_type<flowstats::Direction>::type>()(flowId.direction);
+    }
+};
+
+} // std

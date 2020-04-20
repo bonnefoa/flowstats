@@ -4,16 +4,16 @@
 
 namespace flowstats {
 
-void Flow::addPacket(pcpp::Packet* packet, const Direction direction)
+void Flow::addPacket(Tins::PtrPacket* packet, const Direction direction)
 {
     packets[direction]++;
-    bytes[direction] += packet->getRawPacketReadOnly()->getFrameLength();
+    bytes[direction] += packet->pdu()->advertised_size();
     totalPackets[direction]++;
-    totalBytes[direction] += packet->getRawPacketReadOnly()->getFrameLength();
+    totalBytes[direction] += packet->pdu()->advertised_size();
     if (start.tv_sec == 0) {
-        start = packet->getRawPacket()->getPacketTimeStamp();
+        start = { packet->timestamp().seconds(), packet->timestamp().microseconds() };
     }
-    end = packet->getRawPacket()->getPacketTimeStamp();
+    end = { packet->timestamp().seconds(), packet->timestamp().microseconds() };
 }
 
 void Flow::fillValues(std::map<std::string, std::string>& values,
@@ -54,12 +54,12 @@ auto Flow::getSrvPort() -> uint16_t
     return flowId.ports[srvPos];
 }
 
-auto Flow::getCltIp() -> pcpp::IPv4Address
+auto Flow::getCltIp() -> Tins::IPv4Address
 {
     return flowId.ips[!srvPos];
 }
 
-auto Flow::getSrvIp() -> pcpp::IPv4Address
+auto Flow::getSrvIp() -> Tins::IPv4Address
 {
     return flowId.ips[srvPos];
 }
@@ -88,4 +88,4 @@ void Flow::resetFlow(bool resetTotal)
         totalBytes[1] = 0;
     }
 }
-}  // namespace flowstats
+} // namespace flowstats

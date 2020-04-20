@@ -4,9 +4,10 @@
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
+#include <dns.h>
+#include <tcp.h>
 #include <utility>
-
-#include <utility>
+#include <utils/pdu_utils.h>
 #define ctrl(x) ((x)&0x1f)
 
 #define KEY_B 98
@@ -45,14 +46,14 @@
 namespace flowstats {
 
 int lastKey = 0;
-pcpp::ProtocolType protocols[] = { pcpp::DNS, pcpp::TCP, pcpp::SSL };
+Tins::PDU::PDUType protocols[] = { Tins::PDU::DNS, Tins::PDU::TCP };
 int protocolToDisplayIndex[] = { 0, 0, 0 };
 
 void Screen::updateDisplay(int duration, bool updateOutput)
 {
     if (noCurses) {
         return;
-}
+    }
     lastDuration = duration;
 
     const std::lock_guard<std::mutex> lock(screenMutex);
@@ -110,14 +111,14 @@ void Screen::updateStatus(int duration)
 
     waddstr(statusWin, fmt::format("{:<10} ", "Protocol:").c_str());
     for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
-        pcpp::ProtocolType proto = protocols[i];
+        Tins::PDU::PDUType proto = protocols[i];
         if (displayConf.protocolIndex == i) {
             wattron(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
-}
-        waddstr(statusWin, fmt::format("{}: {:<10} ", i + 1, protocolToString(proto)).c_str());
+        }
+        waddstr(statusWin, fmt::format("{}: {:<10} ", i + 1, Tins::Utils::to_string(proto)).c_str());
         if (displayConf.protocolIndex == i) {
             wattroff(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
-}
+        }
     }
     waddstr(statusWin, "\n");
 
@@ -125,14 +126,14 @@ void Screen::updateStatus(int duration)
     for (int sortType = 0; sortType <= SortSrt; ++sortType) {
         if (displayConf.sortType == sortType) {
             wattron(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
-}
+        }
         waddstr(statusWin,
             fmt::format("{}: {:<10} ", sortType + 4,
                 sortToString((enum SortType)sortType))
                 .c_str());
         if (displayConf.sortType == sortType) {
             wattroff(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
-}
+        }
     }
     waddstr(statusWin, "\n");
 }
@@ -215,7 +216,7 @@ Screen::Screen(std::atomic_bool& shouldStop, bool noCurses,
 {
     if (noCurses) {
         return;
-}
+    }
     initscr();
 
     start_color();
@@ -376,7 +377,7 @@ auto Screen::StartDisplay() -> int
 {
     if (noCurses) {
         return 0;
-}
+    }
     screenThread = std::thread(&Screen::displayLoop, this);
     return 0;
 }
@@ -385,11 +386,11 @@ void Screen::StopDisplay()
 {
     if (noCurses) {
         return;
-}
+    }
     screenThread.join();
     endwin();
 }
 
 Screen::~Screen()
-= default;
-}  // namespace flowstats
+    = default;
+} // namespace flowstats

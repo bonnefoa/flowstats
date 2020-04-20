@@ -10,16 +10,16 @@ TcpFlow::TcpFlow()
 {
 }
 
-TcpFlow::TcpFlow(pcpp::IPv4Layer* ipv4Layer, pcpp::TcpLayer* tcpLayer, uint32_t flowHash)
+TcpFlow::TcpFlow(Tins::IPv4Layer* ipv4Layer, Tins::TcpLayer* tcpLayer, uint32_t flowHash)
     : Flow(ipv4Layer, tcpLayer)
     , flowHash(flowHash)
 {
 }
 
-void TcpFlow::detectServer(pcpp::TcpLayer* const tcpLayer, Direction direction,
+void TcpFlow::detectServer(Tins::TcpLayer* const tcpLayer, Direction direction,
     std::map<uint16_t, int>& srvPortsCounter)
 {
-    pcpp::tcphdr* const tcphdr = tcpLayer->getTcpHeader();
+    Tins::tcphdr* const tcphdr = tcpLayer->getTcpHeader();
     if (tcphdr->synFlag) {
         if (tcphdr->ackFlag) {
             srvPos = direction;
@@ -84,13 +84,13 @@ void TcpFlow::closeConnection()
     lastPayloadTime = { 0, 0 };
 }
 
-auto TcpFlow::nextSeqnum(pcpp::TcpLayer* const tcpLayer, int tcpPayloadSize) -> uint32_t
+auto TcpFlow::nextSeqnum(Tins::TcpLayer* const tcpLayer, int tcpPayloadSize) -> uint32_t
 {
-    pcpp::tcphdr* const tcphdr = tcpLayer->getTcpHeader();
+    Tins::tcphdr* const tcphdr = tcpLayer->getTcpHeader();
     return ntohl(tcphdr->sequenceNumber) + tcpPayloadSize + tcphdr->synFlag + tcphdr->finFlag;
 }
 
-auto TcpFlow::getTcpPayloadSize(pcpp::Packet* const packet, pcpp::TcpLayer* const tcpLayer) -> int
+auto TcpFlow::getTcpPayloadSize(Tins::Packet* const packet, Tins::TcpLayer* const tcpLayer) -> int
 {
     uint8_t const* start = packet->getFirstLayer()->getData();
     uint8_t const* end = tcpLayer->getLayerPayload();
@@ -98,11 +98,11 @@ auto TcpFlow::getTcpPayloadSize(pcpp::Packet* const packet, pcpp::TcpLayer* cons
     return packet->getRawPacketReadOnly()->getFrameLength() - headerLen;
 }
 
-void TcpFlow::updateFlow(pcpp::Packet* const packet, Direction direction,
-    pcpp::TcpLayer* const tcpLayer)
+void TcpFlow::updateFlow(Tins::Packet* const packet, Direction direction,
+    Tins::TcpLayer* const tcpLayer)
 {
-    pcpp::tcphdr* const tcphdr = tcpLayer->getTcpHeader();
-    timespec tv = packet->getRawPacketReadOnly()->getPacketTimeStamp();
+    Tins::tcphdr* const tcphdr = tcpLayer->getTcpHeader();
+    timeval tv = packet->getRawPacketReadOnly()->getPacketTimeStamp();
 
     int tcpPayloadSize = getTcpPayloadSize(packet, tcpLayer);
     lastPacketTime[direction] = tv;
@@ -124,8 +124,8 @@ void TcpFlow::updateFlow(pcpp::Packet* const packet, Direction direction,
         spdlog::debug("syn acked for direction {}", directionToString(currentDirection));
         synAcked[direction] = true;
         if (synAcked[!direction]) {
-            timespec start = synTime[direction];
-            timespec end = tv;
+            timeval start = synTime[direction];
+            timeval end = tv;
             uint32_t delta = getTimevalDeltaMs(start, end);
             opened = true;
             opening = false;
@@ -201,7 +201,7 @@ void TcpFlow::updateFlow(pcpp::Packet* const packet, Direction direction,
     }
 }
 
-auto TcpFlow::tcphdrToString(pcpp::tcphdr* const hdr) -> std::string
+auto TcpFlow::tcphdrToString(Tins::tcphdr* const hdr) -> std::string
 {
     std::string tcpFlag;
     if (hdr->synFlag) {

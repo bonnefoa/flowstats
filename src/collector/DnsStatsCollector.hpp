@@ -18,7 +18,7 @@ public:
         DisplayConfiguration& displayConf);
     ~DnsStatsCollector();
 
-    void processPacket(pcpp::Packet* packet);
+    void processPacket(Tins::Packet* packet);
     std::vector<std::string> getMetrics();
     std::string getFlowName() { return "DNS"; }
     std::string toString() { return "DnsStatsCollector"; }
@@ -27,18 +27,18 @@ public:
     {
         return aggregatedDnsFlows;
     }
-    void advanceTick(timespec now);
+    void advanceTick(timeval now);
     void resetMetrics();
     std::vector<AggregatedPairPointer> getAggregatedPairs();
     void mergePercentiles();
-    pcpp::ProtocolType getProtocol() { return pcpp::DNS; };
+    Tins::ProtocolType getProtocol() { return Tins::DNS; };
 
 private:
-    void newDnsQuery(pcpp::dnshdr* hdr, timespec pktTs,
-        pcpp::DnsLayer* dnsLayer, pcpp::Packet* packet);
-    void newDnsResponse(pcpp::dnshdr* hdr, timespec pktTs, pcpp::DnsLayer* dnsLayer,
-        pcpp::Packet* packet, DnsFlow& flow);
-    void updateIpToFqdn(pcpp::DnsLayer* dnsLayer, const std::string& fqdn);
+    void newDnsQuery(Tins::dnshdr* hdr, timeval pktTs,
+        Tins::DnsLayer* dnsLayer, Tins::Packet* packet);
+    void newDnsResponse(Tins::dnshdr* hdr, timeval pktTs, Tins::DnsLayer* dnsLayer,
+        Tins::Packet* packet, DnsFlow& flow);
+    void updateIpToFqdn(Tins::DnsLayer* dnsLayer, const std::string& fqdn);
 
     void addFlowToAggregation(DnsFlow& flow);
     std::map<uint16_t, DnsFlow> transactionIdToDnsFlow;

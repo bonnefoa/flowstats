@@ -7,8 +7,6 @@
 #include "Flow.hpp"
 #include "FlowFormatter.hpp"
 #include "Utils.hpp"
-#include <Packet.h>
-#include <TablePrinter.h>
 #include <fmt/format.h>
 #include <map>
 #include <mutex>
@@ -24,9 +22,9 @@ public:
         , displayConf(displayConf) {};
     virtual ~Collector() {}
 
-    virtual void processPacket(pcpp::Packet* packet) = 0;
+    virtual void processPacket(Tins::PDU* pdu) = 0;
     virtual std::string getFlowName() = 0;
-    virtual void advanceTick(timespec now) {};
+    virtual void advanceTick(timeval now) {};
     virtual void resetMetrics() {};
     virtual std::vector<std::string> getMetrics()
     {
@@ -37,7 +35,7 @@ public:
     virtual void mergePercentiles() {};
 
     virtual std::string toString() = 0;
-    virtual pcpp::ProtocolType getProtocol() = 0;
+    virtual Tins::PDU::PDUType getProtocol() = 0;
     std::vector<DisplayPair>& getDisplayPairs()
     {
         return displayPairs;

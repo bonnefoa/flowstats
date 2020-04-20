@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Flow.hpp"
-#include <DnsLayer.h>
+#include <dns.h>
 
 namespace flowstats {
 
@@ -12,12 +12,12 @@ public:
     bool hasResponse;
     bool isTcp;
     bool truncated;
-    enum pcpp::DnsType type;
+    enum Tins::DNS::QueryType type;
     uint16_t numberRecords;
     uint8_t responseCode;
 
-    timespec m_StartTimestamp;
-    timespec m_EndTimestamp;
+    timeval m_StartTimestamp;
+    timeval m_EndTimestamp;
 
     DnsFlow()
     {
@@ -25,19 +25,19 @@ public:
         hasResponse = false;
         isTcp = false;
         truncated = false;
-        type = pcpp::DNS_TYPE_ALL;
+        type = Tins::DNS::A;
         numberRecords = 0;
         responseCode = 0;
         m_StartTimestamp = { 0, 0 };
         m_EndTimestamp = { 0, 0 };
     }
 
-    DnsFlow(pcpp::Packet* packet)
-        : Flow(packet)
+    DnsFlow(Tins::PDU* pdu)
+        : Flow(pdu)
     {
         DnsFlow();
     }
 };
 
-std::string dnsTypeToString(pcpp::DnsType dnsType);
+std::string dnsTypeToString(Tins::DNS::QueryType queryType);
 }

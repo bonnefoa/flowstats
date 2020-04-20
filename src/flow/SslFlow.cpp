@@ -3,26 +3,25 @@
 
 namespace flowstats {
 
-auto
-SslFlow::getDomain(pcpp::SSLClientHelloMessage* clientHelloMessage) -> std::string
+auto SslFlow::getDomain(Tins::SSLClientHelloMessage* clientHelloMessage) -> std::string
 {
     auto* sniExt = clientHelloMessage
-                                                         ->getExtensionOfType<pcpp::SSLServerNameIndicationExtension>();
+                       ->getExtensionOfType<Tins::SSLServerNameIndicationExtension>();
     if (sniExt != nullptr) {
         return sniExt->getHostName();
     }
     return "";
 }
 
-void SslFlow::processHandshake(pcpp::Packet* const packet, pcpp::SSLLayer* sslLayer,
+void SslFlow::processHandshake(Tins::Packet* const packet, Tins::SSLLayer* sslLayer,
     Direction direction)
 {
-    auto* handshakeLayer = dynamic_cast<pcpp::SSLHandshakeLayer*>(sslLayer);
+    auto* handshakeLayer = dynamic_cast<Tins::SSLHandshakeLayer*>(sslLayer);
     if (handshakeLayer == nullptr) {
         return;
     }
     auto* clientHelloMessage = handshakeLayer
-                                                          ->getHandshakeMessageOfType<pcpp::SSLClientHelloMessage>();
+                                   ->getHandshakeMessageOfType<Tins::SSLClientHelloMessage>();
     if (clientHelloMessage != nullptr) {
         startHandshake = packet->getRawPacketReadOnly()->getPacketTimeStamp();
         std::string hostName = getDomain(clientHelloMessage);
@@ -33,7 +32,7 @@ void SslFlow::processHandshake(pcpp::Packet* const packet, pcpp::SSLLayer* sslLa
             }
         }
         auto* ticketMessage = clientHelloMessage
-                                                              ->getExtensionOfType<pcpp::SSLNewSessionTicketMessage>();
+                                  ->getExtensionOfType<Tins::SSLNewSessionTicketMessage>();
         if (ticketMessage != nullptr) {
             tickets[direction]++;
             for (auto aggregatedSslFlow : aggregatedFlows) {
@@ -43,7 +42,7 @@ void SslFlow::processHandshake(pcpp::Packet* const packet, pcpp::SSLLayer* sslLa
     }
 
     auto* sslFinishedMessage = handshakeLayer
-                                                      ->getHandshakeMessageOfType<pcpp::SSLUnknownMessage>();
+                                   ->getHandshakeMessageOfType<Tins::SSLUnknownMessage>();
     if (direction == FROM_SERVER && sslFinishedMessage) {
         uint32_t delta = getTimevalDeltaMs(startHandshake,
             packet->getRawPacketReadOnly()->getPacketTimeStamp());
@@ -56,16 +55,16 @@ void SslFlow::processHandshake(pcpp::Packet* const packet, pcpp::SSLLayer* sslLa
     }
 }
 
-void SslFlow::updateFlow(pcpp::Packet* const packet, Direction direction,
-    pcpp::SSLLayer* sslLayer)
+void SslFlow::updateFlow(Tins::Packet* const packet, Direction direction,
+    Tins::SSLLayer* sslLayer)
 {
     while (sslLayer != nullptr) {
-        pcpp::SSLRecordType recType = sslLayer->getRecordType();
-        if (recType == pcpp::SSL_HANDSHAKE) {
+        Tins::SSLRecordType recType = sslLayer->getRecordType();
+        if (recType == Tins::SSL_HANDSHAKE) {
             processHandshake(packet, sslLayer, direction);
         }
 
-        sslLayer = packet->getNextLayerOfType<pcpp::SSLLayer>(sslLayer);
+        sslLayer = packet->getNextLayerOfType<Tins::SSLLayer>(sslLayer);
     }
 }
-}  // namespace flowstats
+} // namespace flowstats
