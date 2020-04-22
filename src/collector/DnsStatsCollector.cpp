@@ -17,25 +17,24 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
     updateDisplayType(0);
 };
 
-void DnsStatsCollector::processPacket(Tins::Packet* packet)
+void DnsStatsCollector::processPacket(Tins::PtrPacket& packet)
 {
-    timeval pktTs = packet->getRawPacket()->getPacketTimeStamp();
+    timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
-    if (packet->isPacketOfType(Tins::IPv6) || !packet->isPacketOfType(Tins::DNS)) {
-        return;
-    }
-    auto* dnsLayer = packet->getLayerOfType<Tins::DnsLayer>(true);
-
-    Tins::dnshdr* hdr = dnsLayer->getDnsHeader();
-    if (hdr->queryOrResponse == 0 && dnsLayer->getFirstQuery() != nullptr) {
-        newDnsQuery(hdr, pktTs, dnsLayer, packet);
+    auto pdu = packet.pdu();
+    auto dns = pdu->find_pdu<Tins::DNS>();
+    if (dns == nullptr) {
         return;
     }
 
-    auto it = transactionIdToDnsFlow.find(hdr->transactionID);
+    if (dns->type() == Tins::DNS::QUERY) {
+        newDnsQuery(packet, dns);
+    }
+
+    auto it = transactionIdToDnsFlow.find(dns->id());
     if (it != transactionIdToDnsFlow.end()) {
         DnsFlow& flow = it->second;
-        newDnsResponse(hdr, pktTs, dnsLayer, packet, flow);
+        newDnsResponse(packet, dns, flow);
     }
 }
 
@@ -48,20 +47,16 @@ auto DnsStatsCollector::getFlows() -> std::vector<Flow*>
     return res;
 }
 
-void DnsStatsCollector::updateIpToFqdn(Tins::DnsLayer* dnsLayer, const std::string& fqdn)
+void DnsStatsCollector::updateIpToFqdn(Tins::DNS* dns, const std::string& fqdn)
 {
-    Tins::DnsResource* answer = dnsLayer->getFirstAnswer();
+    auto answers = dns->answers();
     std::vector<int> ips;
-    while (answer != nullptr) {
-        answer->getData()->toString();
-        if (answer->getData()->isTypeOf<Tins::IPv4DnsResourceData>()) {
-            ips.push_back(answer->getData()
-                              ->castAs<Tins::IPv4DnsResourceData>()
-                              ->getIpAddress()
-                              .toInt());
+    for (auto answer : answers) {
+        if (answer.query_type() == Tins::DNS::A) {
+            ips.push_back(Tins::IPv4Address(answer.data()));
         }
-        answer = dnsLayer->getNextAnswer(answer);
     }
+
     {
         const std::lock_guard<std::mutex> lock(conf.ipToFqdnMutex);
         for (auto ip : ips) {
@@ -70,40 +65,41 @@ void DnsStatsCollector::updateIpToFqdn(Tins::DnsLayer* dnsLayer, const std::stri
     }
 }
 
-void DnsStatsCollector::newDnsQuery(Tins::dnshdr* hdr, timeval pktTs, Tins::DnsLayer* dnsLayer, Tins::Packet* packet)
+void DnsStatsCollector::newDnsQuery(Tins::PtrPacket& packet, Tins::DNS* dns)
 {
-    DnsFlow flow(packet);
+    DnsFlow flow(dns);
     flow.addPacket(packet, FROM_CLIENT);
-    flow.m_StartTimestamp = pktTs;
-    flow.isTcp = packet->isPacketOfType(Tins::TCP);
-    flow.type = dnsLayer->getFirstQuery()->getDnsType();
-    flow.fqdn = std::string(dnsLayer->getFirstQuery()->getName());
+    flow.m_StartTimestamp = packetToTimeval(packet);
+    flow.isTcp = dns->parent_pdu()->pdu_type() == Tins::PDU::TCP;
+    auto queries = dns->queries();
+    auto firstQuery = queries.at(0);
+    flow.type = firstQuery.query_type();
+    flow.fqdn = firstQuery.dname();
     flow.hasResponse = false;
-    if (dnsLayer->getFirstQuery()->getName().empty()) {
-        spdlog::debug("Empty query in dns {}", dnsLayer->toString());
+    if (flow.fqdn.empty()) {
+        spdlog::debug("Empty query in dns tid {}", dns->id());
         return;
     }
-    transactionIdToDnsFlow[hdr->transactionID] = flow;
+    transactionIdToDnsFlow[dns->id()] = flow;
 }
 
-void DnsStatsCollector::newDnsResponse(Tins::dnshdr* hdr, timeval pktTs,
-    Tins::DnsLayer* dnsLayer, Tins::Packet* packet, DnsFlow& flow)
+void DnsStatsCollector::newDnsResponse(Tins::PtrPacket& packet, Tins::DNS* dns, DnsFlow& flow)
 {
     flow.addPacket(packet, FROM_SERVER);
-    flow.m_EndTimestamp = pktTs;
+    flow.m_EndTimestamp = packetToTimeval(packet);
     flow.hasResponse = true;
-    flow.truncated = hdr->truncation;
-    flow.numberRecords = dnsLayer->getAnswerCount();
-    flow.responseCode = hdr->responseCode;
+    flow.truncated = dns->truncated();
+    flow.numberRecords = dns->answers_count();
+    flow.responseCode = dns->rcode();
 
-    updateIpToFqdn(dnsLayer, flow.fqdn);
-    spdlog::debug("Dns tid {}, {}, {} finished, {}", hdr->transactionID,
+    updateIpToFqdn(dns, flow.fqdn);
+    spdlog::debug("Dns tid {}, {}, {} finished, {}", dns->id(),
         flow.isTcp ? "Tcp" : "Udp",
         flow.fqdn,
         flow.numberRecords);
     dnsFlows.push_back(flow);
     addFlowToAggregation(flow);
-    transactionIdToDnsFlow.erase(hdr->transactionID);
+    transactionIdToDnsFlow.erase(dns->id());
 }
 
 void DnsStatsCollector::addFlowToAggregation(DnsFlow& flow)

@@ -16,7 +16,7 @@ int analyzeLiveTraffic(Tins::Sniffer* dev, FlowstatsConfiguration& conf,
     std::atomic_bool& shouldStop, Screen& screen);
 int analyzePcapFile(FlowstatsConfiguration& conf, Collector* collector);
 int analyzePcapFile(FlowstatsConfiguration& conf, std::vector<Collector*> collectors);
-Tins::Sniffer* getLiveDevice(const std::string& interfaceNameOrIP, FlowstatsConfiguration& conf);
+Tins::Sniffer* getLiveDevice(const FlowstatsConfiguration& conf);
 Tins::FileSniffer* getPcapReader(const std::string& pcapFileName, std::string filter);
 
 }

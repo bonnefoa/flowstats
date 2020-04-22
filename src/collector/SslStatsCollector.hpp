@@ -4,11 +4,6 @@
 #include "Collector.hpp"
 #include "PrintHelper.hpp"
 #include "SslFlow.hpp"
-#include <PacketUtils.h>
-#include <PayloadLayer.h>
-#include <SSLLayer.h>
-#include <SystemUtils.h>
-#include <TcpLayer.h>
 #include <algorithm>
 #include <arpa/inet.h>
 #include <iostream>
@@ -24,11 +19,11 @@ public:
     SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf);
     ~SslStatsCollector();
 
-    void processPacket(Tins::Packet* packet);
+    void processPacket(Tins::PtrPacket& packet);
     void resetMetrics();
 
     std::string getFlowName() { return "SSL"; }
-    Tins::ProtocolType getProtocol() { return Tins::SSL; };
+    Tins::PDU::PDUType getProtocol() { return Tins::PDU::TCP; };
     std::string toString() { return "SslStatsCollector"; }
     std::vector<AggregatedPairPointer> getAggregatedPairs();
 
@@ -40,10 +35,10 @@ public:
 private:
     std::map<uint32_t, SslFlow> hashToSslFlow;
     std::map<AggregatedTcpKey, AggregatedSslFlow*> aggregatedMap;
-    SslFlow& lookupSslFlow(Tins::IPv4Layer* ipv4Layer,
-        Tins::TcpLayer* tcpLayer, FlowId& flowId);
+    SslFlow& lookupSslFlow(Tins::IP* ipv4Layer,
+        Tins::TCP* tcp, FlowId& flowId);
 
-    std::vector<AggregatedSslFlow*> lookupAggregatedFlows(Tins::TcpLayer* tcpLayer,
+    std::vector<AggregatedSslFlow*> lookupAggregatedFlows(Tins::TCP* tcp,
         SslFlow& sslFlow, FlowId& flowId,
         const std::string& fqdn);
 };

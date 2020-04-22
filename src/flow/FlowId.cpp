@@ -6,34 +6,33 @@ namespace flowstats {
 auto FlowId::toString() -> std::string
 {
     return fmt::format("{}:{} -> {}:{}",
-        Tins::IPv4Address(ips[direction]).toString(), ports[direction],
-        Tins::IPv4Address(ips[!direction]).toString(), ports[!direction]);
+        Tins::IPv4Address(ips[direction]).to_string(), ports[direction],
+        Tins::IPv4Address(ips[!direction]).to_string(), ports[!direction]);
 }
 
-FlowId::FlowId(Tins::IPv4Layer* ipv4Layer, Tins::TcpLayer* tcpLayer)
+FlowId::FlowId(Tins::IP* ip, Tins::TCP* tcp)
 {
-    Port pktPorts[2] = { ntohs(tcpLayer->getTcpHeader()->portSrc), ntohs(tcpLayer->getTcpHeader()->portDst) };
-    IPv4 pktIps[2] = { ipv4Layer->getIPv4Header()->ipSrc, ipv4Layer->getIPv4Header()->ipDst };
+    Port pktPorts[2] = { ntohs(tcp->sport()), ntohs(tcp->dport()) };
+    IPv4 pktIps[2] = { ip->src_addr(), ip->dst_addr() };
     *this = FlowId(pktPorts, pktIps);
 }
 
-FlowId::FlowId(Tins::IPv4Layer* ipv4Layer, Tins::UdpLayer* udpLayer)
+FlowId::FlowId(Tins::IP* ip, Tins::UDP* upd)
 {
-    Port pktPorts[2] = { ntohs(udpLayer->getUdpHeader()->portSrc), ntohs(udpLayer->getUdpHeader()->portDst) };
-    IPv4 pktIps[2] = { ipv4Layer->getIPv4Header()->ipSrc, ipv4Layer->getIPv4Header()->ipDst };
+    Port pktPorts[2] = { ntohs(upd->sport()), ntohs(upd->dport()) };
+    IPv4 pktIps[2] = { ip->src_addr(), ip->dst_addr() };
     *this = FlowId(pktPorts, pktIps);
 }
 
-FlowId::FlowId(Tins::Packet* packet)
+FlowId::FlowId(Tins::PDU* pdu)
 {
-    if (packet->isPacketOfType(Tins::TCP)) {
-        auto* tcpLayer = packet->getLayerOfType<Tins::TcpLayer>();
-        auto* ipv4Layer = packet->getPrevLayerOfType<Tins::IPv4Layer>(tcpLayer);
-        *this = FlowId(ipv4Layer, tcpLayer);
+    auto ip = pdu->find_pdu<Tins::IP>();
+    auto tcp = ip->find_pdu<Tins::TCP>();
+    if (tcp) {
+        *this = FlowId(ip, tcp);
     } else {
-        auto* udpLayer = packet->getLayerOfType<Tins::UdpLayer>();
-        auto* ipv4Layer = packet->getPrevLayerOfType<Tins::IPv4Layer>(udpLayer);
-        *this = FlowId(ipv4Layer, udpLayer);
+        auto udp = ip->find_pdu<Tins::UDP>();
+        *this = FlowId(ip, udp);
     }
 }
 
@@ -43,8 +42,8 @@ FlowId::FlowId(uint16_t pktPorts[2], IPv4 pktIps[2])
     if (pktPorts[0] < pktPorts[1]) {
         direction = FROM_SERVER;
     }
-    ips[0] = pktIps[0 + direction];
-    ips[1] = pktIps[1 - direction];
+    ips[0] = Tins::IPv4Address(pktIps[0 + direction]);
+    ips[1] = Tins::IPv4Address(pktIps[1 - direction]);
     ports[0] = pktPorts[0 + direction];
     ports[1] = pktPorts[1 - direction];
 }

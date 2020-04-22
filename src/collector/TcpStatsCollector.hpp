@@ -12,12 +12,12 @@ public:
     TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf);
     ~TcpStatsCollector();
 
-    void processPacket(Tins::Packet* packet);
+    void processPacket(Tins::PtrPacket& packet);
 
     void resetMetrics();
 
     std::string getFlowName() { return "TCP"; }
-    Tins::ProtocolType getProtocol() { return Tins::TCP; };
+    Tins::PDU::PDUType getProtocol() { return Tins::PDU::TCP; };
     std::string toString() { return "TcpStatsCollector"; }
 
     std::vector<Flow*> getFlows()
@@ -31,7 +31,7 @@ public:
         return aggregatedMap;
     }
 
-    std::map<uint32_t, TcpFlow> getTcpFlow() { return hashToTcpFlow; }
+    std::map<size_t, TcpFlow> getTcpFlow() { return hashToTcpFlow; }
     std::vector<AggregatedPairPointer> getAggregatedPairs();
     int lastTick = 0;
     void advanceTick(timeval now);
@@ -39,14 +39,14 @@ public:
     void mergePercentiles();
 
 private:
-    std::map<uint32_t, TcpFlow> hashToTcpFlow;
+    std::map<size_t, TcpFlow> hashToTcpFlow;
     std::map<uint16_t, int> srvPortsCounter;
     void timeoutFlow(TcpFlow* flow);
 
     std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap;
     std::vector<std::pair<TcpFlow*, std::vector<AggregatedTcpFlow*>>> openingTcpFlow;
-    TcpFlow& lookupTcpFlow(Tins::IPv4Layer* ipv4Layer,
-        Tins::TcpLayer* tcpLayer,
+    TcpFlow& lookupTcpFlow(Tins::IP* ipv4Layer,
+        Tins::TCP* tcpLayer,
         FlowId& flowId);
     std::vector<AggregatedTcpFlow*> lookupAggregatedFlows(TcpFlow& tcp, FlowId& flowId);
 

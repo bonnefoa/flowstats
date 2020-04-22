@@ -86,12 +86,12 @@ auto analyzePcapFile(FlowstatsConfiguration& conf,
     return 0;
 }
 
-auto getLiveDevice(const std::string& iface, FlowstatsConfiguration& conf) -> Tins::Sniffer*
+auto getLiveDevice(const FlowstatsConfiguration& conf) -> Tins::Sniffer*
 {
     Tins::SnifferConfiguration snifferConf;
     snifferConf.set_promisc_mode(1);
     snifferConf.set_filter(conf.bpfFilter);
-    Tins::Sniffer* dev = new Tins::Sniffer(iface, snifferConf);
+    Tins::Sniffer* dev = new Tins::Sniffer(conf.interfaceNameOrIP, snifferConf);
     return dev;
 }
 
@@ -102,7 +102,7 @@ auto getLiveDevice(const std::string& iface, FlowstatsConfiguration& conf) -> Ti
 /**
  * packet capture callback - called whenever a packet arrives
  */
-static void packetArrive(Tins::PtrPacket* packet,
+static void packetArrive(Tins::PtrPacket& packet,
     __attribute__((unused)) Tins::Sniffer* dev,
     void* cookie)
 {

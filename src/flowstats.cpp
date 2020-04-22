@@ -5,8 +5,6 @@
 #include "SslStatsCollector.hpp"
 #include "TcpStatsCollector.hpp"
 #include "Utils.hpp"
-#include <Logger.h>
-#include <PcapPlusPlusVersion.h>
 #include <cstdlib>
 #include <cstring>
 #include <getopt.h>
@@ -49,7 +47,7 @@ void printUsage()
 {
     printf("\nUsage: \n"
            "----------------------\n"
-           "%s -f input_file -i iface [-m maxResults] [-a ddagentAddr] -hvl \n"
+           "flowstats -f input_file -i iface [-m maxResults] [-a ddagentAddr] -hvl \n"
            "\nOptions:\n\n"
            "    -f           : The input pcap/pcapng file to analyze\n"
            "    -i           : The iface to capture\n"
@@ -58,8 +56,7 @@ void printUsage()
            "    -m           : Maximum number of result to display\n"
            "    -v           : Verbose log\n"
            "    -h           : Displays this help message and exits\n"
-           "    -l           : Print the list of interfaces and exists\n\n",
-        AppName::get().c_str());
+           "    -l           : Print the list of interfaces and exists\n\n");
     exit(0);
 }
 
@@ -68,8 +65,6 @@ void printUsage()
  */
 auto main(int argc, char* argv[]) -> int
 {
-    AppName::init(argc, argv);
-
     FlowstatsConfiguration conf;
     DisplayConfiguration displayConf;
 
@@ -156,20 +151,20 @@ auto main(int argc, char* argv[]) -> int
         new TcpStatsCollector(conf, displayConf));
 
     if (!localhostIp.empty()) {
-        conf.ipToFqdn[Tins::IPv4Address(localhostIp).toInt()] = "localhost";
+        conf.ipToFqdn[Tins::IPv4Address(localhostIp)] = "localhost";
     }
     if (conf.pcapFileName != "") {
         analyzePcapFile(conf, collectors);
     } else {
         std::vector<Tins::IPv4Address> localIps = getLocalIps();
         for (auto& ip : localIps) {
-            conf.ipToFqdn[ip.toInt()] = "localhost";
+            conf.ipToFqdn[ip] = "localhost";
         }
         std::atomic_bool shouldStop = false;
         Screen screen(shouldStop, conf.noCurses, conf,
             displayConf, collectors);
         screen.StartDisplay();
-        PcapLiveDevice* dev = getLiveDevice(conf.interfaceNameOrIP);
+        auto dev = getLiveDevice(conf);
         analyzeLiveTraffic(dev, conf, collectors,
             shouldStop, screen);
     }

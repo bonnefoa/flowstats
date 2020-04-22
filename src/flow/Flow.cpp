@@ -4,16 +4,16 @@
 
 namespace flowstats {
 
-void Flow::addPacket(Tins::PtrPacket* packet, const Direction direction)
+void Flow::addPacket(Tins::PtrPacket& packet, const Direction direction)
 {
     packets[direction]++;
-    bytes[direction] += packet->pdu()->advertised_size();
+    bytes[direction] += packet.pdu()->advertised_size();
     totalPackets[direction]++;
-    totalBytes[direction] += packet->pdu()->advertised_size();
+    totalBytes[direction] += packet.pdu()->advertised_size();
     if (start.tv_sec == 0) {
-        start = { packet->timestamp().seconds(), packet->timestamp().microseconds() };
+        start = { packet.timestamp().seconds(), packet.timestamp().microseconds() };
     }
-    end = { packet->timestamp().seconds(), packet->timestamp().microseconds() };
+    end = { packet.timestamp().seconds(), packet.timestamp().microseconds() };
 }
 
 void Flow::fillValues(std::map<std::string, std::string>& values,

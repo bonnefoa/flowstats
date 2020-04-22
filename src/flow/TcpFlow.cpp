@@ -1,6 +1,5 @@
 #include "TcpFlow.hpp"
 #include "Utils.hpp"
-#include <PacketUtils.h>
 #include <spdlog/spdlog.h>
 
 namespace flowstats {
@@ -10,18 +9,18 @@ TcpFlow::TcpFlow()
 {
 }
 
-TcpFlow::TcpFlow(Tins::IPv4Layer* ipv4Layer, Tins::TcpLayer* tcpLayer, uint32_t flowHash)
-    : Flow(ipv4Layer, tcpLayer)
+TcpFlow::TcpFlow(Tins::IP* ip, Tins::TCP* tcp, uint32_t flowHash)
+    : Flow(ip, tcp)
     , flowHash(flowHash)
 {
 }
 
-void TcpFlow::detectServer(Tins::TcpLayer* const tcpLayer, Direction direction,
+void TcpFlow::detectServer(const Tins::TCP* tcp, Direction direction,
     std::map<uint16_t, int>& srvPortsCounter)
 {
-    Tins::tcphdr* const tcphdr = tcpLayer->getTcpHeader();
-    if (tcphdr->synFlag) {
-        if (tcphdr->ackFlag) {
+    auto const flags = tcp->flags();
+    if (flags & Tins::TCP::SYN) {
+        if (flags & Tins::TCP::ACK) {
             srvPos = direction;
             srvPortsCounter[flowId.ports[srvPos]]++;
             spdlog::debug("Incrementing port {} as server port to {}", flowId.ports[srvPos], srvPortsCounter[flowId.ports[srvPos]]);
@@ -84,33 +83,31 @@ void TcpFlow::closeConnection()
     lastPayloadTime = { 0, 0 };
 }
 
-auto TcpFlow::nextSeqnum(Tins::TcpLayer* const tcpLayer, int tcpPayloadSize) -> uint32_t
+auto TcpFlow::nextSeqnum(const Tins::TCP* tcp, int tcpPayloadSize) -> uint32_t
 {
-    Tins::tcphdr* const tcphdr = tcpLayer->getTcpHeader();
-    return ntohl(tcphdr->sequenceNumber) + tcpPayloadSize + tcphdr->synFlag + tcphdr->finFlag;
+
+    return ntohl(tcp->seq()) + tcpPayloadSize + tcp->get_flag(Tins::TCP::SYN) + tcp->get_flag(Tins::TCP::FIN);
 }
 
-auto TcpFlow::getTcpPayloadSize(Tins::Packet* const packet, Tins::TcpLayer* const tcpLayer) -> int
+auto TcpFlow::getTcpPayloadSize(const Tins::PDU* packet, const Tins::TCP* tcp) -> int
 {
-    uint8_t const* start = packet->getFirstLayer()->getData();
-    uint8_t const* end = tcpLayer->getLayerPayload();
-    int headerLen = end - start;
-    return packet->getRawPacketReadOnly()->getFrameLength() - headerLen;
+    return tcp->inner_pdu()->size();
 }
 
-void TcpFlow::updateFlow(Tins::Packet* const packet, Direction direction,
-    Tins::TcpLayer* const tcpLayer)
+void TcpFlow::updateFlow(const Tins::PtrPacket& packet, Direction direction,
+    const Tins::TCP* tcp)
 {
-    Tins::tcphdr* const tcphdr = tcpLayer->getTcpHeader();
-    timeval tv = packet->getRawPacketReadOnly()->getPacketTimeStamp();
+    auto const flags = tcp->flags();
+    timeval tv = packetToTimeval(packet);
 
-    int tcpPayloadSize = getTcpPayloadSize(packet, tcpLayer);
+    auto pdu = packet.pdu();
+    int tcpPayloadSize = getTcpPayloadSize(pdu, tcp);
     lastPacketTime[direction] = tv;
-    uint32_t nextSeq = std::max(seqNum[direction], nextSeqnum(tcpLayer, tcpPayloadSize));
+    uint32_t nextSeq = std::max(seqNum[direction], nextSeqnum(tcp, tcpPayloadSize));
     spdlog::debug("Update flow {}, nextSeq {}, ts {}ms, direction {}, tcp {}, payload {}", flowId.toString(), nextSeq,
-        timevalInMs(tv), direction, tcphdrToString(tcphdr), tcpPayloadSize);
+        timevalInMs(tv), direction, tcpToString(tcp), tcpPayloadSize);
 
-    if (tcphdr->synFlag) {
+    if (flags & Tins::TCP::SYN) {
         synTime[direction] = tv;
         opening = true;
         closed = false;
@@ -119,7 +116,7 @@ void TcpFlow::updateFlow(Tins::Packet* const packet, Direction direction,
     }
     auto currentDirection = static_cast<Direction>(direction == srvPos);
 
-    if (!opened && tcphdr->ackFlag && ntohl(tcphdr->ackNumber) == seqNum[!direction]
+    if (!opened && flags & Tins::TCP::ACK && tcp->ack_seq() == seqNum[!direction]
         && synAcked[direction] == false) {
         spdlog::debug("syn acked for direction {}", directionToString(currentDirection));
         synAcked[direction] = true;
@@ -139,16 +136,16 @@ void TcpFlow::updateFlow(Tins::Packet* const packet, Direction direction,
         }
     }
 
-    uint32_t ackNumber = ntohl(tcphdr->ackNumber);
+    uint32_t ackNumber = tcp->ack_seq();
     if (seqNum[!direction] > 0 && ackNumber > seqNum[!direction]) {
-        spdlog::debug("Got a gap, ack {}, expected seqNum {}", ntohl(tcphdr->ackNumber), seqNum[!direction]);
+        spdlog::debug("Got a gap, ack {}, expected seqNum {}", ackNumber, seqNum[!direction]);
         gap++;
         requestSize = 0;
         lastPayloadTime = { 0, 0 };
-        seqNum[!direction] = std::max(seqNum[!direction], ntohl(tcphdr->ackNumber));
+        seqNum[!direction] = std::max(seqNum[!direction], ackNumber);
     }
 
-    if (!tcphdr->rstFlag) {
+    if (!(flags & Tins::TCP::RST)) {
         seqNum[direction] = std::max(seqNum[direction], nextSeq);
     }
     if (tcpPayloadSize > 0) {
@@ -173,7 +170,7 @@ void TcpFlow::updateFlow(Tins::Packet* const packet, Direction direction,
         }
     }
 
-    if (!tcphdr->synFlag && !tcphdr->rstFlag && !opened && !opening && seqNum[!direction] == ackNumber) {
+    if (!tcp->has_flags(Tins::TCP::SYN) && !tcp->has_flags(Tins::TCP::RST) && !opened && !opening && seqNum[!direction] == ackNumber) {
         spdlog::debug("Detected ongoing conversation");
         opened = true;
         for (auto& aggregatedFlow : aggregatedFlows) {
@@ -181,14 +178,14 @@ void TcpFlow::updateFlow(Tins::Packet* const packet, Direction direction,
         }
     }
 
-    if (tcphdr->finFlag) {
-        uint32_t nextSeq = nextSeqnum(tcpLayer, tcpPayloadSize);
+    if (tcp->has_flags(Tins::TCP::RST)) {
+        uint32_t nextSeq = nextSeqnum(tcp, tcpPayloadSize);
         spdlog::debug("Got fin for direction {}, ts {}ms, nextSeq {}",
             directionToString(currentDirection), timevalInMs(tv), nextSeq);
         finSeqnum[direction] = nextSeq;
     }
 
-    if (tcphdr->ackFlag && ntohl(tcphdr->ackNumber) == finSeqnum[!direction]
+    if (tcp->has_flags(Tins::TCP::ACK) && tcp->ack_seq() == finSeqnum[!direction]
         && finAcked[direction] == false) {
         finAcked[direction] = true;
         if (finAcked[!direction]) {
@@ -196,34 +193,35 @@ void TcpFlow::updateFlow(Tins::Packet* const packet, Direction direction,
         }
     }
 
-    if (tcphdr->rstFlag && closed == false) {
+    if (tcp->has_flags(Tins::TCP::RST) && closed == false) {
         closeConnection();
     }
 }
 
-auto TcpFlow::tcphdrToString(Tins::tcphdr* const hdr) -> std::string
+auto TcpFlow::tcpToString(const Tins::TCP* tcp) -> std::string
 {
     std::string tcpFlag;
-    if (hdr->synFlag) {
-        if (hdr->ackFlag) {
+    auto flags = tcp->flags();
+    if (flags & Tins::TCP::SYN) {
+        if (flags & Tins::TCP::ACK) {
             tcpFlag = "[SYN, ACK], ";
         } else {
             tcpFlag = "[SYN], ";
         }
-    } else if (hdr->finFlag) {
-        if (hdr->ackFlag) {
+    } else if (flags & Tins::TCP::FIN) {
+        if (flags & Tins::TCP::ACK) {
             tcpFlag = "[FIN, ACK], ";
         } else {
             tcpFlag = "[FIN], ";
         }
-    } else if (hdr->ackFlag) {
+    } else if (flags & Tins::TCP::ACK) {
         tcpFlag = "[ACK], ";
-    } else if (hdr->rstFlag) {
+    } else if (flags & Tins::TCP::RST) {
         tcpFlag = "[RST], ";
     }
     return fmt::format("{}seq={}, ack={}, opened={}",
-        tcpFlag, ntohl(hdr->sequenceNumber),
-        ntohl(hdr->ackNumber),
+        tcpFlag, ntohl(tcp->seq()),
+        ntohl(tcp->ack_seq()),
         opened);
 }
 } // namespace flowstats

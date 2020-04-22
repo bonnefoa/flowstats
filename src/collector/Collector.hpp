@@ -22,7 +22,7 @@ public:
         , displayConf(displayConf) {};
     virtual ~Collector() {}
 
-    virtual void processPacket(Tins::PDU* pdu) = 0;
+    virtual void processPacket(Tins::PtrPacket& pdu) = 0;
     virtual std::string getFlowName() = 0;
     virtual void advanceTick(timeval now) {};
     virtual void resetMetrics() {};

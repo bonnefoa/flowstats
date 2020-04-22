@@ -105,23 +105,23 @@ struct CurlGeneratorConfiguration {
     ;
 };
 
-void handleHttp(Packet& packet, TcpLayer* tcpLayer, CurlGeneratorConfiguration& conf)
+void handleHttp(Packet& packet, TCP* tcp, CurlGeneratorConfiguration& conf)
 {
-    int dstPort = ntohs(tcpLayer->getTcpHeader()->portDst);
+    int dstPort = ntohs(tcp->getTcpHeader()->portDst);
     if (conf.httpServerPorts.count(dstPort) == 0) {
         return;
     }
-    uint8_t* payload = tcpLayer->getLayerPayload();
-    size_t payloadLen = tcpLayer->getLayerPayloadSize();
+    uint8_t* payload = tcp->getLayerPayload();
+    size_t payloadLen = tcp->getLayerPayloadSize();
     if (HttpRequestFirstLine::parseMethod(reinterpret_cast<char*>(payload), payloadLen) == HttpRequestLayer::HttpMethodUnknown) {
         return;
     }
-    HttpRequestLayer request = HttpRequestLayer(payload, payloadLen, tcpLayer, &packet);
+    HttpRequestLayer request = HttpRequestLayer(payload, payloadLen, tcp, &packet);
     HttpRequestFirstLine* firstLine = request.getFirstLine();
 
     std::string destinationIP;
     if (conf.destinationIP == "") {
-        auto* ipv4Layer = packet.getPrevLayerOfType<Tins::IPv4Layer>(tcpLayer);
+        auto* ipv4Layer = packet.getPrevLayerOfType<Tins::IP>(tcp);
         destinationIP = ipv4Layer->getDstIpAddress().toString();
     } else {
         destinationIP = conf.destinationIP;
@@ -239,8 +239,8 @@ auto main(int argc, char* argv[]) -> int
     while (reader->getNextPacket(rawPacket)) {
         Packet packet(&rawPacket, Tins::OsiModelTransportLayer);
         if (packet.isPacketOfType(Tins::TCP)) {
-            auto* tcpLayer = packet.getLayerOfType<Tins::TcpLayer>();
-            handleHttp(packet, tcpLayer, conf);
+            auto* tcp = packet.getLayerOfType<Tins::TCP>();
+            handleHttp(packet, tcp, conf);
         }
     }
 }

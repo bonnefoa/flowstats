@@ -3,7 +3,6 @@
 #include "AggregatedSslFlow.hpp"
 #include "Flow.hpp"
 #include "Stats.hpp"
-#include <SSLLayer.h>
 
 namespace flowstats {
 
@@ -15,12 +14,12 @@ public:
     timeval startHandshake = { 0, 0 };
 
     void updateFlow(Tins::Packet* const packet, Direction direction,
-        Tins::SSLLayer* sslLayer);
+        Tins::TCP* sslLayer);
     std::vector<AggregatedSslFlow*> aggregatedFlows;
 
-private:
-    std::string getDomain(Tins::SSLClientHelloMessage* clientHelloMessage);
-    void processHandshake(Tins::Packet* const packet, Tins::SSLLayer* sslLayer,
-        Direction direction);
+    //private:
+    //std::string getDomain(Tins::SSLClientHelloMessage* clientHelloMessage);
+    //void processHandshake(Tins::Packet* const packet, Tins::SSLLayer* sslLayer,
+    //Direction direction);
 };
 }

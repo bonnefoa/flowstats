@@ -8,6 +8,7 @@
 #include <limits>
 #include <map>
 #include <optional> // for optional
+#include <packet.h>
 #include <set>
 #include <string>
 #include <tcp.h>
@@ -52,7 +53,7 @@ std::map<uint32_t, std::string> getIpToFqdn();
 std::map<uint32_t, std::string> getIpToFqdn(std::vector<std::string>& initialDomains);
 std::map<std::string, uint16_t> getDomainToServerPort(std::vector<std::string>& initialServerPorts);
 
-uint32_t hash5Tuple(Tins::IP* ipv4Layer, uint16_t portSrc, uint16_t portDst);
-
 std::optional<std::string> getFlowFqdn(FlowstatsConfiguration& conf, uint32_t srvIp);
+
+auto packetToTimeval(const Tins::PtrPacket& packet) -> timeval;
 }

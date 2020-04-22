@@ -1,8 +1,5 @@
 #include "Collector.hpp"
 #include "FlowId.hpp"
-#include <IPv4Layer.h>
-#include <PacketUtils.h>
-#include <TcpLayer.h>
 #include <arpa/inet.h>
 #include <fstream>
 #include <iostream>

@@ -2,7 +2,6 @@
 #include "AggregatedTcpFlow.hpp"
 #include "Collector.hpp"
 #include "TcpFlow.hpp"
-#include <PacketUtils.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <string>
@@ -29,40 +28,41 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
 };
 
 auto TcpStatsCollector::lookupTcpFlow(
-    Tins::IPv4Layer* ipv4Layer,
-    Tins::TcpLayer* tcpLayer,
+    Tins::IP* ip,
+    Tins::TCP* tcp,
     FlowId& flowId) -> TcpFlow&
 {
-    uint32_t flowHash = hash5Tuple(ipv4Layer, tcpLayer);
-    TcpFlow& tcp = hashToTcpFlow[flowHash];
-    if (tcp.flowHash == 0) {
-        tcp = TcpFlow(ipv4Layer, tcpLayer, flowHash);
-        tcp.detectServer(tcpLayer, flowId.direction, srvPortsCounter);
-        std::optional<std::string> fqdn = getFlowFqdn(conf, tcp.getSrvIpInt());
+    std::hash<FlowId> hash_fn;
+    size_t flowHash = hash_fn(flowId);
+    TcpFlow& tcpFlow = hashToTcpFlow[flowHash];
+    if (tcpFlow.flowHash == 0) {
+        tcpFlow = TcpFlow(ip, tcp, flowHash);
+        tcpFlow.detectServer(tcp, flowId.direction, srvPortsCounter);
+        std::optional<std::string> fqdn = getFlowFqdn(conf, tcpFlow.getSrvIpInt());
         if (!fqdn.has_value()) {
-            return tcp;
+            return tcpFlow;
         }
-        spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), tcp.flowHash, fqdn->data());
-        tcp.fqdn = fqdn->data();
-        tcp.aggregatedFlows = lookupAggregatedFlows(tcp, flowId);
+        spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), tcpFlow.flowHash, fqdn->data());
+        tcpFlow.fqdn = fqdn->data();
+        tcpFlow.aggregatedFlows = lookupAggregatedFlows(tcpFlow, flowId);
     }
-    return tcp;
+    return tcpFlow;
 }
 
-auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcp, FlowId& flowId) -> std::vector<AggregatedTcpFlow*>
+auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcpFlow, FlowId& flowId) -> std::vector<AggregatedTcpFlow*>
 {
     IPv4 ipSrvInt = 0;
     if (conf.perIpAggr) {
-        ipSrvInt = tcp.getSrvIpInt();
+        ipSrvInt = tcpFlow.getSrvIpInt();
     }
     AggregatedTcpFlow* aggregatedFlow;
-    AggregatedTcpKey tcpKey = AggregatedTcpKey(tcp.fqdn, ipSrvInt,
-        tcp.getSrvPort());
+    AggregatedTcpKey tcpKey = AggregatedTcpKey(tcpFlow.fqdn, ipSrvInt,
+        tcpFlow.getSrvPort());
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto it = aggregatedMap.find(tcpKey);
     if (it == aggregatedMap.end()) {
-        aggregatedFlow = new AggregatedTcpFlow(flowId, tcp.fqdn);
-        aggregatedFlow->srvPos = tcp.srvPos;
+        aggregatedFlow = new AggregatedTcpFlow(flowId, tcpFlow.fqdn);
+        aggregatedFlow->srvPos = tcpFlow.srvPos;
         aggregatedMap[tcpKey] = aggregatedFlow;
         spdlog::debug("Create aggregated tcp flow for {}", tcpKey.toString());
     } else {
@@ -73,45 +73,45 @@ auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcp, FlowId& flowId) -> s
     return aggregatedFlows;
 }
 
-void TcpStatsCollector::processPacket(Tins::Packet* packet)
+void TcpStatsCollector::processPacket(Tins::PtrPacket& packet)
 {
-    advanceTick(packet->getRawPacket()->getPacketTimeStamp());
-    if (!packet->isPacketOfType(Tins::TCP) || packet->isPacketOfType(Tins::IPv6)) {
+    advanceTick(packetToTimeval(packet));
+    auto pdu = packet.pdu();
+    auto tcp = pdu->find_pdu<Tins::TCP>();
+    if (tcp == nullptr) {
         return;
     }
-    auto* tcpLayer = packet->getLayerOfType<Tins::TcpLayer>(true);
-    auto* ipv4Layer = packet->getPrevLayerOfType<Tins::IPv4Layer>(tcpLayer);
-    FlowId flowId(ipv4Layer, tcpLayer);
+    auto ip = tcp->find_pdu<Tins::IP>();
+    FlowId flowId(ip, tcp);
 
-    TcpFlow& tcp = lookupTcpFlow(ipv4Layer, tcpLayer, flowId);
-    if (tcp.fqdn == "") {
+    TcpFlow& tcpFlow = lookupTcpFlow(ip, tcp, flowId);
+    if (tcpFlow.fqdn == "") {
         return;
     }
 
-    tcp.addPacket(packet, flowId.direction);
+    tcpFlow.addPacket(packet, flowId.direction);
 
-    for (auto& subflow : tcp.aggregatedFlows) {
+    for (auto& subflow : tcpFlow.aggregatedFlows) {
         subflow->addPacket(packet, flowId.direction);
-        subflow->updateFlow(packet, flowId, tcpLayer);
+        subflow->updateFlow(packet, flowId, tcp);
     }
 
-    tcp.updateFlow(packet, flowId.direction, tcpLayer);
+    tcpFlow.updateFlow(packet, flowId.direction, tcp);
 
-    if (tcpLayer->getTcpHeader()->synFlag && tcp.opening == false) {
-        tcp.opening = true;
+    if (tcp->has_flags(Tins::TCP::SYN) && tcpFlow.opening == false) {
+        tcpFlow.opening = true;
     }
 }
 
 void TcpStatsCollector::advanceTick(timeval now)
 {
-    std::map<uint32_t, TcpFlow>::iterator it;
-    std::vector<uint32_t> toTimeout;
     if (now.tv_sec <= lastTick) {
         return;
     }
+    std::vector<uint32_t> toTimeout;
     lastTick = now.tv_sec;
     spdlog::debug("Advance tick to {}", now.tv_sec);
-    for (it = hashToTcpFlow.begin(); it != hashToTcpFlow.end(); it++) {
+    for (auto it = hashToTcpFlow.begin(); it != hashToTcpFlow.end(); it++) {
         TcpFlow* flow = &it->second;
         spdlog::debug("Check flow {} for timeouts, now {}, lastPacketTime {} {}",
             flow->flowId.toString(), now.tv_sec,
@@ -154,7 +154,7 @@ auto TcpStatsCollector::getMetrics() -> std::vector<std::string>
     for (auto& pair : aggregatedMap) {
         struct AggregatedTcpFlow* val = pair.second;
         DogFood::Tags tags = DogFood::Tags({ { "fqdn", val->fqdn },
-            { "ip", val->getSrvIp().toString() },
+            { "ip", val->getSrvIp().to_string() },
             { "port", std::to_string(val->getSrvPort()) } });
         for (auto& i : val->srts.getPoints()) {
             lst.push_back(DogFood::Metric("flowstats.tcp.srt", i,

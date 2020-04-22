@@ -3,8 +3,8 @@
 
 namespace flowstats {
 
-void AggregatedTcpFlow::updateFlow(Tins::PDU* pdu, FlowId& flowId,
-    Tins::TCP* tcp)
+void AggregatedTcpFlow::updateFlow(const Tins::PtrPacket& packet, const FlowId& flowId,
+    const Tins::TCP* tcp)
 {
     auto flags = tcp->flags();
 
@@ -22,7 +22,7 @@ void AggregatedTcpFlow::updateFlow(Tins::PDU* pdu, FlowId& flowId,
         fins[flowId.direction]++;
     }
     mtu[flowId.direction] = std::max(mtu[flowId.direction],
-        pdu->advertised_size());
+        packet.pdu()->advertised_size());
 }
 
 void AggregatedTcpFlow::fillValues(std::map<std::string, std::string>& values,

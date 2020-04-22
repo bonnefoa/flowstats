@@ -187,6 +187,12 @@ auto prettyFormatBytes(int bytes) -> std::string
     }
 }
 
+auto packetToTimeval(const Tins::PtrPacket& packet) -> timeval
+{
+    auto ts = packet.timestamp();
+    return { ts.seconds(), ts.microseconds() };
+}
+
 auto getIpToFqdn(std::vector<std::string>& initialDomains) -> std::map<uint32_t, std::string>
 {
     std::map<uint32_t, std::string> ipToFqdn;

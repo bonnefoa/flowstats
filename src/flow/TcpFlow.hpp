@@ -3,7 +3,6 @@
 #include "AggregatedTcpFlow.hpp"
 #include "Flow.hpp"
 #include "Stats.hpp"
-#include <TcpLayer.h>
 
 namespace flowstats {
 
@@ -11,10 +10,10 @@ class TcpFlow : public Flow {
 
 public:
     TcpFlow();
-    TcpFlow(Tins::IPv4Layer* ipv4Layer, Tins::TcpLayer* tcpLayer, uint32_t flowHash);
+    TcpFlow(Tins::IP* ip, Tins::TCP* tcp, uint32_t flowHash);
 
-    void updateFlow(Tins::Packet* const packet, Direction direction,
-        Tins::TcpLayer* const tcpLayer);
+    void updateFlow(const Tins::PtrPacket& packet, Direction direction,
+        const Tins::TCP* tcp);
 
     uint32_t seqNum[2] = { 0, 0 };
     uint32_t finSeqnum[2] = { 0, 0 };
@@ -37,15 +36,15 @@ public:
     Direction lastDirection;
     timeval lastPacketTime[2] = { { 0, 0 }, { 0, 0 } };
     timeval lastPayloadTime = { 0, 0 };
-    void detectServer(Tins::TcpLayer* const tcpLayer, Direction direction,
+    void detectServer(const Tins::TCP* tcp, Direction direction,
         std::map<uint16_t, int>& srvPortsCounter);
     std::vector<AggregatedTcpFlow*> aggregatedFlows;
     void closeConnection();
     void timeoutFlow();
 
 private:
-    std::string tcphdrToString(Tins::tcphdr* const hdr);
-    uint32_t nextSeqnum(Tins::TcpLayer* const tcpLayer, int payloadSize);
-    int getTcpPayloadSize(Tins::Packet* const packet, Tins::TcpLayer* const tcpLayer);
+    std::string tcpToString(const Tins::TCP* hdr);
+    uint32_t nextSeqnum(const Tins::TCP* tcp, int payloadSize);
+    int getTcpPayloadSize(const Tins::PDU* pdu, const Tins::TCP* tcp);
 };
 }
