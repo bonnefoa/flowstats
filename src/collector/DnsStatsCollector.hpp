@@ -15,7 +15,7 @@ public:
         DisplayConfiguration& displayConf);
     ~DnsStatsCollector();
 
-    void processPacket(Tins::PtrPacket& packet);
+    void processPacket(Tins::Packet& packet);
     std::vector<std::string> getMetrics();
     std::string getFlowName() { return "DNS"; }
     std::string toString() { return "DnsStatsCollector"; }
@@ -31,8 +31,8 @@ public:
     Tins::PDU::PDUType getProtocol() { return Tins::PDU::DNS; };
 
 private:
-    void newDnsQuery(Tins::PtrPacket& packet, Tins::DNS* dns);
-    void newDnsResponse(Tins::PtrPacket& packet, Tins::DNS* dns, DnsFlow& flow);
+    void newDnsQuery(Tins::Packet& packet, Tins::DNS* dns);
+    void newDnsResponse(Tins::Packet& packet, Tins::DNS* dns, DnsFlow& flow);
     void updateIpToFqdn(Tins::DNS* dns, const std::string& fqdn);
 
     void addFlowToAggregation(DnsFlow& flow);

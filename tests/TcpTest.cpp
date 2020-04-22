@@ -45,7 +45,7 @@ TEST_CASE("Tcp simple", "[tcp]")
         CHECK(aggregatedFlow->mtu[0] == 140);
         CHECK(aggregatedFlow->mtu[1] == 594);
 
-        std::map<uint32_t, TcpFlow> flows = tcpCollector.getTcpFlow();
+        auto flows = tcpCollector.getTcpFlow();
         CHECK(flows.size() == 1);
         CHECK(flows[0].gap == 0);
     }
@@ -74,7 +74,7 @@ TEST_CASE("https pcap", "[tcp]")
         CHECK(aggregatedFlow->connections.getCount() == 1);
         CHECK(aggregatedFlow->connections.getPercentile(1.0) == 1);
 
-        std::map<uint32_t, TcpFlow> flows = tcpCollector.getTcpFlow();
+        auto flows = tcpCollector.getTcpFlow();
         REQUIRE(flows.size() == 1);
         CHECK(flows[0].gap == 0);
     }
@@ -101,7 +101,7 @@ TEST_CASE("Tcp reused port", "[tcp]")
         REQUIRE(aggregatedFlow->connections.getPercentile(1.0) == 0);
         REQUIRE(aggregatedFlow->srts.getPercentile(1.0) == 0);
 
-        std::map<uint32_t, TcpFlow> flows = tcpCollector.getTcpFlow();
+        auto flows = tcpCollector.getTcpFlow();
         REQUIRE(flows.size() == 0);
     }
 }
@@ -180,7 +180,7 @@ TEST_CASE("Tcp 0 win", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> ipFlows = tcpStatsIp.getAggregatedMap();
         REQUIRE(ipFlows.size() == 1);
 
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", Tins::IPv4Address("127.0.0.1").toInt(), 443);
+        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", Tins::IPv4Address("127.0.0.1"), 443);
         auto flow = ipFlows[tcpKey];
         REQUIRE(flow->zeroWins[FROM_SERVER] == 3);
         REQUIRE(flow->rsts[FROM_SERVER] == 1);
@@ -191,7 +191,7 @@ TEST_CASE("Tcp rst", "[tcp]")
 {
     FlowstatsConfiguration conf;
     Tins::IPv4Address ip("10.142.226.42");
-    conf.ipToFqdn[ip.toInt()] = "whatever";
+    conf.ipToFqdn[ip] = "whatever";
 
     conf.perIpAggr = true;
     SECTION("Rst only close once")
@@ -202,7 +202,7 @@ TEST_CASE("Tcp rst", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> ipFlows = tcpStatsIp.getAggregatedMap();
         REQUIRE(ipFlows.size() == 1);
 
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("whatever", ip.toInt(), 3834);
+        AggregatedTcpKey tcpKey = AggregatedTcpKey("whatever", ip, 3834);
         auto flow = ipFlows[tcpKey];
         REQUIRE(flow->rsts[FROM_CLIENT] == 2);
         REQUIRE(flow->closes == 1);
@@ -225,7 +225,7 @@ TEST_CASE("Inversed srt", "[tcp]")
 
         AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
         REQUIRE(aggregatedFlow != NULL);
-        REQUIRE(aggregatedFlow->getSrvIp().toString() == "10.8.109.46");
+        REQUIRE(aggregatedFlow->getSrvIp() == "10.8.109.46");
     }
 }
 
@@ -288,7 +288,7 @@ TEST_CASE("Gap in capture", "[tcp]")
         REQUIRE(aggregatedFlow->totalSrts == 1);
         REQUIRE(aggregatedFlow->srts.getPercentile(1.0) == 26);
 
-        std::map<uint32_t, TcpFlow> flows = tcpCollector.getTcpFlow();
+        auto flows = tcpCollector.getTcpFlow();
         CHECK(flows.size() == 1);
         CHECK(flows[0].gap == 0);
     }

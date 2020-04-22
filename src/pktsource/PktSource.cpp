@@ -61,15 +61,15 @@ auto analyzePcapFile(FlowstatsConfiguration& conf,
 
     timeval start = { 0, 0 };
     timeval end = { 0, 0 };
-    while (true) {
-        Tins::PtrPacket packet = reader->next_packet();
+    for (auto packet : *reader) {
         if (packet.timestamp().seconds() == 0) {
             break;
         }
 
         spdlog::debug("parsedPacket: {}", packet.pdu()->pdu_type());
+        auto pktTv = packetToTimeval(packet);
         if (start.tv_sec == 0) {
-            start = { packet.timestamp().seconds(), packet.timestamp().microseconds() };
+            start = pktTv;
         }
         for (auto* collector : collectors) {
             collector->processPacket(packet);
@@ -96,25 +96,6 @@ auto getLiveDevice(const FlowstatsConfiguration& conf) -> Tins::Sniffer*
 }
 
 /**
- * The callback to be called when application is terminated by ctrl-c. Stops the
- * endless while loop
- */
-/**
- * packet capture callback - called whenever a packet arrives
- */
-static void packetArrive(Tins::PtrPacket& packet,
-    __attribute__((unused)) Tins::Sniffer* dev,
-    void* cookie)
-{
-    //Packet parsedPacket(packet);
-
-    //auto* collectors = static_cast<std::vector<Collector*>*>(cookie);
-    //for (auto collector : *collectors) {
-    //collector->processPacket(&parsedPacket);
-    //}
-}
-
-/**
  * analysis live traffic
  */
 auto analyzeLiveTraffic(Tins::Sniffer* dev, FlowstatsConfiguration& conf,
@@ -123,14 +104,26 @@ auto analyzeLiveTraffic(Tins::Sniffer* dev, FlowstatsConfiguration& conf,
 {
     long startTs = time(nullptr);
     spdlog::info("Start live traffic capture with filter {}", conf.bpfFilter);
-    while (!shouldStop.load()) {
-        screen.updateDisplay(time(nullptr) - startTs, true);
-        for (auto& collector : collectors) {
-            collector->sendMetrics();
-            collector->resetMetrics();
+    int lastUpdate = 0;
+    for (auto packet : *dev) {
+        if (shouldStop.load()) {
+            break;
         }
-        sleep(1);
+        for (auto& collector : collectors) {
+            collector->processPacket(packet);
+        }
+
+        int pktSeconds = packet.timestamp().seconds();
+        if (lastUpdate < pktSeconds) {
+            lastUpdate = pktSeconds;
+            screen.updateDisplay(time(nullptr) - startTs, true);
+            for (auto& collector : collectors) {
+                collector->sendMetrics();
+                collector->resetMetrics();
+            }
+        }
     }
+
     spdlog::info("Stop capture");
     dev->stop_sniff();
     spdlog::info("Stopping screen");

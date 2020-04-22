@@ -18,7 +18,7 @@ int readPcap(std::string pcap, Collector& collector, std::string filter = "",
 
     int i = 0;
     while (true) {
-        Tins::PtrPacket packet = reader->next_packet();
+        Tins::Packet packet = reader->next_packet();
         if (packet.timestamp().seconds() == 0) {
             break;
         }

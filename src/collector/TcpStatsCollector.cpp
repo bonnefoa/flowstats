@@ -73,15 +73,15 @@ auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcpFlow, FlowId& flowId) 
     return aggregatedFlows;
 }
 
-void TcpStatsCollector::processPacket(Tins::PtrPacket& packet)
+void TcpStatsCollector::processPacket(Tins::Packet& packet)
 {
     advanceTick(packetToTimeval(packet));
     auto pdu = packet.pdu();
-    auto tcp = pdu->find_pdu<Tins::TCP>();
+    auto ip = pdu->find_pdu<Tins::IP>();
+    auto tcp = ip->find_pdu<Tins::TCP>();
     if (tcp == nullptr) {
         return;
     }
-    auto ip = tcp->find_pdu<Tins::IP>();
     FlowId flowId(ip, tcp);
 
     TcpFlow& tcpFlow = lookupTcpFlow(ip, tcp, flowId);

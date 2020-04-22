@@ -187,7 +187,7 @@ auto prettyFormatBytes(int bytes) -> std::string
     }
 }
 
-auto packetToTimeval(const Tins::PtrPacket& packet) -> timeval
+auto packetToTimeval(const Tins::Packet& packet) -> timeval
 {
     auto ts = packet.timestamp();
     return { ts.seconds(), ts.microseconds() };

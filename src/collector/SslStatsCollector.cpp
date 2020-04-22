@@ -69,7 +69,7 @@ auto SslStatsCollector::lookupAggregatedFlows(
     return subflows;
 }
 
-void SslStatsCollector::processPacket(Tins::PtrPacket& packet)
+void SslStatsCollector::processPacket(Tins::Packet& packet)
 {
     //advanceTick(packet.getRawPacket()->getPacketTimeStamp());
     //if (!packet.isPacketOfType(Tins::TCP) || packet.isPacketOfType(Tins::IPv6) || !packet.isPacketOfType(Tins::SSL)) {

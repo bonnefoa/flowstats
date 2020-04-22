@@ -61,7 +61,7 @@ public:
     IPv4 getCltIpInt();
     IPv4 getSrvIpInt();
 
-    void addPacket(Tins::PtrPacket& packet, const Direction direction);
+    void addPacket(Tins::Packet& packet, const Direction direction);
     virtual void addFlow(Flow* flow);
     virtual void addAggregatedFlow(Flow* flow);
     virtual void resetFlow(bool resetTotal);

@@ -19,7 +19,7 @@ public:
     SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf);
     ~SslStatsCollector();
 
-    void processPacket(Tins::PtrPacket& packet);
+    void processPacket(Tins::Packet& packet);
     void resetMetrics();
 
     std::string getFlowName() { return "SSL"; }

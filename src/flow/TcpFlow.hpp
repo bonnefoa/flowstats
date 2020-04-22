@@ -12,7 +12,7 @@ public:
     TcpFlow();
     TcpFlow(Tins::IP* ip, Tins::TCP* tcp, uint32_t flowHash);
 
-    void updateFlow(const Tins::PtrPacket& packet, Direction direction,
+    void updateFlow(const Tins::Packet& packet, Direction direction,
         const Tins::TCP* tcp);
 
     uint32_t seqNum[2] = { 0, 0 };

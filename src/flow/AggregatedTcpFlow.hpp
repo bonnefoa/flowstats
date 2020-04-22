@@ -46,7 +46,7 @@ struct AggregatedTcpFlow : Flow {
         return syns[0] < b.syns[0];
     }
 
-    void updateFlow(const Tins::PtrPacket& packet, const FlowId& flowId,
+    void updateFlow(const Tins::Packet& packet, const FlowId& flowId,
         const Tins::TCP* tcpLayer);
 
     void resetFlow(bool resetTotal);

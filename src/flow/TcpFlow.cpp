@@ -94,7 +94,7 @@ auto TcpFlow::getTcpPayloadSize(const Tins::PDU* packet, const Tins::TCP* tcp) -
     return tcp->inner_pdu()->size();
 }
 
-void TcpFlow::updateFlow(const Tins::PtrPacket& packet, Direction direction,
+void TcpFlow::updateFlow(const Tins::Packet& packet, Direction direction,
     const Tins::TCP* tcp)
 {
     auto const flags = tcp->flags();

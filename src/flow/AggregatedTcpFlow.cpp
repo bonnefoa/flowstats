@@ -3,7 +3,7 @@
 
 namespace flowstats {
 
-void AggregatedTcpFlow::updateFlow(const Tins::PtrPacket& packet, const FlowId& flowId,
+void AggregatedTcpFlow::updateFlow(const Tins::Packet& packet, const FlowId& flowId,
     const Tins::TCP* tcp)
 {
     auto flags = tcp->flags();

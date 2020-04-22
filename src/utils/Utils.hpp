@@ -55,5 +55,5 @@ std::map<std::string, uint16_t> getDomainToServerPort(std::vector<std::string>& 
 
 std::optional<std::string> getFlowFqdn(FlowstatsConfiguration& conf, uint32_t srvIp);
 
-auto packetToTimeval(const Tins::PtrPacket& packet) -> timeval;
+auto packetToTimeval(const Tins::Packet& packet) -> timeval;
 }

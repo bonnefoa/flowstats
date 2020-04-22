@@ -12,7 +12,7 @@ public:
     TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf);
     ~TcpStatsCollector();
 
-    void processPacket(Tins::PtrPacket& packet);
+    void processPacket(Tins::Packet& packet);
 
     void resetMetrics();
 

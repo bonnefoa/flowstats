@@ -1,6 +1,6 @@
 find_package(Catch2 REQUIRED)
 
-link_directories ( tests ${PCAPPLUSPLUS_LIBRARY_DIRS} ${NCURSES_LIBRARY_DIRS} )
+link_directories ( tests ${TINS_LIBRARY_DIRS} ${NCURSES_LIBRARY_DIRS} )
 
 file(GLOB TESTS_SRCS *.cpp)
 add_executable(tests ${TESTS_SRCS})

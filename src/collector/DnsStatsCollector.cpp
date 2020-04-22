@@ -17,7 +17,7 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
     updateDisplayType(0);
 };
 
-void DnsStatsCollector::processPacket(Tins::PtrPacket& packet)
+void DnsStatsCollector::processPacket(Tins::Packet& packet)
 {
     timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
@@ -65,7 +65,7 @@ void DnsStatsCollector::updateIpToFqdn(Tins::DNS* dns, const std::string& fqdn)
     }
 }
 
-void DnsStatsCollector::newDnsQuery(Tins::PtrPacket& packet, Tins::DNS* dns)
+void DnsStatsCollector::newDnsQuery(Tins::Packet& packet, Tins::DNS* dns)
 {
     DnsFlow flow(dns);
     flow.addPacket(packet, FROM_CLIENT);
@@ -83,7 +83,7 @@ void DnsStatsCollector::newDnsQuery(Tins::PtrPacket& packet, Tins::DNS* dns)
     transactionIdToDnsFlow[dns->id()] = flow;
 }
 
-void DnsStatsCollector::newDnsResponse(Tins::PtrPacket& packet, Tins::DNS* dns, DnsFlow& flow)
+void DnsStatsCollector::newDnsResponse(Tins::Packet& packet, Tins::DNS* dns, DnsFlow& flow)
 {
     flow.addPacket(packet, FROM_SERVER);
     flow.m_EndTimestamp = packetToTimeval(packet);
