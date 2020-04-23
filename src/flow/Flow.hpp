@@ -32,19 +32,19 @@ public:
         Flow();
     }
 
-    Flow(Tins::IP* ipv4, Tins::TCP* tcp)
+    Flow(const Tins::IP& ipv4, const Tins::TCP& tcp)
         : flowId(ipv4, tcp)
     {
         Flow();
     }
 
-    Flow(Tins::IP* ipv4, Tins::UDP* udp)
+    Flow(const Tins::IP& ipv4, const Tins::UDP& udp)
         : flowId(ipv4, udp)
     {
         Flow();
     }
 
-    Flow(FlowId& flowId, std::string fqdn)
+    Flow(const FlowId& flowId, const std::string fqdn)
         : flowId(flowId)
         , fqdn(fqdn)
     {

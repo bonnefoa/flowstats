@@ -13,8 +13,8 @@ public:
     int tickets[2] = { 0, 0 };
     timeval startHandshake = { 0, 0 };
 
-    void updateFlow(Tins::Packet* const packet, Direction direction,
-        Tins::TCP* sslLayer);
+    void updateFlow(const Tins::Packet* packet, Direction direction,
+        const Tins::TCP& sslLayer);
     std::vector<AggregatedSslFlow*> aggregatedFlows;
 
     //private:

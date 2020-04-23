@@ -45,10 +45,10 @@ private:
 
     std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap;
     std::vector<std::pair<TcpFlow*, std::vector<AggregatedTcpFlow*>>> openingTcpFlow;
-    TcpFlow& lookupTcpFlow(Tins::IP* ipv4Layer,
-        Tins::TCP* tcpLayer,
-        FlowId& flowId);
-    std::vector<AggregatedTcpFlow*> lookupAggregatedFlows(TcpFlow& tcp, FlowId& flowId);
+    TcpFlow& lookupTcpFlow(const Tins::IP& ipv4Layer,
+        const Tins::TCP& tcpLayer,
+        const FlowId& flowId);
+    std::vector<AggregatedTcpFlow*> lookupAggregatedFlows(TcpFlow& tcp, const FlowId& flowId);
 
     void timeoutOpeningConnections(timeval now);
     void timeoutFlows(timeval now);

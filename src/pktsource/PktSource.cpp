@@ -112,6 +112,8 @@ auto analyzeLiveTraffic(Tins::Sniffer* dev, FlowstatsConfiguration& conf,
         for (auto& collector : collectors) {
             try {
                 collector->processPacket(packet);
+            } catch (const Tins::malformed_packet) {
+                // Good to ignore
             } catch (const Tins::pdu_not_found) {
                 // Good to ignore
             }

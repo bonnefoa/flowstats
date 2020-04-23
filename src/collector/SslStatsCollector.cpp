@@ -27,8 +27,8 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
 };
 
 auto SslStatsCollector::lookupSslFlow(
-    Tins::IP* ipv4Layer,
-    Tins::TCP* tcpLayer,
+    const Tins::IP& ipv4Layer,
+    const Tins::TCP& tcpLayer,
     FlowId& flowId) -> SslFlow&
 {
     //uint32_t hashVal = hash5Tuple(ipv4Layer, tcpLayer);
@@ -42,11 +42,10 @@ auto SslStatsCollector::lookupSslFlow(
     //}
     //sslFlow.aggregatedFlows = lookupAggregatedFlows(tcpLayer, sslFlow, flowId, fqdn->data());
     //}
-    //return sslFlow;
 }
 
 auto SslStatsCollector::lookupAggregatedFlows(
-    Tins::TCP* /*tcpLayer*/, SslFlow& sslFlow, FlowId& flowId,
+    const Tins::TCP& /*tcpLayer*/, SslFlow& sslFlow, FlowId& flowId,
     const std::string& fqdn) -> std::vector<AggregatedSslFlow*>
 {
     std::vector<AggregatedSslFlow*> subflows;

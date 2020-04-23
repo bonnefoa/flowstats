@@ -21,11 +21,11 @@ struct FlowId {
 
     FlowId() {}
     FlowId(uint16_t ports[2], IPv4 pktIps[2], bool isTcp);
-    FlowId(Tins::IP* ipv4Layer, Tins::TCP* tcpLayer);
-    FlowId(Tins::IP* ipv4Layer, Tins::UDP* udpLayer);
-    FlowId(Tins::Packet& packet);
+    FlowId(const Tins::IP& ipv4Layer, const Tins::TCP& tcpLayer);
+    FlowId(const Tins::IP& ipv4Layer, const Tins::UDP& udpLayer);
+    FlowId(const Tins::Packet& packet);
 
-    std::string toString();
+    std::string toString() const;
 };
 }
 

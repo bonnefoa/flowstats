@@ -105,7 +105,7 @@ struct CurlGeneratorConfiguration {
     ;
 };
 
-void handleHttp(Packet& packet, TCP* tcp, CurlGeneratorConfiguration& conf)
+void handleHttp(Packet& packet, const Tins::TCP& tcp, CurlGeneratorConfiguration& conf)
 {
     int dstPort = ntohs(tcp->getTcpHeader()->portDst);
     if (conf.httpServerPorts.count(dstPort) == 0) {

@@ -3,35 +3,36 @@
 
 namespace flowstats {
 
-auto FlowId::toString() -> std::string
+auto FlowId::toString() const -> std::string
 {
     return fmt::format("{}:{} -> {}:{}",
         Tins::IPv4Address(ips[direction]).to_string(), ports[direction],
         Tins::IPv4Address(ips[!direction]).to_string(), ports[!direction]);
 }
 
-FlowId::FlowId(Tins::IP* ip, Tins::TCP* tcp)
+FlowId::FlowId(const Tins::IP& ip, const Tins::TCP& tcp)
 {
-    Port pktPorts[2] = { tcp->sport(), tcp->dport() };
-    IPv4 pktIps[2] = { ip->src_addr(), ip->dst_addr() };
+    Port pktPorts[2] = { tcp.sport(), tcp.dport() };
+    IPv4 pktIps[2] = { ip.src_addr(), ip.dst_addr() };
     *this = FlowId(pktPorts, pktIps, true);
 }
 
-FlowId::FlowId(Tins::IP* ip, Tins::UDP* upd)
+FlowId::FlowId(const Tins::IP& ip, const Tins::UDP& upd)
 {
-    Port pktPorts[2] = { upd->sport(), upd->dport() };
-    IPv4 pktIps[2] = { ip->src_addr(), ip->dst_addr() };
+    Port pktPorts[2] = { upd.sport(), upd.dport() };
+    IPv4 pktIps[2] = { ip.src_addr(), ip.dst_addr() };
     *this = FlowId(pktPorts, pktIps, false);
 }
 
-FlowId::FlowId(Tins::Packet& packet)
+FlowId::FlowId(const Tins::Packet& packet)
 {
-    auto ip = packet.pdu()->find_pdu<Tins::IP>();
-    auto tcp = ip->find_pdu<Tins::TCP>();
-    if (tcp) {
+    auto ip = packet.pdu()->rfind_pdu<Tins::IP>();
+    try {
+        auto tcp = ip.rfind_pdu<Tins::TCP>();
         *this = FlowId(ip, tcp);
-    } else {
-        auto udp = ip->find_pdu<Tins::UDP>();
+        return;
+    } catch (const Tins::pdu_not_found) {
+        auto udp = ip.rfind_pdu<Tins::UDP>();
         *this = FlowId(ip, udp);
     }
 }

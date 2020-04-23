@@ -35,10 +35,10 @@ public:
 private:
     std::map<uint32_t, SslFlow> hashToSslFlow;
     std::map<AggregatedTcpKey, AggregatedSslFlow*> aggregatedMap;
-    SslFlow& lookupSslFlow(Tins::IP* ipv4Layer,
-        Tins::TCP* tcp, FlowId& flowId);
+    SslFlow& lookupSslFlow(const Tins::IP& ipv4Layer,
+        const Tins::TCP& tcp, FlowId& flowId);
 
-    std::vector<AggregatedSslFlow*> lookupAggregatedFlows(Tins::TCP* tcp,
+    std::vector<AggregatedSslFlow*> lookupAggregatedFlows(const Tins::TCP& tcp,
         SslFlow& sslFlow, FlowId& flowId,
         const std::string& fqdn);
 };

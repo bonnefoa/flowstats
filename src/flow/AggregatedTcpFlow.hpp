@@ -38,7 +38,7 @@ struct AggregatedTcpFlow : Flow {
         fqdn = "Total";
     };
 
-    AggregatedTcpFlow(FlowId& flowId, std::string fqdn)
+    AggregatedTcpFlow(const FlowId& flowId, std::string fqdn)
         : Flow(flowId, fqdn) {};
 
     bool operator<(AggregatedTcpFlow const& b) const
@@ -47,8 +47,8 @@ struct AggregatedTcpFlow : Flow {
     }
 
     void updateFlow(const Tins::Packet& packet, const FlowId& flowId,
-        const Tins::IP* ip,
-        const Tins::TCP* tcpLayer);
+        const Tins::IP& ip,
+        const Tins::TCP& tcpLayer);
 
     void resetFlow(bool resetTotal);
     void fillValues(std::map<std::string, std::string>& map, Direction direction, int duration);

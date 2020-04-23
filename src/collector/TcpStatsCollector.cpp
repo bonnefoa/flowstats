@@ -28,9 +28,9 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
 };
 
 auto TcpStatsCollector::lookupTcpFlow(
-    Tins::IP* ip,
-    Tins::TCP* tcp,
-    FlowId& flowId) -> TcpFlow&
+    const Tins::IP& ip,
+    const Tins::TCP& tcp,
+    const FlowId& flowId) -> TcpFlow&
 {
     std::hash<FlowId> hash_fn;
     size_t flowHash = hash_fn(flowId);
@@ -49,7 +49,7 @@ auto TcpStatsCollector::lookupTcpFlow(
     return tcpFlow;
 }
 
-auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcpFlow, FlowId& flowId) -> std::vector<AggregatedTcpFlow*>
+auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcpFlow, const FlowId& flowId) -> std::vector<AggregatedTcpFlow*>
 {
     IPv4 ipSrvInt = 0;
     if (conf.perIpAggr) {
@@ -77,11 +77,8 @@ void TcpStatsCollector::processPacket(Tins::Packet& packet)
 {
     advanceTick(packetToTimeval(packet));
     auto pdu = packet.pdu();
-    auto ip = pdu->find_pdu<Tins::IP>();
-    auto tcp = ip->find_pdu<Tins::TCP>();
-    if (tcp == nullptr) {
-        return;
-    }
+    auto ip = pdu->rfind_pdu<Tins::IP>();
+    auto tcp = ip.rfind_pdu<Tins::TCP>();
     FlowId flowId(ip, tcp);
 
     TcpFlow& tcpFlow = lookupTcpFlow(ip, tcp, flowId);
@@ -98,7 +95,7 @@ void TcpStatsCollector::processPacket(Tins::Packet& packet)
 
     tcpFlow.updateFlow(packet, flowId.direction, ip, tcp);
 
-    if (tcp->has_flags(Tins::TCP::SYN) && tcpFlow.opening == false) {
+    if (tcp.has_flags(Tins::TCP::SYN) && tcpFlow.opening == false) {
         tcpFlow.opening = true;
     }
 }
@@ -243,5 +240,6 @@ TcpStatsCollector::~TcpStatsCollector()
     for (auto& pair : aggregatedMap) {
         delete pair.second;
     }
+    delete totalFlow;
 }
 } // namespace flowstats

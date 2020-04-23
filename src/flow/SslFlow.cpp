@@ -55,8 +55,8 @@ namespace flowstats {
 //}
 //}
 
-void SslFlow::updateFlow(Tins::Packet* const packet, Direction direction,
-    Tins::TCP* sslLayer)
+void SslFlow::updateFlow(const Tins::Packet* packet, Direction direction,
+    const Tins::TCP& sslLayer)
 {
     //while (sslLayer != nullptr) {
     //Tins::SSLRecordType recType = sslLayer->getRecordType();
