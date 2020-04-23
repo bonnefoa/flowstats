@@ -47,6 +47,7 @@ struct AggregatedTcpFlow : Flow {
     }
 
     void updateFlow(const Tins::Packet& packet, const FlowId& flowId,
+        const Tins::IP* ip,
         const Tins::TCP* tcpLayer);
 
     void resetFlow(bool resetTotal);

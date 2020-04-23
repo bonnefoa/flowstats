@@ -13,6 +13,7 @@ public:
     TcpFlow(Tins::IP* ip, Tins::TCP* tcp, uint32_t flowHash);
 
     void updateFlow(const Tins::Packet& packet, Direction direction,
+        const Tins::IP* ip,
         const Tins::TCP* tcp);
 
     uint32_t seqNum[2] = { 0, 0 };
@@ -45,6 +46,6 @@ public:
 private:
     std::string tcpToString(const Tins::TCP* hdr);
     uint32_t nextSeqnum(const Tins::TCP* tcp, int payloadSize);
-    int getTcpPayloadSize(const Tins::PDU* pdu, const Tins::TCP* tcp);
+    int getTcpPayloadSize(const Tins::PDU* pdu, const Tins::IP* ip, const Tins::TCP* tcp);
 };
 }

@@ -93,10 +93,10 @@ void TcpStatsCollector::processPacket(Tins::Packet& packet)
 
     for (auto& subflow : tcpFlow.aggregatedFlows) {
         subflow->addPacket(packet, flowId.direction);
-        subflow->updateFlow(packet, flowId, tcp);
+        subflow->updateFlow(packet, flowId, ip, tcp);
     }
 
-    tcpFlow.updateFlow(packet, flowId.direction, tcp);
+    tcpFlow.updateFlow(packet, flowId.direction, ip, tcp);
 
     if (tcp->has_flags(Tins::TCP::SYN) && tcpFlow.opening == false) {
         tcpFlow.opening = true;

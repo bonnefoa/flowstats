@@ -3,7 +3,9 @@
 
 namespace flowstats {
 
-void AggregatedTcpFlow::updateFlow(const Tins::Packet& packet, const FlowId& flowId,
+void AggregatedTcpFlow::updateFlow(const Tins::Packet& packet,
+    const FlowId& flowId,
+    const Tins::IP* ip,
     const Tins::TCP* tcp)
 {
     if (tcp->has_flags(Tins::TCP::RST)) {
