@@ -12,7 +12,7 @@ void AggregatedTcpFlow::updateFlow(const Tins::Packet& packet,
         rsts[flowId.direction]++;
     }
 
-    if (tcp->window() == 0 && tcp->has_flags(Tins::TCP::RST)) {
+    if (tcp->window() == 0 && !tcp->has_flags(Tins::TCP::RST)) {
         zeroWins[flowId.direction]++;
     }
 

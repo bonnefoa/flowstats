@@ -108,35 +108,35 @@ void TcpStatsCollector::advanceTick(timeval now)
     if (now.tv_sec <= lastTick) {
         return;
     }
-    std::vector<uint32_t> toTimeout;
+    std::vector<size_t> toTimeout;
     lastTick = now.tv_sec;
     spdlog::debug("Advance tick to {}", now.tv_sec);
     for (auto it = hashToTcpFlow.begin(); it != hashToTcpFlow.end(); it++) {
-        TcpFlow* flow = &it->second;
+        TcpFlow& flow = it->second;
         spdlog::debug("Check flow {} for timeouts, now {}, lastPacketTime {} {}",
-            flow->flowId.toString(), now.tv_sec,
-            flow->lastPacketTime[0].tv_sec, flow->lastPacketTime[1].tv_sec);
-        if (flow->lastPacketTime[FROM_CLIENT].tv_sec == 0
-            && flow->lastPacketTime[FROM_SERVER].tv_sec == 0) {
+            flow.flowId.toString(), now.tv_sec,
+            flow.lastPacketTime[0].tv_sec, flow.lastPacketTime[1].tv_sec);
+        if (flow.lastPacketTime[FROM_CLIENT].tv_sec == 0
+            && flow.lastPacketTime[FROM_SERVER].tv_sec == 0) {
             continue;
         }
         uint32_t deltas[2] = { 0, 0 };
         for (int i = 0; i < 2; ++i) {
-            if (flow->lastPacketTime[i].tv_sec > 0) {
-                deltas[i] = getTimevalDeltaS(flow->lastPacketTime[i], now);
+            if (flow.lastPacketTime[i].tv_sec > 0) {
+                deltas[i] = getTimevalDeltaS(flow.lastPacketTime[i], now);
             }
         }
         uint32_t maxDelta = std::max(deltas[0], deltas[1]);
-        spdlog::debug("Flow: {}, maxDelta: {}", flow->flowId.toString(), maxDelta);
+        spdlog::debug("flow.{}, maxDelta: {}", flow.flowId.toString(), maxDelta);
         if (maxDelta > conf.timeoutFlow) {
             spdlog::debug("Timeout flow {}, now {}, maxDelta {} > {}",
-                flow->flowId.toString(), now.tv_sec, maxDelta, conf.timeoutFlow);
+                flow.flowId.toString(), now.tv_sec, maxDelta, conf.timeoutFlow);
             toTimeout.push_back(it->first);
-            flow->timeoutFlow();
+            flow.timeoutFlow();
         }
     }
     for (auto i : toTimeout) {
-        hashToTcpFlow.erase(i);
+        assert(hashToTcpFlow.erase(i));
     }
 }
 
