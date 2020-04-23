@@ -68,7 +68,7 @@ auto SslStatsCollector::lookupAggregatedFlows(
     return subflows;
 }
 
-void SslStatsCollector::processPacket(Tins::Packet& packet)
+auto SslStatsCollector::processPacket(const Tins::Packet& packet) -> void
 {
     //advanceTick(packet.getRawPacket()->getPacketTimeStamp());
     //if (!packet.isPacketOfType(Tins::TCP) || packet.isPacketOfType(Tins::IPv6) || !packet.isPacketOfType(Tins::SSL)) {
@@ -106,16 +106,7 @@ void SslStatsCollector::mergePercentiles()
     }
 }
 
-auto SslStatsCollector::getFlows() -> std::vector<Flow*>
-{
-    std::vector<Flow*> res;
-    for (auto& pair : hashToSslFlow) {
-        res.push_back(&pair.second);
-    }
-    return res;
-}
-
-auto SslStatsCollector::getAggregatedPairs() -> std::vector<AggregatedPairPointer>
+auto SslStatsCollector::getAggregatedPairs() -> const std::vector<AggregatedPairPointer>
 {
     std::vector<AggregatedPairPointer> tempVector;
 

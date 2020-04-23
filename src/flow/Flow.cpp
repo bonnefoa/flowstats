@@ -4,7 +4,7 @@
 
 namespace flowstats {
 
-void Flow::addPacket(Tins::Packet& packet, const Direction direction)
+void Flow::addPacket(const Tins::Packet& packet, const Direction direction)
 {
     packets[direction]++;
     bytes[direction] += packet.pdu()->advertised_size();

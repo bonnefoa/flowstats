@@ -26,7 +26,7 @@ auto AggregatedDnsFlow::getTopClientIpsStr() -> std::string
     for (auto& pair : topIps) {
         topIpsStr.push_back(fmt::format("{:<3} {:<" STR(IP_SIZE) "}",
             prettyFormatNumber(pair.second),
-            pair.first));
+            Tins::IPv4Address(pair.first).to_string()));
     }
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }

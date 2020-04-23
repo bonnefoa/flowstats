@@ -19,18 +19,16 @@ public:
     SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf);
     ~SslStatsCollector();
 
-    void processPacket(Tins::Packet& packet);
-    void resetMetrics();
+    auto processPacket(const Tins::Packet& packet) -> void override;
+    auto resetMetrics() -> void override;
 
-    std::string getFlowName() { return "SSL"; }
-    Tins::PDU::PDUType getProtocol() { return Tins::PDU::TCP; };
-    std::string toString() { return "SslStatsCollector"; }
-    std::vector<AggregatedPairPointer> getAggregatedPairs();
+    auto getProtocol() -> CollectorProtocol override { return SSL; };
+    auto getAggregatedPairs() -> std::vector<AggregatedPairPointer> const override;
+    auto toString() -> std::string override { return "SslStatsCollector"; }
 
-    std::vector<Flow*> getFlows();
     std::map<AggregatedTcpKey, AggregatedSslFlow*> getAggregatedMap() { return aggregatedMap; }
     std::map<uint32_t, SslFlow> getSslFlow() { return hashToSslFlow; }
-    void mergePercentiles();
+    void mergePercentiles() override;
 
 private:
     std::map<uint32_t, SslFlow> hashToSslFlow;

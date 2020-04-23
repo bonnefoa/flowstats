@@ -73,7 +73,7 @@ auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcpFlow, const FlowId& fl
     return aggregatedFlows;
 }
 
-void TcpStatsCollector::processPacket(Tins::Packet& packet)
+void TcpStatsCollector::processPacket(const Tins::Packet& packet)
 {
     advanceTick(packetToTimeval(packet));
     auto pdu = packet.pdu();
@@ -108,8 +108,8 @@ void TcpStatsCollector::advanceTick(timeval now)
     std::vector<size_t> toTimeout;
     lastTick = now.tv_sec;
     spdlog::debug("Advance tick to {}", now.tv_sec);
-    for (auto it = hashToTcpFlow.begin(); it != hashToTcpFlow.end(); it++) {
-        TcpFlow& flow = it->second;
+    for (auto it : hashToTcpFlow) {
+        TcpFlow& flow = it.second;
         spdlog::debug("Check flow {} for timeouts, now {}, lastPacketTime {} {}",
             flow.flowId.toString(), now.tv_sec,
             flow.lastPacketTime[0].tv_sec, flow.lastPacketTime[1].tv_sec);
@@ -117,7 +117,7 @@ void TcpStatsCollector::advanceTick(timeval now)
             && flow.lastPacketTime[FROM_SERVER].tv_sec == 0) {
             continue;
         }
-        uint32_t deltas[2] = { 0, 0 };
+        std::array<uint32_t, 2> deltas = { 0, 0 };
         for (int i = 0; i < 2; ++i) {
             if (flow.lastPacketTime[i].tv_sec > 0) {
                 deltas[i] = getTimevalDeltaS(flow.lastPacketTime[i], now);
@@ -128,12 +128,12 @@ void TcpStatsCollector::advanceTick(timeval now)
         if (maxDelta > conf.timeoutFlow) {
             spdlog::debug("Timeout flow {}, now {}, maxDelta {} > {}",
                 flow.flowId.toString(), now.tv_sec, maxDelta, conf.timeoutFlow);
-            toTimeout.push_back(it->first);
+            toTimeout.push_back(it.first);
             flow.timeoutFlow();
         }
     }
     for (auto i : toTimeout) {
-        assert(hashToTcpFlow.erase(i));
+        hashToTcpFlow.erase(i);
     }
 }
 
@@ -205,7 +205,7 @@ auto sortAggregatedTcpByRequestRate(const AggregatedPairPointer& left,
     return rightTcp->srts.getCount() < leftTcp->srts.getCount();
 }
 
-auto TcpStatsCollector::getAggregatedPairs() -> std::vector<AggregatedPairPointer>
+auto TcpStatsCollector::getAggregatedPairs() -> const std::vector<AggregatedPairPointer>
 {
     std::vector<AggregatedPairPointer> tempVector = std::vector<AggregatedPairPointer>(aggregatedMap.begin(), aggregatedMap.end());
     spdlog::info("Got {} tcp flows", tempVector.size());

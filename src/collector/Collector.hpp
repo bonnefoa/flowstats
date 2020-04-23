@@ -15,18 +15,25 @@
 
 namespace flowstats {
 
+enum CollectorProtocol {
+    TCP,
+    DNS,
+    SSL,
+};
+auto collectorProtocolToString(CollectorProtocol proto) -> std::string;
+
 class Collector {
 public:
     Collector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf)
         : conf(conf)
         , displayConf(displayConf) {};
-    virtual ~Collector() {}
+    virtual ~Collector() = default;
 
-    virtual void processPacket(Tins::Packet& pdu) = 0;
-    virtual std::string getFlowName() = 0;
+    virtual void processPacket(const Tins::Packet& pdu)
+        = 0;
     virtual void advanceTick(timeval now) {};
     virtual void resetMetrics() {};
-    virtual std::vector<std::string> getMetrics()
+    virtual auto getMetrics() -> std::vector<std::string>
     {
         std::vector<std::string> empty;
         return empty;
@@ -34,19 +41,18 @@ public:
     void sendMetrics();
     virtual void mergePercentiles() {};
 
-    virtual std::string toString() = 0;
-    virtual Tins::PDU::PDUType getProtocol() = 0;
-    std::vector<DisplayPair>& getDisplayPairs()
+    virtual auto toString() -> std::string = 0;
+    virtual auto getProtocol() -> CollectorProtocol = 0;
+    auto getDisplayPairs() -> std::vector<DisplayPair>&
     {
         return displayPairs;
     };
 
-    CollectorOutput outputStatus(int duration);
-    void updateDisplayType(int displayIndex);
+    auto outputStatus(int duration) -> CollectorOutput;
+    auto updateDisplayType(int displayIndex) -> void;
 
 protected:
-    virtual std::vector<AggregatedPairPointer> getAggregatedPairs() { return {}; };
-    virtual std::vector<Flow*> getFlows() = 0;
+    virtual auto getAggregatedPairs() -> std::vector<AggregatedPairPointer> const { return {}; };
 
     void fillOutputs(const std::vector<AggregatedPairPointer>& aggregatedPairs,
         std::vector<std::string>& keyLines,
@@ -62,12 +68,12 @@ protected:
 
     virtual std::mutex* getDataMutex() { return &dataMutex; };
 
-    std::mutex dataMutex;
     FlowstatsConfiguration& conf;
     DisplayConfiguration& displayConf;
     Flow* totalFlow;
     std::vector<DisplayPair> displayPairs;
 
 private:
+    std::mutex dataMutex;
 };
 }

@@ -32,7 +32,7 @@ public:
         m_EndTimestamp = { 0, 0 };
     }
 
-    DnsFlow(Tins::Packet& packet)
+    DnsFlow(const Tins::Packet& packet)
         : Flow(packet)
     {
         DnsFlow();

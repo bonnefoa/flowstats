@@ -3,7 +3,6 @@
 #include "AggregatedTcpFlow.hpp"
 #include "Collector.hpp"
 #include "TcpFlow.hpp"
-#include <stdlib.h>
 
 namespace flowstats {
 
@@ -12,19 +11,12 @@ public:
     TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf);
     ~TcpStatsCollector();
 
-    void processPacket(Tins::Packet& packet);
+    void processPacket(const Tins::Packet& packet) override;
 
-    void resetMetrics();
+    void resetMetrics() override;
 
-    std::string getFlowName() { return "TCP"; }
-    Tins::PDU::PDUType getProtocol() { return Tins::PDU::TCP; };
-    std::string toString() { return "TcpStatsCollector"; }
-
-    std::vector<Flow*> getFlows()
-    {
-        std::vector<Flow*> res;
-        return res;
-    }
+    auto getProtocol() -> CollectorProtocol override { return TCP; };
+    auto toString() -> std::string override { return "TcpStatsCollector"; }
 
     std::map<AggregatedTcpKey, AggregatedTcpFlow*> getAggregatedMap()
     {
@@ -32,11 +24,11 @@ public:
     }
 
     std::map<size_t, TcpFlow> getTcpFlow() { return hashToTcpFlow; }
-    std::vector<AggregatedPairPointer> getAggregatedPairs();
+    auto getAggregatedPairs() -> std::vector<AggregatedPairPointer> const override;
     int lastTick = 0;
-    void advanceTick(timeval now);
-    std::vector<std::string> getMetrics();
-    void mergePercentiles();
+    auto advanceTick(timeval now) -> void override;
+    auto getMetrics() -> std::vector<std::string> override;
+    auto mergePercentiles() -> void override;
 
 private:
     std::map<size_t, TcpFlow> hashToTcpFlow;

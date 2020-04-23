@@ -18,7 +18,7 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
     updateDisplayType(0);
 };
 
-void DnsStatsCollector::processPacket(Tins::Packet& packet)
+auto DnsStatsCollector::processPacket(const Tins::Packet& packet) -> void
 {
     timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
@@ -26,29 +26,20 @@ void DnsStatsCollector::processPacket(Tins::Packet& packet)
     auto dns = pdu->rfind_pdu<Tins::RawPDU>().to<Tins::DNS>();
 
     if (dns.type() == Tins::DNS::QUERY) {
-        newDnsQuery(packet, &dns);
+        newDnsQuery(packet, dns);
         return;
     }
 
     auto it = transactionIdToDnsFlow.find(dns.id());
     if (it != transactionIdToDnsFlow.end()) {
         DnsFlow& flow = it->second;
-        newDnsResponse(packet, &dns, flow);
+        newDnsResponse(packet, dns, flow);
     }
 }
 
-auto DnsStatsCollector::getFlows() -> std::vector<Flow*>
+void DnsStatsCollector::updateIpToFqdn(const Tins::DNS& dns, const std::string& fqdn)
 {
-    std::vector<Flow*> res;
-    for (auto& flow : dnsFlows) {
-        res.push_back(&flow);
-    }
-    return res;
-}
-
-void DnsStatsCollector::updateIpToFqdn(Tins::DNS* dns, const std::string& fqdn)
-{
-    auto answers = dns->answers();
+    auto answers = dns.answers();
     std::vector<Tins::IPv4Address> ips;
     for (auto answer : answers) {
         if (answer.query_type() == Tins::DNS::A) {
@@ -65,40 +56,40 @@ void DnsStatsCollector::updateIpToFqdn(Tins::DNS* dns, const std::string& fqdn)
     }
 }
 
-void DnsStatsCollector::newDnsQuery(Tins::Packet& packet, Tins::DNS* dns)
+void DnsStatsCollector::newDnsQuery(const Tins::Packet& packet, const Tins::DNS& dns)
 {
     DnsFlow flow(packet);
     flow.addPacket(packet, FROM_CLIENT);
     flow.m_StartTimestamp = packetToTimeval(packet);
-    auto queries = dns->queries();
+    auto queries = dns.queries();
     auto firstQuery = queries.at(0);
     flow.type = firstQuery.query_type();
     flow.fqdn = firstQuery.dname();
     flow.hasResponse = false;
     if (flow.fqdn.empty()) {
-        spdlog::debug("Empty query in dns tid {}", dns->id());
+        spdlog::debug("Empty query in dns tid {}", dns.id());
         return;
     }
-    transactionIdToDnsFlow[dns->id()] = flow;
+    transactionIdToDnsFlow[dns.id()] = flow;
 }
 
-void DnsStatsCollector::newDnsResponse(Tins::Packet& packet, Tins::DNS* dns, DnsFlow& flow)
+void DnsStatsCollector::newDnsResponse(const Tins::Packet& packet, const Tins::DNS& dns, DnsFlow& flow)
 {
     flow.addPacket(packet, FROM_SERVER);
     flow.m_EndTimestamp = packetToTimeval(packet);
     flow.hasResponse = true;
-    flow.truncated = dns->truncated();
-    flow.numberRecords = dns->answers_count();
-    flow.responseCode = dns->rcode();
+    flow.truncated = dns.truncated();
+    flow.numberRecords = dns.answers_count();
+    flow.responseCode = dns.rcode();
 
     updateIpToFqdn(dns, flow.fqdn);
-    spdlog::debug("Dns tid {}, {}, {} finished, {}", dns->id(),
+    spdlog::debug("Dns tid {}, {}, {} finished, {}", dns.id(),
         flow.flowId.isTcp ? "Tcp" : "Udp",
         flow.fqdn,
         flow.numberRecords);
     dnsFlows.push_back(flow);
     addFlowToAggregation(flow);
-    transactionIdToDnsFlow.erase(dns->id());
+    transactionIdToDnsFlow.erase(dns.id());
 }
 
 void DnsStatsCollector::addFlowToAggregation(DnsFlow& flow)
@@ -213,7 +204,7 @@ auto sortAggregatedDnsByRequestRate(const AggregatedPairPointer& left,
     return rightDns->queries < leftDns->queries;
 }
 
-auto DnsStatsCollector::getAggregatedPairs() -> std::vector<AggregatedPairPointer>
+auto DnsStatsCollector::getAggregatedPairs() -> std::vector<AggregatedPairPointer> const
 {
     std::vector<AggregatedPairPointer> tempVector(aggregatedDnsFlows.begin(),
         aggregatedDnsFlows.end());

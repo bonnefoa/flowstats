@@ -26,7 +26,7 @@ public:
     }
     virtual ~Flow() {}
 
-    Flow(Tins::Packet& packet)
+    Flow(const Tins::Packet& packet)
         : flowId(packet)
     {
         Flow();
@@ -61,7 +61,7 @@ public:
     IPv4 getCltIpInt();
     IPv4 getSrvIpInt();
 
-    void addPacket(Tins::Packet& packet, const Direction direction);
+    void addPacket(const Tins::Packet& packet, const Direction direction);
     virtual void addFlow(Flow* flow);
     virtual void addAggregatedFlow(Flow* flow);
     virtual void resetFlow(bool resetTotal);

@@ -15,25 +15,23 @@ public:
         DisplayConfiguration& displayConf);
     ~DnsStatsCollector();
 
-    void processPacket(Tins::Packet& packet);
-    std::vector<std::string> getMetrics();
-    std::string getFlowName() { return "DNS"; }
-    std::string toString() { return "DnsStatsCollector"; }
-    std::vector<Flow*> getFlows();
+    auto processPacket(const Tins::Packet& packet) -> void override;
+    auto getMetrics() -> std::vector<std::string> override;
+    auto toString() -> std::string override { return "DnsStatsCollector"; }
     std::map<AggregatedDnsKey, AggregatedDnsFlow*> getAggregatedFlow()
     {
         return aggregatedDnsFlows;
     }
-    void advanceTick(timeval now);
-    void resetMetrics();
-    std::vector<AggregatedPairPointer> getAggregatedPairs();
-    void mergePercentiles();
-    Tins::PDU::PDUType getProtocol() { return Tins::PDU::DNS; };
+    auto advanceTick(timeval now) -> void override;
+    auto resetMetrics() -> void override;
+    auto getAggregatedPairs() -> std::vector<AggregatedPairPointer> const override;
+    auto mergePercentiles() -> void override;
+    auto getProtocol() -> CollectorProtocol override { return DNS; };
 
 private:
-    void newDnsQuery(Tins::Packet& packet, Tins::DNS* dns);
-    void newDnsResponse(Tins::Packet& packet, Tins::DNS* dns, DnsFlow& flow);
-    void updateIpToFqdn(Tins::DNS* dns, const std::string& fqdn);
+    auto newDnsQuery(const Tins::Packet& packet, const Tins::DNS& dns) -> void;
+    auto newDnsResponse(const Tins::Packet& packet, const Tins::DNS& dns, DnsFlow& flow) -> void;
+    auto updateIpToFqdn(const Tins::DNS& dns, const std::string& fqdn) -> void;
 
     void addFlowToAggregation(DnsFlow& flow);
     std::map<uint16_t, DnsFlow> transactionIdToDnsFlow;

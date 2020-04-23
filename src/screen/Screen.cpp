@@ -46,8 +46,8 @@
 namespace flowstats {
 
 int lastKey = 0;
-Tins::PDU::PDUType protocols[] = { Tins::PDU::DNS, Tins::PDU::TCP };
-int protocolToDisplayIndex[] = { 0, 0, 0 };
+std::array<CollectorProtocol, 3> protocols = { DNS, TCP, SSL };
+std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 
 void Screen::updateDisplay(int duration, bool updateOutput)
 {
@@ -111,11 +111,11 @@ void Screen::updateStatus(int duration)
 
     waddstr(statusWin, fmt::format("{:<10} ", "Protocol:").c_str());
     for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
-        Tins::PDU::PDUType proto = protocols[i];
+        auto proto = protocols[i];
         if (displayConf.protocolIndex == i) {
             wattron(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }
-        waddstr(statusWin, fmt::format("{}: {:<10} ", i + 1, Tins::Utils::to_string(proto)).c_str());
+        waddstr(statusWin, fmt::format("{}: {:<10} ", i + 1, collectorProtocolToString(proto)).c_str());
         if (displayConf.protocolIndex == i) {
             wattroff(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }

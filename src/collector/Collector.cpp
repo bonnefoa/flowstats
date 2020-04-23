@@ -86,10 +86,22 @@ auto Collector::outputStatus(int duration) -> CollectorOutput
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     mergePercentiles();
-    std::vector<AggregatedPairPointer> tempVector = getAggregatedPairs();
+    const std::vector<AggregatedPairPointer> tempVector = getAggregatedPairs();
     fillOutputs(tempVector, keyLines, valueLines, duration);
-    return CollectorOutput(getFlowName(), keyLines, valueLines,
+    return CollectorOutput(toString(), keyLines, valueLines,
         keyHeaders, valueHeaders, duration);
+}
+
+auto collectorProtocolToString(CollectorProtocol proto) -> std::string
+{
+#define ENUM_TEXT(p) \
+    case (p):        \
+        return #p;
+    switch (proto) {
+        ENUM_TEXT(DNS);
+        ENUM_TEXT(TCP);
+        ENUM_TEXT(SSL);
+    }
 }
 
 } // namespace flowstats

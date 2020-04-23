@@ -10,7 +10,7 @@ using namespace flowstats;
 
 FlowstatsConfiguration conf;
 DisplayConfiguration displayConf;
-TcpStatsCollector getTcpStatsCollector()
+auto getTcpStatsCollector() -> TcpStatsCollector
 {
     conf.displayUnknownFqdn = true;
     return TcpStatsCollector(conf, displayConf);
