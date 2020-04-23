@@ -64,7 +64,7 @@ void AggregatedDnsFlow::fillValues(std::map<std::string, std::string>& values,
 
     if (direction == FROM_CLIENT) {
         values["fqdn"] = fqdn;
-        values["proto"] = isTcp ? "Tcp" : "Udp";
+        values["proto"] = flowId.isTcp ? "Tcp" : "Udp";
         values["type"] = dnsTypeToString(dnsType);
         values["ip"] = getSrvIp().to_string();
         values["timeouts_s"] = std::to_string(timeouts);

@@ -10,10 +10,11 @@ void Flow::addPacket(Tins::Packet& packet, const Direction direction)
     bytes[direction] += packet.pdu()->advertised_size();
     totalPackets[direction]++;
     totalBytes[direction] += packet.pdu()->advertised_size();
+    auto tv = packetToTimeval(packet);
     if (start.tv_sec == 0) {
-        start = { packet.timestamp().seconds(), packet.timestamp().microseconds() };
+        start = tv;
     }
-    end = { packet.timestamp().seconds(), packet.timestamp().microseconds() };
+    end = tv;
 }
 
 void Flow::fillValues(std::map<std::string, std::string>& values,

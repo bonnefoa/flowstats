@@ -38,7 +38,7 @@ auto TcpStatsCollector::lookupTcpFlow(
     if (tcpFlow.flowHash == 0) {
         tcpFlow = TcpFlow(ip, tcp, flowHash);
         tcpFlow.detectServer(tcp, flowId.direction, srvPortsCounter);
-        std::optional<std::string> fqdn = getFlowFqdn(conf, tcpFlow.getSrvIpInt());
+        std::optional<std::string> fqdn = getFlowFqdn(conf, tcpFlow.getSrvIp());
         if (!fqdn.has_value()) {
             return tcpFlow;
         }

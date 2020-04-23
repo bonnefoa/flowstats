@@ -32,8 +32,8 @@ public:
         m_EndTimestamp = { 0, 0 };
     }
 
-    DnsFlow(Tins::PDU* pdu)
-        : Flow(pdu)
+    DnsFlow(Tins::Packet& packet)
+        : Flow(packet)
     {
         DnsFlow();
     }

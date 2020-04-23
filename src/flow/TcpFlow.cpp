@@ -85,13 +85,12 @@ void TcpFlow::closeConnection()
 
 auto TcpFlow::nextSeqnum(const Tins::TCP* tcp, int tcpPayloadSize) -> uint32_t
 {
-
-    return ntohl(tcp->seq()) + tcpPayloadSize + tcp->get_flag(Tins::TCP::SYN) + tcp->get_flag(Tins::TCP::FIN);
+    return tcp->seq() + tcpPayloadSize + tcp->has_flags(Tins::TCP::SYN) + tcp->has_flags(Tins::TCP::FIN);
 }
 
 auto TcpFlow::getTcpPayloadSize(const Tins::PDU* packet, const Tins::TCP* tcp) -> int
 {
-    return tcp->inner_pdu()->size();
+    return tcp->advertised_size() - tcp->header_size();
 }
 
 void TcpFlow::updateFlow(const Tins::Packet& packet, Direction direction,
@@ -178,14 +177,15 @@ void TcpFlow::updateFlow(const Tins::Packet& packet, Direction direction,
         }
     }
 
-    if (tcp->has_flags(Tins::TCP::RST)) {
+    if (tcp->has_flags(Tins::TCP::FIN)) {
         uint32_t nextSeq = nextSeqnum(tcp, tcpPayloadSize);
-        spdlog::debug("Got fin for direction {}, ts {}ms, nextSeq {}",
-            directionToString(currentDirection), timevalInMs(tv), nextSeq);
+        spdlog::debug("Got fin for direction {}, ts {}ms, nextSeq {}, ack {}",
+            directionToString(currentDirection), timevalInMs(tv), nextSeq, tcp->ack_seq());
         finSeqnum[direction] = nextSeq;
     }
 
-    if (tcp->has_flags(Tins::TCP::ACK) && tcp->ack_seq() == finSeqnum[!direction]
+    if (tcp->has_flags(Tins::TCP::ACK)
+        && tcp->ack_seq() == finSeqnum[!direction]
         && finAcked[direction] == false) {
         finAcked[direction] = true;
         if (finAcked[!direction]) {
@@ -220,8 +220,8 @@ auto TcpFlow::tcpToString(const Tins::TCP* tcp) -> std::string
         tcpFlag = "[RST], ";
     }
     return fmt::format("{}seq={}, ack={}, opened={}",
-        tcpFlag, ntohl(tcp->seq()),
-        ntohl(tcp->ack_seq()),
+        tcpFlag, tcp->seq(),
+        tcp->ack_seq(),
         opened);
 }
 } // namespace flowstats

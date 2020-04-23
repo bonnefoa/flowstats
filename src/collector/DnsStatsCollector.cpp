@@ -1,5 +1,6 @@
 #include "DnsStatsCollector.hpp"
 #include "PrintHelper.hpp"
+#include "rawpdu.h"
 
 namespace flowstats {
 
@@ -22,19 +23,17 @@ void DnsStatsCollector::processPacket(Tins::Packet& packet)
     timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
     auto pdu = packet.pdu();
-    auto dns = pdu->find_pdu<Tins::DNS>();
-    if (dns == nullptr) {
+    auto dns = pdu->rfind_pdu<Tins::RawPDU>().to<Tins::DNS>();
+
+    if (dns.type() == Tins::DNS::QUERY) {
+        newDnsQuery(packet, &dns);
         return;
     }
 
-    if (dns->type() == Tins::DNS::QUERY) {
-        newDnsQuery(packet, dns);
-    }
-
-    auto it = transactionIdToDnsFlow.find(dns->id());
+    auto it = transactionIdToDnsFlow.find(dns.id());
     if (it != transactionIdToDnsFlow.end()) {
         DnsFlow& flow = it->second;
-        newDnsResponse(packet, dns, flow);
+        newDnsResponse(packet, &dns, flow);
     }
 }
 
@@ -50,7 +49,7 @@ auto DnsStatsCollector::getFlows() -> std::vector<Flow*>
 void DnsStatsCollector::updateIpToFqdn(Tins::DNS* dns, const std::string& fqdn)
 {
     auto answers = dns->answers();
-    std::vector<int> ips;
+    std::vector<Tins::IPv4Address> ips;
     for (auto answer : answers) {
         if (answer.query_type() == Tins::DNS::A) {
             ips.push_back(Tins::IPv4Address(answer.data()));
@@ -60,6 +59,7 @@ void DnsStatsCollector::updateIpToFqdn(Tins::DNS* dns, const std::string& fqdn)
     {
         const std::lock_guard<std::mutex> lock(conf.ipToFqdnMutex);
         for (auto ip : ips) {
+            spdlog::debug("Fqdn mapping {} -> {}", ip.to_string(), fqdn);
             conf.ipToFqdn[ip] = fqdn;
         }
     }
@@ -67,10 +67,9 @@ void DnsStatsCollector::updateIpToFqdn(Tins::DNS* dns, const std::string& fqdn)
 
 void DnsStatsCollector::newDnsQuery(Tins::Packet& packet, Tins::DNS* dns)
 {
-    DnsFlow flow(dns);
+    DnsFlow flow(packet);
     flow.addPacket(packet, FROM_CLIENT);
     flow.m_StartTimestamp = packetToTimeval(packet);
-    flow.isTcp = dns->parent_pdu()->pdu_type() == Tins::PDU::TCP;
     auto queries = dns->queries();
     auto firstQuery = queries.at(0);
     flow.type = firstQuery.query_type();
@@ -94,7 +93,7 @@ void DnsStatsCollector::newDnsResponse(Tins::Packet& packet, Tins::DNS* dns, Dns
 
     updateIpToFqdn(dns, flow.fqdn);
     spdlog::debug("Dns tid {}, {}, {} finished, {}", dns->id(),
-        flow.isTcp ? "Tcp" : "Udp",
+        flow.flowId.isTcp ? "Tcp" : "Udp",
         flow.fqdn,
         flow.numberRecords);
     dnsFlows.push_back(flow);
@@ -104,15 +103,15 @@ void DnsStatsCollector::newDnsResponse(Tins::Packet& packet, Tins::DNS* dns, Dns
 
 void DnsStatsCollector::addFlowToAggregation(DnsFlow& flow)
 {
-    AggregatedDnsKey key(flow.fqdn, flow.type, flow.isTcp);
+    AggregatedDnsKey key(flow.fqdn, flow.type, flow.flowId.isTcp);
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto it = aggregatedDnsFlows.find(key);
     AggregatedDnsFlow* aggregatedFlow;
     if (it == aggregatedDnsFlows.end()) {
         spdlog::debug("Create new dns aggregation for {} {} {}", flow.fqdn,
-            dnsTypeToString(flow.type), flow.isTcp);
-        aggregatedFlow = new AggregatedDnsFlow(flow.flowId, flow.fqdn, flow.type, flow.isTcp);
+            dnsTypeToString(flow.type), flow.flowId.isTcp);
+        aggregatedFlow = new AggregatedDnsFlow(flow.flowId, flow.fqdn, flow.type);
         aggregatedDnsFlows[key] = aggregatedFlow;
     } else {
         aggregatedFlow = it->second;
@@ -152,7 +151,7 @@ auto DnsStatsCollector::getMetrics() -> std::vector<std::string>
         struct AggregatedDnsFlow* val = pair.second;
         DogFood::Tags tags = DogFood::Tags({
             { "fqdn", val->fqdn },
-            { "proto", val->isTcp ? "tcp" : "udp" },
+            { "proto", val->flowId.isTcp ? "tcp" : "udp" },
             { "type", dnsTypeToString(val->dnsType) },
         });
         if (val->queries) {

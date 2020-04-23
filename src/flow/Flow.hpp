@@ -26,8 +26,8 @@ public:
     }
     virtual ~Flow() {}
 
-    Flow(Tins::PDU* pdu)
-        : flowId(pdu)
+    Flow(Tins::Packet& packet)
+        : flowId(packet)
     {
         Flow();
     }

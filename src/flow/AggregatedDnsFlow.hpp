@@ -11,7 +11,6 @@ namespace flowstats {
 
 struct AggregatedDnsFlow : Flow {
     enum Tins::DNS::QueryType dnsType;
-    bool isTcp = false;
 
     int totalQueries = 0;
     int totalResponses = 0;
@@ -36,10 +35,9 @@ struct AggregatedDnsFlow : Flow {
     };
 
     AggregatedDnsFlow(FlowId& flowId, std::string fqdn,
-        enum Tins::DNS::QueryType dnsType, bool isTcp)
+        enum Tins::DNS::QueryType dnsType)
         : Flow(flowId, fqdn)
-        , dnsType(dnsType)
-        , isTcp(isTcp) {};
+        , dnsType(dnsType) {};
 
     void resetFlow(bool resetTotal);
     bool operator<(AggregatedDnsFlow const& b) { return queries < b.queries; }

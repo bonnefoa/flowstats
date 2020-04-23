@@ -6,19 +6,19 @@ namespace flowstats {
 void AggregatedTcpFlow::updateFlow(const Tins::Packet& packet, const FlowId& flowId,
     const Tins::TCP* tcp)
 {
-    auto flags = tcp->flags();
-
-    if (flags & Tins::TCP::RST) {
+    if (tcp->has_flags(Tins::TCP::RST)) {
         rsts[flowId.direction]++;
     }
-    if (tcp->window() == 0 && (flags == Tins::TCP::RST)) {
+
+    if (tcp->window() == 0 && tcp->has_flags(Tins::TCP::RST)) {
         zeroWins[flowId.direction]++;
     }
-    if (flags == Tins::TCP::SYN) {
-        syns[flowId.direction]++;
-    } else if (flags == (Tins::TCP::SYN | Tins::TCP::ACK)) {
+
+    if (tcp->has_flags(Tins::TCP::SYN | Tins::TCP::ACK)) {
         synacks[flowId.direction]++;
-    } else if (flags == Tins::TCP::FIN) {
+    } else if (tcp->has_flags(Tins::TCP::SYN)) {
+        syns[flowId.direction]++;
+    } else if (tcp->has_flags(Tins::TCP::FIN)) {
         fins[flowId.direction]++;
     }
     mtu[flowId.direction] = std::max(mtu[flowId.direction],

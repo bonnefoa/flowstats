@@ -13,7 +13,7 @@ namespace flowstats {
 
 auto getTimevalDeltaMs(timeval start, timeval end) -> uint32_t
 {
-    return (end.tv_sec * 1000 + end.tv_usec / 1000) - (start.tv_sec * 1000 + start.tv_usec / 1000000);
+    return (end.tv_sec * 1000 + end.tv_usec / 1000) - (start.tv_sec * 1000 + start.tv_usec / 1000);
 }
 
 auto timevalInMs(timeval tv) -> uint64_t

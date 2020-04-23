@@ -110,7 +110,11 @@ auto analyzeLiveTraffic(Tins::Sniffer* dev, FlowstatsConfiguration& conf,
             break;
         }
         for (auto& collector : collectors) {
-            collector->processPacket(packet);
+            try {
+                collector->processPacket(packet);
+            } catch (const Tins::pdu_not_found) {
+                // Good to ignore
+            }
         }
 
         int pktSeconds = packet.timestamp().seconds();

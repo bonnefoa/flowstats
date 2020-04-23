@@ -12,21 +12,21 @@ auto FlowId::toString() -> std::string
 
 FlowId::FlowId(Tins::IP* ip, Tins::TCP* tcp)
 {
-    Port pktPorts[2] = { ntohs(tcp->sport()), ntohs(tcp->dport()) };
+    Port pktPorts[2] = { tcp->sport(), tcp->dport() };
     IPv4 pktIps[2] = { ip->src_addr(), ip->dst_addr() };
-    *this = FlowId(pktPorts, pktIps);
+    *this = FlowId(pktPorts, pktIps, true);
 }
 
 FlowId::FlowId(Tins::IP* ip, Tins::UDP* upd)
 {
-    Port pktPorts[2] = { ntohs(upd->sport()), ntohs(upd->dport()) };
+    Port pktPorts[2] = { upd->sport(), upd->dport() };
     IPv4 pktIps[2] = { ip->src_addr(), ip->dst_addr() };
-    *this = FlowId(pktPorts, pktIps);
+    *this = FlowId(pktPorts, pktIps, false);
 }
 
-FlowId::FlowId(Tins::PDU* pdu)
+FlowId::FlowId(Tins::Packet& packet)
 {
-    auto ip = pdu->find_pdu<Tins::IP>();
+    auto ip = packet.pdu()->find_pdu<Tins::IP>();
     auto tcp = ip->find_pdu<Tins::TCP>();
     if (tcp) {
         *this = FlowId(ip, tcp);
@@ -36,9 +36,10 @@ FlowId::FlowId(Tins::PDU* pdu)
     }
 }
 
-FlowId::FlowId(uint16_t pktPorts[2], IPv4 pktIps[2])
+FlowId::FlowId(uint16_t pktPorts[2], IPv4 pktIps[2], bool _isTcp)
 {
     direction = FROM_CLIENT;
+    isTcp = _isTcp;
     if (pktPorts[0] < pktPorts[1]) {
         direction = FROM_SERVER;
     }
