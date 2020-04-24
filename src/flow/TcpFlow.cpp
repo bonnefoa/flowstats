@@ -1,6 +1,7 @@
 #include "TcpFlow.hpp"
 #include "Utils.hpp"
 #include <spdlog/spdlog.h>
+#include <string.h>
 
 namespace flowstats {
 
@@ -73,14 +74,14 @@ void TcpFlow::closeConnection()
     opened = false;
     opening = false;
 
-    memset(synTime, 0, sizeof(synTime));
-    memset(seqNum, 0, sizeof(seqNum));
-    memset(finSeqnum, 0, sizeof(finSeqnum));
-    memset(hadPacket, 0, sizeof(hadPacket));
-    memset(finAcked, 0, sizeof(finAcked));
-    memset(synAcked, 0, sizeof(synAcked));
-    closeTime = { 0, 0 };
-    lastPayloadTime = { 0, 0 };
+    synTime = {};
+    seqNum = {};
+    finSeqnum = {};
+    hadPacket = {};
+    finAcked = {};
+    synAcked = {};
+    closeTime = {};
+    lastPayloadTime = {};
 }
 
 auto TcpFlow::nextSeqnum(const Tins::TCP& tcp, int tcpPayloadSize) -> uint32_t

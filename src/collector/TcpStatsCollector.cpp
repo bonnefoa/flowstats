@@ -44,7 +44,7 @@ auto TcpStatsCollector::lookupTcpFlow(
         }
         spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), tcpFlow.flowHash, fqdn->data());
         tcpFlow.fqdn = fqdn->data();
-        tcpFlow.aggregatedFlows = lookupAggregatedFlows(tcpFlow, flowId);
+        tcpFlow.setAggregatedFlows(lookupAggregatedFlows(tcpFlow, flowId));
     }
     return tcpFlow;
 }
@@ -88,7 +88,7 @@ void TcpStatsCollector::processPacket(const Tins::Packet& packet)
 
     tcpFlow.addPacket(packet, flowId.direction);
 
-    for (auto& subflow : tcpFlow.aggregatedFlows) {
+    for (auto& subflow : tcpFlow.getAggregatedFlows()) {
         subflow->addPacket(packet, flowId.direction);
         subflow->updateFlow(packet, flowId, ip, tcp);
     }

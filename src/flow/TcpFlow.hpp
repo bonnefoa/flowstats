@@ -12,20 +12,18 @@ public:
     TcpFlow();
     TcpFlow(const Tins::IP& ip, const Tins::TCP& tcp, uint32_t flowHash);
 
-    void updateFlow(const Tins::Packet& packet, Direction direction,
+    auto updateFlow(const Tins::Packet& packet, Direction direction,
         const Tins::IP& ip,
-        const Tins::TCP& tcp);
+        const Tins::TCP& tcp) -> void;
 
-    uint32_t seqNum[2] = { 0, 0 };
-    uint32_t finSeqnum[2] = { 0, 0 };
-    bool finAcked[2] = { 0, 0 };
+    std::array<uint32_t, 2> seqNum = {};
+    std::array<uint32_t, 2> finSeqnum = {};
+    std::array<bool, 2> finAcked = {};
     uint32_t flowHash = 0;
 
-    timeval synTime[2] = { { 0, 0 }, { 0, 0 } };
-    bool synAcked[2] = { 0, 0 };
-    bool hadPacket[2] = { 0, 0 };
+    std::array<bool, 2> synAcked = {};
+    std::array<bool, 2> hadPacket = {};
 
-    timeval closeTime = { 0, 0 };
     int requestSize = 0;
     int gap = 0;
     std::string fqdn = "";
@@ -34,18 +32,24 @@ public:
     bool opened = false;
     bool opening = false;
 
-    Direction lastDirection;
-    timeval lastPacketTime[2] = { { 0, 0 }, { 0, 0 } };
-    timeval lastPayloadTime = { 0, 0 };
-    void detectServer(const Tins::TCP& tcp, Direction direction,
-        std::map<uint16_t, int>& srvPortsCounter);
-    std::vector<AggregatedTcpFlow*> aggregatedFlows;
-    void closeConnection();
-    void timeoutFlow();
+    Direction lastDirection = FROM_CLIENT;
+
+    std::array<timeval, 2> synTime = {};
+    std::array<timeval, 2> closeTime = {};
+    std::array<timeval, 2> lastPacketTime = {};
+    timeval lastPayloadTime = {};
+
+    auto detectServer(const Tins::TCP& tcp, Direction direction,
+        std::map<uint16_t, int>& srvPortsCounter) -> void;
+    auto closeConnection() -> void;
+    auto timeoutFlow() -> void;
+    auto getAggregatedFlows() const { return aggregatedFlows; }
+    auto setAggregatedFlows(std::vector<AggregatedTcpFlow*> _aggregatedFlows) { aggregatedFlows = _aggregatedFlows; }
 
 private:
-    std::string tcpToString(const Tins::TCP& hdr);
-    uint32_t nextSeqnum(const Tins::TCP& tcp, int payloadSize);
-    int getTcpPayloadSize(const Tins::PDU* pdu, const Tins::IP& ip, const Tins::TCP& tcp);
+    std::vector<AggregatedTcpFlow*> aggregatedFlows;
+    auto tcpToString(const Tins::TCP& hdr) -> std::string;
+    auto nextSeqnum(const Tins::TCP& tcp, int payloadSize) -> uint32_t;
+    auto getTcpPayloadSize(const Tins::PDU* pdu, const Tins::IP& ip, const Tins::TCP& tcp) -> int;
 };
 }
