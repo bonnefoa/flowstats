@@ -29,7 +29,7 @@ public:
         , displayConf(displayConf) {};
     virtual ~Collector() = default;
 
-    virtual void processPacket(const Tins::Packet& pdu)
+    virtual auto processPacket(const Tins::Packet& pdu) -> void
         = 0;
     virtual void advanceTick(timeval now) {};
     virtual void resetMetrics() {};

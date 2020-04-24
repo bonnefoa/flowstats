@@ -11,29 +11,24 @@ public:
     TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf);
     ~TcpStatsCollector();
 
-    void processPacket(const Tins::Packet& packet) override;
+    auto processPacket(const Tins::Packet& packet) -> void override;
+    auto resetMetrics() -> void override;
 
-    void resetMetrics() override;
-
-    auto getProtocol() -> CollectorProtocol override { return TCP; };
-    auto toString() -> std::string override { return "TcpStatsCollector"; }
-
-    std::map<AggregatedTcpKey, AggregatedTcpFlow*> getAggregatedMap()
-    {
-        return aggregatedMap;
-    }
-
-    std::map<size_t, TcpFlow> getTcpFlow() { return hashToTcpFlow; }
     auto getAggregatedPairs() -> std::vector<AggregatedPairPointer> const override;
-    int lastTick = 0;
     auto advanceTick(timeval now) -> void override;
     auto getMetrics() -> std::vector<std::string> override;
     auto mergePercentiles() -> void override;
 
+    auto getProtocol() -> CollectorProtocol override { return TCP; };
+    auto toString() -> std::string override { return "TcpStatsCollector"; }
+    auto getAggregatedMap() const { return aggregatedMap; }
+    auto getTcpFlow() const { return hashToTcpFlow; }
+
+    int lastTick = 0;
+
 private:
     std::map<size_t, TcpFlow> hashToTcpFlow;
     std::map<uint16_t, int> srvPortsCounter;
-    void timeoutFlow(TcpFlow* flow);
 
     std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap;
     std::vector<std::pair<TcpFlow*, std::vector<AggregatedTcpFlow*>>> openingTcpFlow;
