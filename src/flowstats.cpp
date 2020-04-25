@@ -12,8 +12,6 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 
-using namespace flowstats;
-
 #define EXIT_WITH_ERROR(reason, ...)                      \
     do {                                                  \
         printf("\nError: " reason "\n\n", ##__VA_ARGS__); \
@@ -65,8 +63,8 @@ void printUsage()
  */
 auto main(int argc, char* argv[]) -> int
 {
-    FlowstatsConfiguration conf;
-    DisplayConfiguration displayConf;
+    flowstats::FlowstatsConfiguration conf;
+    flowstats::DisplayConfiguration displayConf;
 
     std::string agentAddr = "";
     std::string localhostIp = "";
@@ -101,10 +99,10 @@ auto main(int argc, char* argv[]) -> int
             localhostIp = optarg;
             break;
         case 'k':
-            initialServerPorts = split(optarg, ',');
+            initialServerPorts = flowstats::split(optarg, ',');
             break;
         case 'd':
-            initialDomains = split(optarg, ',');
+            initialDomains = flowstats::split(optarg, ',');
             break;
         case 'v':
             spdlog::set_level(spdlog::level::debug);
@@ -123,7 +121,7 @@ auto main(int argc, char* argv[]) -> int
             conf.perIpAggr = true;
             break;
         case 'l':
-            listInterfaces();
+            flowstats::listInterfaces();
             break;
         default:
             printUsage();
@@ -140,15 +138,15 @@ auto main(int argc, char* argv[]) -> int
     spdlog::set_pattern("[%H:%M:%S %z] [thread %t] %v");
 
     conf.agentConf = DogFood::Configure(agentAddr);
-    std::vector<Collector*> collectors;
-    conf.ipToFqdn = getIpToFqdn(initialDomains);
-    conf.domainToServerPort = getDomainToServerPort(initialServerPorts);
+    std::vector<flowstats::Collector*> collectors;
+    conf.ipToFqdn = flowstats::getIpToFqdn(initialDomains);
+    conf.domainToServerPort = flowstats::getDomainToServerPort(initialServerPorts);
 
     collectors.push_back(
-        new DnsStatsCollector(conf, displayConf));
-    collectors.push_back(new SslStatsCollector(conf, displayConf));
+        new flowstats::DnsStatsCollector(conf, displayConf));
+    collectors.push_back(new flowstats::SslStatsCollector(conf, displayConf));
     collectors.push_back(
-        new TcpStatsCollector(conf, displayConf));
+        new flowstats::TcpStatsCollector(conf, displayConf));
 
     std::atomic_bool shouldStop = false;
     if (!localhostIp.empty()) {
@@ -157,11 +155,11 @@ auto main(int argc, char* argv[]) -> int
     if (conf.pcapFileName != "") {
         analyzePcapFile(conf, collectors);
     } else {
-        std::vector<Tins::IPv4Address> localIps = getLocalIps();
+        std::vector<Tins::IPv4Address> localIps = flowstats::getLocalIps();
         for (auto& ip : localIps) {
             conf.ipToFqdn[ip] = "localhost";
         }
-        Screen screen(&shouldStop, displayConf, collectors);
+        flowstats::Screen screen(&shouldStop, displayConf, collectors);
         screen.StartDisplay();
         auto dev = getLiveDevice(conf);
         analyzeLiveTraffic(dev, conf, collectors,

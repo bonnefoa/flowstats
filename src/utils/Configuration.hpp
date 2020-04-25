@@ -1,10 +1,10 @@
 #pragma once
 
 #include <DogFood.hpp> // for Configuration
+#include <cstdint> // for uint16_t, uint32_t
 #include <map> // for map
 #include <mutex> // for mutex
 #include <optional> // for optional
-#include <stdint.h> // for uint16_t, uint32_t
 #include <string> // for string, allocator
 
 namespace flowstats {
@@ -27,8 +27,8 @@ enum DisplayType {
     DisplayTraffic,
 };
 
-std::string sortToString(enum SortType sortType);
-std::string displayTypeToString(enum DisplayType displayType);
+auto sortToString(enum SortType sortType) -> std::string;
+auto displayTypeToString(enum DisplayType displayType) -> std::string;
 
 struct DisplayConfiguration {
     int protocolIndex = 0;
@@ -55,4 +55,4 @@ struct FlowstatsConfiguration {
 };
 
 using DisplayPair = std::pair<DisplayType, std::vector<std::string>>;
-}
+} // namespace flowstats
