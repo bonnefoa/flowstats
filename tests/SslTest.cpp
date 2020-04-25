@@ -12,15 +12,11 @@ TEST_CASE("Ssl connection time", "[ssl]")
 {
     spdlog::set_level(spdlog::level::debug);
 
-    FlowstatsConfiguration conf;
-    DisplayConfiguration displayConf;
-    DnsStatsCollector dnsStats(conf, displayConf);
-    readPcap("ssl_simple.pcap", dnsStats, "port 53");
+    auto tester = Tester();
+    tester.readPcap("ssl_simple.pcap", "port 53");
+    tester.readPcap("ssl_simple.pcap", "port 443");
 
-    SslStatsCollector sslStats(conf, displayConf);
-    readPcap("ssl_simple.pcap", sslStats, "port 443");
-
-    std::map<AggregatedTcpKey, AggregatedSslFlow*> ipFlows = sslStats.getAggregatedMap();
+    std::map<AggregatedTcpKey, AggregatedSslFlow*> ipFlows = tester.getSslStatsCollector().getAggregatedMap();
     REQUIRE(ipFlows.size() == 1);
     AggregatedTcpKey key("google.com", 0, 443);
     AggregatedSslFlow* flow = ipFlows[key];
@@ -35,14 +31,11 @@ TEST_CASE("Ssl port detection", "[ssl]")
 {
     spdlog::set_level(spdlog::level::debug);
 
-    FlowstatsConfiguration conf;
-    DisplayConfiguration displayConf;
-    conf.displayUnknownFqdn = true;
-    conf.pcapFileName = "ssl_alt_port.pcap";
-    SslStatsCollector sslStats(conf, displayConf);
-    analyzePcapFile(conf, &sslStats);
+    auto tester = Tester();
+    //conf.displayUnknownFqdn = true;
+    tester.readPcap("ssl_alt_port.pcap", "port 443");
 
-    std::map<AggregatedTcpKey, AggregatedSslFlow*> ipFlows = sslStats.getAggregatedMap();
+    std::map<AggregatedTcpKey, AggregatedSslFlow*> ipFlows = tester.getSslStatsCollector().getAggregatedMap();
     // Not working for now
 
     //REQUIRE(ipFlows.size() == 1);

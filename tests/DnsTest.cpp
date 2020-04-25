@@ -8,15 +8,12 @@ using namespace flowstats;
 TEST_CASE("Dns queries timeout", "[dns]")
 {
     spdlog::set_level(spdlog::level::debug);
+    auto tester = Tester();
+    auto& dnsStatsCollector = tester.getDnsStatsCollector();
 
-    std::map<uint32_t, std::string> ipToFqdn;
-    FlowstatsConfiguration conf;
-    DisplayConfiguration displayConf;
-    DnsStatsCollector dnsStats(conf, displayConf);
+    tester.readPcap("dns_simple.pcap");
 
-    readPcap("dns_simple.pcap", dnsStats);
-
-    std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedFlows = dnsStats.getAggregatedFlow();
+    std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedFlows = dnsStatsCollector.getAggregatedFlow();
     REQUIRE(aggregatedFlows.size() == 3);
 
     AggregatedDnsKey firstKey("test.com", Tins::DNS::A, false);
@@ -31,14 +28,11 @@ TEST_CASE("Dns queries timeout", "[dns]")
 TEST_CASE("Dns rcrd/rsps", "[dns]")
 {
     spdlog::set_level(spdlog::level::debug);
+    auto tester = Tester();
+    auto& dnsStatsCollector = tester.getDnsStatsCollector();
+    tester.readPcap("dns_rcrds.pcap");
 
-    FlowstatsConfiguration conf;
-    DisplayConfiguration displayConf;
-    DnsStatsCollector dnsStats(conf, displayConf);
-
-    readPcap("dns_rcrds.pcap", dnsStats);
-
-    std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedFlows = dnsStats.getAggregatedFlow();
+    std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedFlows = dnsStatsCollector.getAggregatedFlow();
     REQUIRE(aggregatedFlows.size() == 1);
 
     AggregatedDnsKey udpKey("all.alb-metrics-agent-shard1-770518637.us-east-1.elb.amazonaws.com", Tins::DNS::A, false);

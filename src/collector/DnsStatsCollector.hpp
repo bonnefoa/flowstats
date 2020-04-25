@@ -22,7 +22,7 @@ public:
     auto mergePercentiles() -> void override;
 
     auto toString() -> std::string override { return "DnsStatsCollector"; }
-    auto getAggregatedFlow() { return aggregatedDnsFlows; }
+    auto getAggregatedFlow() const { return aggregatedDnsFlows; }
     auto getProtocol() -> CollectorProtocol override { return DNS; };
 
 private:

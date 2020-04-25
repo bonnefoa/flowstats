@@ -41,7 +41,7 @@ static struct option FlowStatsOptions[] = {
 /**
  * Print application usage
  */
-void printUsage()
+static auto printUsage()
 {
     printf("\nUsage: \n"
            "----------------------\n"
@@ -72,7 +72,7 @@ auto main(int argc, char* argv[]) -> int
     std::vector<std::string> initialServerPorts;
 
     int optionIndex = 0;
-    char opt = 0;
+    int opt = 0;
 
     while ((opt = getopt_long(argc, argv, "k:i:a:f:o:b:m:p:d:nuwhvl", FlowStatsOptions,
                 &optionIndex))
@@ -149,21 +149,20 @@ auto main(int argc, char* argv[]) -> int
         new flowstats::TcpStatsCollector(conf, displayConf));
 
     std::atomic_bool shouldStop = false;
+    flowstats::Screen screen(&shouldStop, displayConf, collectors);
+    flowstats::PktSource pktSource(&screen, conf, collectors, &shouldStop);
     if (!localhostIp.empty()) {
         conf.ipToFqdn[Tins::IPv4Address(localhostIp)] = "localhost";
     }
     if (conf.pcapFileName != "") {
-        analyzePcapFile(conf, collectors);
+        pktSource.analyzePcapFile();
     } else {
-        std::vector<Tins::IPv4Address> localIps = flowstats::getLocalIps();
+        std::vector<Tins::IPv4Address> localIps = pktSource.getLocalIps();
         for (auto& ip : localIps) {
             conf.ipToFqdn[ip] = "localhost";
         }
-        flowstats::Screen screen(&shouldStop, displayConf, collectors);
         screen.StartDisplay();
-        auto dev = getLiveDevice(conf);
-        analyzeLiveTraffic(dev, conf, collectors,
-            shouldStop, screen);
+        pktSource.analyzeLiveTraffic();
     }
 
     for (auto* collector : collectors) {

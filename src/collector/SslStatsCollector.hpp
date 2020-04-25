@@ -26,18 +26,17 @@ public:
     auto getAggregatedPairs() const -> std::vector<AggregatedPairPointer> override;
     auto toString() -> std::string override { return "SslStatsCollector"; }
 
-    std::map<AggregatedTcpKey, AggregatedSslFlow*> getAggregatedMap() { return aggregatedMap; }
-    std::map<uint32_t, SslFlow> getSslFlow() { return hashToSslFlow; }
+    auto getAggregatedMap() const -> std::map<AggregatedTcpKey, AggregatedSslFlow*> { return aggregatedMap; }
+    auto getSslFlow() const -> std::map<uint32_t, SslFlow> { return hashToSslFlow; }
     void mergePercentiles() override;
 
 private:
     std::map<uint32_t, SslFlow> hashToSslFlow;
     std::map<AggregatedTcpKey, AggregatedSslFlow*> aggregatedMap;
-    SslFlow& lookupSslFlow(const Tins::IP& ipv4Layer,
-        const Tins::TCP& tcp, FlowId& flowId);
-
-    std::vector<AggregatedSslFlow*> lookupAggregatedFlows(const Tins::TCP& tcp,
+    auto lookupSslFlow(const Tins::IP& ipv4Layer,
+        const Tins::TCP& tcp, FlowId& flowId) -> SslFlow&;
+    auto lookupAggregatedFlows(const Tins::TCP& tcp,
         SslFlow& sslFlow, FlowId& flowId,
-        const std::string& fqdn);
+        const std::string& fqdn) -> std::vector<AggregatedSslFlow*>;
 };
 }

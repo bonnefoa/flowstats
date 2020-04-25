@@ -52,6 +52,8 @@ struct FlowstatsConfiguration {
 
     std::mutex ipToFqdnMutex;
     std::map<uint32_t, std::string> ipToFqdn;
+
+    FlowstatsConfiguration() = default;
 };
 
 using DisplayPair = std::pair<DisplayType, std::vector<std::string>>;

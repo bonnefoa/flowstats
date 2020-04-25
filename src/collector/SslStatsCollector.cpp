@@ -132,5 +132,6 @@ SslStatsCollector::~SslStatsCollector()
     for (auto& pair : aggregatedMap) {
         delete pair.second;
     }
+    delete totalFlow;
 }
 } // namespace flowstats

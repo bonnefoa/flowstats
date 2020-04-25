@@ -1,8 +1,8 @@
 #include "PktSource.hpp"
 #include "Utils.hpp"
+#include <cstdint>
 #include <network_interface.h>
 #include <spdlog/spdlog.h>
-
 #include <utility>
 
 namespace flowstats {
@@ -10,10 +10,9 @@ namespace flowstats {
 /**
  * Go over all interfaces and output their names
  */
-void listInterfaces()
+auto listInterfaces() -> void
 {
     const std::vector<Tins::NetworkInterface> ifaces = Tins::NetworkInterface::all();
-
     printf("\nNetwork interfaces:\n");
     for (auto iter : ifaces) {
         printf("    -> Name: '%s'   IP address: %s\n",
@@ -23,7 +22,7 @@ void listInterfaces()
     exit(0);
 }
 
-auto getLocalIps() -> std::vector<Tins::IPv4Address>
+auto PktSource::getLocalIps() -> std::vector<Tins::IPv4Address>
 {
     std::vector<Tins::IPv4Address> res;
     const std::vector<Tins::NetworkInterface> ifaces = Tins::NetworkInterface::all();
@@ -35,26 +34,13 @@ auto getLocalIps() -> std::vector<Tins::IPv4Address>
     return res;
 }
 
-auto getPcapReader(const std::string& pcapFileName, std::string filter) -> Tins::FileSniffer*
-{
-    Tins::FileSniffer* reader = new Tins::FileSniffer(pcapFileName, filter);
-    return reader;
-}
-
-auto analyzePcapFile(FlowstatsConfiguration& conf, Collector* collector) -> int
-{
-    std::vector<Collector*> collectors;
-    collectors.push_back(collector);
-    return analyzePcapFile(conf, collectors);
-}
-
 /**
  * analysis pcap file
  */
-auto analyzePcapFile(FlowstatsConfiguration& conf,
-    std::vector<Collector*> collectors) -> int
+auto PktSource::analyzePcapFile()
+    -> int
 {
-    Tins::FileSniffer* reader = getPcapReader(conf.pcapFileName, conf.bpfFilter);
+    auto reader = new Tins::FileSniffer(conf.pcapFileName, conf.bpfFilter);
     if (reader == nullptr) {
         return 1;
     }
@@ -72,7 +58,11 @@ auto analyzePcapFile(FlowstatsConfiguration& conf,
             start = pktTv;
         }
         for (auto* collector : collectors) {
-            collector->processPacket(packet);
+            try {
+                collector->processPacket(packet);
+            } catch (const Tins::malformed_packet&) {
+            } catch (const Tins::pdu_not_found&) {
+            }
         }
     }
 
@@ -86,63 +76,63 @@ auto analyzePcapFile(FlowstatsConfiguration& conf,
     return 0;
 }
 
-auto getLiveDevice(const FlowstatsConfiguration& conf) -> Tins::Sniffer*
+auto PktSource::getLiveDevice() -> Tins::Sniffer*
 {
     Tins::SnifferConfiguration snifferConf;
-    snifferConf.set_promisc_mode(1);
+    snifferConf.set_promisc_mode(true);
     snifferConf.set_filter(conf.bpfFilter);
-    Tins::Sniffer* dev = new Tins::Sniffer(conf.interfaceNameOrIP, snifferConf);
+    auto dev = new Tins::Sniffer(conf.interfaceNameOrIP, snifferConf);
     return dev;
+}
+
+auto PktSource::updateScreen(int currentTime) -> void
+{
+    if (lastUpdate < currentTime) {
+        lastUpdate = currentTime;
+        screen->updateDisplay(currentTime, true);
+        for (auto& collector : collectors) {
+            collector->sendMetrics();
+            collector->resetMetrics();
+        }
+    }
 }
 
 /**
  * analysis live traffic
  */
-auto analyzeLiveTraffic(Tins::Sniffer* dev, FlowstatsConfiguration& conf,
-    std::vector<Collector*> collectors,
-    std::atomic_bool& shouldStop, Screen& screen) -> int
+auto PktSource::analyzeLiveTraffic() -> int
 {
-    long startTs = time(nullptr);
+    int64_t startTs = time(nullptr);
     spdlog::info("Start live traffic capture with filter {}", conf.bpfFilter);
-    int lastUpdate = 0;
-    for (auto packet : *dev) {
-        if (shouldStop.load()) {
+    auto dev = getLiveDevice();
+    for (const auto& packet : *dev) {
+        if (shouldStop->load()) {
             break;
         }
         for (auto& collector : collectors) {
             try {
                 collector->processPacket(packet);
-            } catch (const Tins::malformed_packet) {
-                // Good to ignore
-            } catch (const Tins::pdu_not_found) {
-                // Good to ignore
+            } catch (const Tins::malformed_packet&) {
+            } catch (const Tins::pdu_not_found&) {
             }
         }
-
         int pktSeconds = packet.timestamp().seconds();
-        if (lastUpdate < pktSeconds) {
-            lastUpdate = pktSeconds;
-            screen.updateDisplay(time(nullptr) - startTs, true);
-            for (auto& collector : collectors) {
-                collector->sendMetrics();
-                collector->resetMetrics();
-            }
-        }
+        updateScreen(pktSeconds);
     }
 
     spdlog::info("Stop capture");
     dev->stop_sniff();
     spdlog::info("Stopping screen");
-    screen.StopDisplay();
+    screen->StopDisplay();
 
     fmt::print("\n");
-    long endTs = time(nullptr);
+    int64_t endTs = time(nullptr);
     for (auto& collector : collectors) {
         collector->advanceTick(maxTimeval);
         collector->sendMetrics();
         collector->resetMetrics();
 
-        int delta = endTs - startTs;
+        int64_t delta = endTs - startTs;
         CollectorOutput o = collector->outputStatus(delta);
         fmt::print("{} {}s\n", o.name, delta);
         for (int i = 0; i < o.keys.size(); ++i) {

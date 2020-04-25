@@ -5,18 +5,37 @@
 #include "Screen.hpp"
 #include <ip_address.h>
 #include <sniffer.h>
-#include <stdlib.h>
 
 namespace flowstats {
 
-void listInterfaces(void);
-std::vector<Tins::IPv4Address> getLocalIps(void);
-int analyzeLiveTraffic(Tins::Sniffer* dev, FlowstatsConfiguration& conf,
-    std::vector<Collector*> collectors,
-    std::atomic_bool& shouldStop, Screen& screen);
-int analyzePcapFile(FlowstatsConfiguration& conf, Collector* collector);
-int analyzePcapFile(FlowstatsConfiguration& conf, std::vector<Collector*> collectors);
-Tins::Sniffer* getLiveDevice(const FlowstatsConfiguration& conf);
-Tins::FileSniffer* getPcapReader(const std::string& pcapFileName, std::string filter);
+auto listInterfaces() -> void;
 
-}
+class PktSource {
+public:
+    PktSource(Screen* screen,
+        FlowstatsConfiguration& conf,
+        const std::vector<Collector*>& collectors,
+        std::atomic_bool* shouldStop)
+        : screen(screen)
+        , conf(conf)
+        , collectors(collectors)
+        , shouldStop(shouldStop) {};
+    virtual ~PktSource() = default;
+
+    auto getLocalIps() -> std::vector<Tins::IPv4Address>;
+    auto updateScreen(int currentTime) -> void;
+    auto analyzeLiveTraffic() -> int;
+    auto analyzePcapFile() -> int;
+
+private:
+    Screen* screen;
+    FlowstatsConfiguration& conf;
+    const std::vector<Collector*>& collectors;
+    std::atomic_bool* shouldStop;
+
+    int lastUpdate = 0;
+
+    auto getLiveDevice() -> Tins::Sniffer*;
+};
+
+} // namespace flowstats
