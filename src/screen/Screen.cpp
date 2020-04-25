@@ -51,7 +51,7 @@ std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 
 auto Screen::updateDisplay(int duration, bool updateOutput) -> void
 {
-    if (noCurses) {
+    if (displayConf.noCurses) {
         return;
     }
     lastDuration = duration;
@@ -205,16 +205,14 @@ auto Screen::getActiveCollector() -> Collector*
     return nullptr;
 }
 
-Screen::Screen(std::atomic_bool* shouldStop, bool noCurses,
-    FlowstatsConfiguration& conf, DisplayConfiguration& displayConf,
+Screen::Screen(std::atomic_bool* shouldStop,
+    DisplayConfiguration& displayConf,
     std::vector<Collector*> collectors)
     : shouldStop(shouldStop)
-    , noCurses(noCurses)
-    , conf(conf)
     , displayConf(displayConf)
     , collectors(std::move(std::move(collectors)))
 {
-    if (noCurses) {
+    if (displayConf.noCurses) {
         return;
     }
     initscr();
@@ -375,7 +373,7 @@ auto Screen::displayLoop() -> void
 
 auto Screen::StartDisplay() -> int
 {
-    if (noCurses) {
+    if (displayConf.noCurses) {
         return 0;
     }
     screenThread = std::thread(&Screen::displayLoop, this);
@@ -384,7 +382,7 @@ auto Screen::StartDisplay() -> int
 
 auto Screen::StopDisplay() -> void
 {
-    if (noCurses) {
+    if (displayConf.noCurses) {
         return;
     }
     screenThread.join();

@@ -17,8 +17,8 @@ namespace flowstats {
 
 class Screen {
 public:
-    Screen(std::atomic_bool* shouldStop, bool noCurses,
-        FlowstatsConfiguration& conf, DisplayConfiguration& displayConf,
+    Screen(std::atomic_bool* shouldStop,
+        DisplayConfiguration& displayConf,
         std::vector<Collector*> collectors);
     virtual ~Screen();
 
@@ -55,9 +55,7 @@ private:
     std::thread screenThread;
     std::atomic_bool* shouldStop;
     bool shouldFreeze = false;
-    bool noCurses;
     int lastDuration {};
-    FlowstatsConfiguration& conf;
     DisplayConfiguration& displayConf;
     std::vector<Collector*> collectors;
     Collector* activeCollector;

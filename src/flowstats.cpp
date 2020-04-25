@@ -117,7 +117,7 @@ auto main(int argc, char* argv[]) -> int
             conf.displayUnknownFqdn = true;
             break;
         case 'n':
-            conf.noCurses = true;
+            displayConf.noCurses = true;
             break;
         case 'w':
             conf.perIpAggr = true;
@@ -161,8 +161,7 @@ auto main(int argc, char* argv[]) -> int
         for (auto& ip : localIps) {
             conf.ipToFqdn[ip] = "localhost";
         }
-        Screen screen(&shouldStop, conf.noCurses, conf,
-            displayConf, collectors);
+        Screen screen(&shouldStop, displayConf, collectors);
         screen.StartDisplay();
         auto dev = getLiveDevice(conf);
         analyzeLiveTraffic(dev, conf, collectors,

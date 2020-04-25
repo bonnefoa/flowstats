@@ -35,6 +35,7 @@ struct DisplayConfiguration {
     enum SortType sortType = SortFqdn;
     int maxResults = 15;
     std::string filter;
+    bool noCurses = false;
 };
 
 struct FlowstatsConfiguration {
@@ -43,7 +44,6 @@ struct FlowstatsConfiguration {
     std::string bpfFilter = "";
 
     std::map<std::string, uint16_t> domainToServerPort;
-    bool noCurses = false;
     bool perIpAggr = false;
 
     bool displayUnknownFqdn = false;
