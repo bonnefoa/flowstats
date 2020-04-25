@@ -23,7 +23,7 @@ void Collector::sendMetrics()
     }
 }
 
-void Collector::outputFlow(Flow* flow,
+auto Collector::outputFlow(Flow* flow,
     std::vector<std::string>& keyLines,
     std::vector<std::string>& valueLines, int duration,
     int position)
@@ -42,7 +42,7 @@ void Collector::outputFlow(Flow* flow,
     }
 }
 
-void Collector::fillOutputs(const std::vector<AggregatedPairPointer>& aggregatedPairs,
+auto Collector::fillOutputs(std::vector<AggregatedPairPointer>& aggregatedPairs,
     std::vector<std::string>& keyLines,
     std::vector<std::string>& valueLines, int duration)
 {
@@ -54,8 +54,8 @@ void Collector::fillOutputs(const std::vector<AggregatedPairPointer>& aggregated
     valueLines.resize(2);
 
     int i = 0;
-    for (auto& pair : aggregatedPairs) {
-        auto* flow = pair.second;
+    for (auto pair : aggregatedPairs) {
+        auto flow = pair.second;
         if (flow->fqdn.find(displayConf.filter) == std::string::npos) {
             continue;
         }
@@ -86,7 +86,7 @@ auto Collector::outputStatus(int duration) -> CollectorOutput
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     mergePercentiles();
-    const std::vector<AggregatedPairPointer> tempVector = getAggregatedPairs();
+    std::vector<AggregatedPairPointer> tempVector = getAggregatedPairs();
     fillOutputs(tempVector, keyLines, valueLines, duration);
     return CollectorOutput(toString(), keyLines, valueLines,
         keyHeaders, valueHeaders, duration);

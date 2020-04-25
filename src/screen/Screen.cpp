@@ -49,7 +49,7 @@ int lastKey = 0;
 std::array<CollectorProtocol, 3> protocols = { DNS, TCP, SSL };
 std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 
-void Screen::updateDisplay(int duration, bool updateOutput)
+auto Screen::updateDisplay(int duration, bool updateOutput) -> void
 {
     if (noCurses) {
         return;
@@ -75,12 +75,12 @@ void Screen::updateDisplay(int duration, bool updateOutput)
     refreshPads();
 }
 
-void Screen::updateValues()
+auto Screen::updateValues() -> void
 {
     werase(keyWin);
     werase(valueWin);
 
-    numberElements = collectorOutput.keys.size() / 2;
+    numberElements = int(collectorOutput.keys.size() / 2);
     for (int i = 0; i < collectorOutput.keys.size(); ++i) {
         int line = i / 2;
         if (line == selectedLine) {
@@ -102,7 +102,7 @@ void Screen::updateValues()
     }
 }
 
-void Screen::updateStatus(int duration)
+auto Screen::updateStatus(int duration) -> void
 {
     werase(statusWin);
     mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, last key {}, Filter {}, line {}\n", shouldFreeze, lastKey, displayConf.filter, selectedLine).c_str());
@@ -138,7 +138,7 @@ void Screen::updateStatus(int duration)
     waddstr(statusWin, "\n");
 }
 
-void Screen::updateHeaders()
+auto Screen::updateHeaders() -> void
 {
     werase(keyHeaderWin);
     werase(valueHeaderWin);
@@ -166,7 +166,7 @@ void Screen::updateHeaders()
     wattroff(valueHeaderWin, COLOR_PAIR(VALUE_HEADER_COLOR));
 }
 
-void Screen::updateMenu()
+auto Screen::updateMenu() -> void
 {
     werase(menuWin);
 
@@ -205,7 +205,7 @@ auto Screen::getActiveCollector() -> Collector*
     return nullptr;
 }
 
-Screen::Screen(std::atomic_bool& shouldStop, bool noCurses,
+Screen::Screen(std::atomic_bool* shouldStop, bool noCurses,
     FlowstatsConfiguration& conf, DisplayConfiguration& displayConf,
     std::vector<Collector*> collectors)
     : shouldStop(shouldStop)
@@ -245,7 +245,7 @@ Screen::Screen(std::atomic_bool& shouldStop, bool noCurses,
     activeCollector = getActiveCollector();
 }
 
-void Screen::refreshPads()
+auto Screen::refreshPads() -> void
 {
     wnoutrefresh(statusWin);
 
@@ -325,15 +325,15 @@ auto Screen::refreshableAction(int c) -> bool
     return false;
 }
 
-void Screen::displayLoop()
+auto Screen::displayLoop() -> void
 {
     int c;
-    while (shouldStop.load() == false) {
+    while (shouldStop->load() == false) {
 
         c = getch();
         lastKey = c;
         if (c == KEY_Q || c == ctrl('c')) {
-            shouldStop.store(true);
+            shouldStop->store(true);
             return;
         }
 
@@ -382,7 +382,7 @@ auto Screen::StartDisplay() -> int
     return 0;
 }
 
-void Screen::StopDisplay()
+auto Screen::StopDisplay() -> void
 {
     if (noCurses) {
         return;

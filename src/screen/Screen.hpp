@@ -8,7 +8,6 @@
 #include <menu.h>
 #include <mutex>
 #include <ncurses.h>
-#include <signal.h>
 #include <string>
 #include <thread>
 #include <unistd.h>
@@ -18,26 +17,26 @@ namespace flowstats {
 
 class Screen {
 public:
-    Screen(std::atomic_bool& shouldStop, bool noCurses,
+    Screen(std::atomic_bool* shouldStop, bool noCurses,
         FlowstatsConfiguration& conf, DisplayConfiguration& displayConf,
         std::vector<Collector*> collectors);
     virtual ~Screen();
 
-    int StartDisplay();
-    void StopDisplay();
-    std::string getCurrentChoice();
-    void updateDisplay(int duration, bool updateOutput);
+    auto StartDisplay() -> int;
+    auto StopDisplay() -> void;
+    auto getCurrentChoice() -> std::string;
+    auto updateDisplay(int duration, bool updateOutput) -> void;
 
 private:
-    void displayLoop();
-    void refreshPads();
-    Collector* getActiveCollector();
+    auto displayLoop() -> void;
+    auto refreshPads() -> void;
+    auto getActiveCollector() -> Collector*;
 
-    bool refreshableAction(int c);
-    void updateHeaders();
-    void updateValues();
-    void updateStatus(int duration);
-    void updateMenu();
+    auto refreshableAction(int c) -> bool;
+    auto updateHeaders() -> void;
+    auto updateValues() -> void;
+    auto updateStatus(int duration) -> void;
+    auto updateMenu() -> void;
 
     WINDOW* keyWin;
     WINDOW* valueWin;
@@ -54,7 +53,7 @@ private:
     int verticalScroll = 0;
 
     std::thread screenThread;
-    std::atomic_bool& shouldStop;
+    std::atomic_bool* shouldStop;
     bool shouldFreeze = false;
     bool noCurses;
     int lastDuration {};
@@ -68,4 +67,4 @@ private:
 
     std::mutex screenMutex;
 };
-}
+} // namespace flowstats

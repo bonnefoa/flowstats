@@ -8,30 +8,18 @@ namespace flowstats {
 class DnsFlow : public Flow {
 
 public:
-    std::string fqdn;
-    bool hasResponse;
-    bool isTcp;
-    bool truncated;
-    enum Tins::DNS::QueryType type;
-    uint16_t numberRecords;
-    uint8_t responseCode;
+    std::string fqdn = "";
+    bool hasResponse = false;
+    bool isTcp = false;
+    bool truncated = false;
+    enum Tins::DNS::QueryType type = Tins::DNS::A;
+    uint16_t numberRecords = 0;
+    uint8_t responseCode = 0;
 
-    timeval m_StartTimestamp;
-    timeval m_EndTimestamp;
+    timeval startTv = {};
+    timeval endTv = {};
 
-    DnsFlow()
-    {
-        fqdn = "";
-        hasResponse = false;
-        isTcp = false;
-        truncated = false;
-        type = Tins::DNS::A;
-        numberRecords = 0;
-        responseCode = 0;
-        m_StartTimestamp = { 0, 0 };
-        m_EndTimestamp = { 0, 0 };
-    }
-
+    DnsFlow() {}
     DnsFlow(const Tins::Packet& packet)
         : Flow(packet)
     {
@@ -39,5 +27,5 @@ public:
     }
 };
 
-std::string dnsTypeToString(Tins::DNS::QueryType queryType);
+auto dnsTypeToString(Tins::DNS::QueryType queryType) -> std::string;
 }

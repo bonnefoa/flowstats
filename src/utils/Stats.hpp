@@ -9,7 +9,7 @@ public:
     virtual ~Percentile() {};
 
     void addPoint(uint32_t point);
-    void addPoints(Percentile& perc);
+    void addPoints(const Percentile& perc);
     void merge();
     uint32_t getPercentile(float percentile);
     std::string getPercentileStr(float p);

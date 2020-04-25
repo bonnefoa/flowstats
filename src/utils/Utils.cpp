@@ -16,9 +16,9 @@ auto getTimevalDeltaMs(timeval start, timeval end) -> uint32_t
     return (end.tv_sec * 1000 + end.tv_usec / 1000) - (start.tv_sec * 1000 + start.tv_usec / 1000);
 }
 
-auto timevalInMs(timeval tv) -> uint64_t
+auto timevalInMs(timeval tv) -> uint32_t
 {
-    uint64_t ms = 1000 * tv.tv_sec + tv.tv_usec / 1000;
+    uint32_t ms = 1000 * tv.tv_sec + tv.tv_usec / 1000;
     return ms;
 }
 
@@ -102,16 +102,15 @@ auto resolveDns(const std::string& domain) -> std::vector<std::string>
         inet_ntop(res->ai_family, ptr, ip, 20);
         ips.emplace_back(ip);
         spdlog::debug("Resolved {} -> {}", domain, ip);
-        ips.emplace_back(ip);
         res = res->ai_next;
     }
     return ips;
 }
 
-static void resolveDomains(std::vector<std::string>& initialDomains,
-    std::map<uint32_t, std::string>& ipToFqdn)
+static void resolveDomains(const std::vector<std::string>& initialDomains,
+    std::map<uint32_t, std::string> ipToFqdn)
 {
-    for (auto& domain : initialDomains) {
+    for (const auto& domain : initialDomains) {
         std::vector<std::string> ips = resolveDns(domain);
         for (auto& ip : ips) {
             ipToFqdn[Tins::IPv4Address(ip)] = domain;
@@ -119,36 +118,38 @@ static void resolveDomains(std::vector<std::string>& initialDomains,
     }
 }
 
-auto getIpToFqdn() -> std::map<uint32_t, std::string>
+auto getIpToFqdn(const std::vector<std::string>& initialDomains) -> std::map<uint32_t, std::string>
 {
-    std::vector<std::string> empty;
-    return getIpToFqdn(empty);
+    std::map<uint32_t, std::string> ipToFqdn;
+    ipToFqdn[Tins::IPv4Address("127.0.0.1")] = "localhost";
+    resolveDomains(initialDomains, ipToFqdn);
+    return ipToFqdn;
 }
 
-auto stringsToInts(std::vector<std::string>& strInts) -> std::set<int>
+auto stringsToInts(const std::vector<std::string>& strInts) -> std::set<int>
 {
     std::set<int> res;
-    for (std::string& strInt : strInts) {
+    for (const auto& strInt : strInts) {
         res.insert(atoi(strInt.c_str()));
     }
     return res;
 }
 
-auto getDomainToServerPort(std::vector<std::string>& initialServerPorts) -> std::map<std::string, uint16_t>
+auto getDomainToServerPort(const std::vector<std::string>& initialServerPorts) -> std::map<std::string, uint16_t>
 {
     std::map<std::string, uint16_t> res;
-    for (std::string& serviceToPort : initialServerPorts) {
+    for (const auto& serviceToPort : initialServerPorts) {
         std::vector<std::string> pair = split(serviceToPort, ':');
         res[pair[0]] = std::stoi(pair[1]);
     }
     return res;
 }
 
-static auto prettyFormatGeneric(int num, std::string* suffixes, int numSuffixes) -> std::string
+static auto prettyFormatGeneric(int num, std::vector<std::string> suffixes) -> std::string
 {
     int unit = 0;
     double currentCount = num;
-    while (currentCount >= 1000 && unit < numSuffixes) {
+    while (currentCount >= 1000 && unit < suffixes.size()) {
         unit++;
         currentCount /= 1000;
     }
@@ -161,22 +162,22 @@ static auto prettyFormatGeneric(int num, std::string* suffixes, int numSuffixes)
 
 auto prettyFormatNumber(int num) -> std::string
 {
-    std::string suffixes[2] = { "", "K" };
-    return prettyFormatGeneric(num, suffixes, 2);
+    std::vector<std::string> suffixes = { "", "K" };
+    return prettyFormatGeneric(num, suffixes);
 }
 
 auto prettyFormatMs(int ms) -> std::string
 {
-    std::string suffixes[2] = { "ms", "s" };
-    return prettyFormatGeneric(ms, suffixes, 2);
+    std::vector<std::string> suffixes = { "ms", "s" };
+    return prettyFormatGeneric(ms, suffixes);
 }
 
 auto prettyFormatBytes(int bytes) -> std::string
 {
-    std::string suffixes[7] = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
+    std::vector<std::string> suffixes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
     int unit = 0;
     double currentCount = bytes;
-    while (currentCount >= 1024 && unit < 7) {
+    while (currentCount >= 1024 && unit < suffixes.size()) {
         unit++;
         currentCount /= 1024;
     }
@@ -191,14 +192,6 @@ auto packetToTimeval(const Tins::Packet& packet) -> timeval
 {
     auto ts = packet.timestamp();
     return { ts.seconds(), ts.microseconds() };
-}
-
-auto getIpToFqdn(std::vector<std::string>& initialDomains) -> std::map<uint32_t, std::string>
-{
-    std::map<uint32_t, std::string> ipToFqdn;
-    ipToFqdn[Tins::IPv4Address("127.0.0.1")] = "localhost";
-    resolveDomains(initialDomains, ipToFqdn);
-    return ipToFqdn;
 }
 
 auto getFlowFqdn(FlowstatsConfiguration& conf, uint32_t srvIp) -> std::optional<std::string>

@@ -14,7 +14,7 @@ public:
     auto processPacket(const Tins::Packet& packet) -> void override;
     auto resetMetrics() -> void override;
 
-    auto getAggregatedPairs() -> std::vector<AggregatedPairPointer> const override;
+    auto getAggregatedPairs() const -> std::vector<AggregatedPairPointer> override;
     auto advanceTick(timeval now) -> void override;
     auto getMetrics() -> std::vector<std::string> override;
     auto mergePercentiles() -> void override;

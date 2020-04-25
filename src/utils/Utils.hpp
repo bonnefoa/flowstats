@@ -2,6 +2,7 @@
 
 #include "Configuration.hpp"
 #include <cstdint>
+#include <ctime> // for time_t, timeval
 #include <iosfwd> // for size_t
 #include <ip.h>
 #include <ip_address.h>
@@ -12,7 +13,6 @@
 #include <set>
 #include <string>
 #include <tcp.h>
-#include <time.h> // for time_t, timeval
 #include <udp.h>
 #include <vector>
 
@@ -21,39 +21,37 @@
 
 namespace flowstats {
 
-uint32_t getTimevalDeltaMs(timeval start, timeval end);
-uint32_t getTimevalDeltaS(timeval start, timeval end);
-
-uint64_t timevalInMs(timeval tv);
+auto getTimevalDeltaMs(timeval start, timeval end) -> uint32_t;
+auto getTimevalDeltaS(timeval start, timeval end) -> uint32_t;
+auto timevalInMs(timeval tv) -> uint32_t;
 
 enum Direction {
     FROM_CLIENT,
     FROM_SERVER,
 };
 
-std::string directionToString(enum Direction direction);
-std::string directionToString(uint8_t direction);
-void clearScreen();
+auto directionToString(enum Direction direction) -> std::string;
+auto directionToString(uint8_t direction) -> std::string;
+auto clearScreen() -> void;
 
 time_t const maxTime = std::numeric_limits<time_t>::max();
 timeval const maxTimeval { maxTime, 0 };
 
-std::vector<std::string> split(const std::string& s, char delimiter);
-std::set<std::string> splitSet(const std::string& s, char delimiter);
-std::vector<std::string> resolveDns(const std::string& domain);
-std::set<int> stringsToInts(std::vector<std::string>& strInts);
+auto split(const std::string& s, char delimiter) -> std::vector<std::string>;
+auto splitSet(const std::string& s, char delimiter) -> std::set<std::string>;
+auto resolveDns(const std::string& domain) -> std::vector<std::string>;
+auto stringsToInts(const std::vector<std::string>& strInts) -> std::set<int>;
 
 template <std::size_t N>
-std::string fmtVector(const std::string& format, const std::vector<std::string>& v);
-std::string prettyFormatBytes(int bytes);
-std::string prettyFormatNumber(int num);
-std::string prettyFormatMs(int ms);
+auto fmtVector(const std::string& format, const std::vector<std::string>& v) -> std::string;
+auto prettyFormatBytes(int bytes) -> std::string;
+auto prettyFormatNumber(int num) -> std::string;
+auto prettyFormatMs(int ms) -> std::string;
 
-std::map<uint32_t, std::string> getIpToFqdn();
-std::map<uint32_t, std::string> getIpToFqdn(std::vector<std::string>& initialDomains);
-std::map<std::string, uint16_t> getDomainToServerPort(std::vector<std::string>& initialServerPorts);
+auto getIpToFqdn(const std::vector<std::string>& initialDomains) -> std::map<uint32_t, std::string>;
+auto getDomainToServerPort(const std::vector<std::string>& initialServerPorts) -> std::map<std::string, uint16_t>;
 
-std::optional<std::string> getFlowFqdn(FlowstatsConfiguration& conf, uint32_t srvIp);
+auto getFlowFqdn(FlowstatsConfiguration& conf, uint32_t srvIp) -> std::optional<std::string>;
 
 auto packetToTimeval(const Tins::Packet& packet) -> timeval;
-}
+} // namespace flowstats

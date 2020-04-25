@@ -32,7 +32,7 @@ void Flow::fillValues(std::map<std::string, std::string>& values,
     values["dir"] = directionToString(static_cast<Direction>(direction));
 }
 
-void Flow::addFlow(Flow* flow)
+auto Flow::addFlow(const Flow* flow) -> void
 {
     packets[0] += flow->packets[0];
     packets[1] += flow->packets[1];
@@ -45,32 +45,32 @@ void Flow::addFlow(Flow* flow)
     totalBytes[1] += flow->totalBytes[1];
 }
 
-void Flow::addAggregatedFlow(Flow* flow)
+auto Flow::addAggregatedFlow(const Flow* flow) -> void
 {
     addFlow(flow);
 }
 
-auto Flow::getSrvPort() -> uint16_t
+auto Flow::getSrvPort() const -> uint16_t
 {
     return flowId.ports[srvPos];
 }
 
-auto Flow::getCltIp() -> Tins::IPv4Address
+auto Flow::getCltIp() const -> Tins::IPv4Address
 {
     return flowId.ips[!srvPos];
 }
 
-auto Flow::getSrvIp() -> Tins::IPv4Address
+auto Flow::getSrvIp() const -> Tins::IPv4Address
 {
     return flowId.ips[srvPos];
 }
 
-auto Flow::getCltIpInt() -> IPv4
+auto Flow::getCltIpInt() const -> IPv4
 {
     return flowId.ips[!srvPos];
 }
 
-auto Flow::getSrvIpInt() -> IPv4
+auto Flow::getSrvIpInt() const -> IPv4
 {
     return flowId.ips[srvPos];
 }

@@ -32,7 +32,7 @@ auto SslStatsCollector::lookupSslFlow(
     FlowId& flowId) -> SslFlow&
 {
     //uint32_t hashVal = hash5Tuple(ipv4Layer, tcpLayer);
-    //SslFlow& sslFlow = hashToSslFlow[hashVal];
+    SslFlow& sslFlow = hashToSslFlow[0];
     //if (sslFlow.flowId.ports[0] == 0) {
     //spdlog::debug("Create ssl flow {}", flowId.toString());
     //sslFlow.flowId = flowId;
@@ -42,6 +42,8 @@ auto SslStatsCollector::lookupSslFlow(
     //}
     //sslFlow.aggregatedFlows = lookupAggregatedFlows(tcpLayer, sslFlow, flowId, fqdn->data());
     //}
+
+    return sslFlow;
 }
 
 auto SslStatsCollector::lookupAggregatedFlows(
@@ -91,7 +93,7 @@ auto SslStatsCollector::processPacket(const Tins::Packet& packet) -> void
     //sslFlow.updateFlow(packet, flowId.direction, sslLayer);
 }
 
-void SslStatsCollector::resetMetrics()
+auto SslStatsCollector::resetMetrics() -> void
 {
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     for (auto& pair : aggregatedMap) {
@@ -99,14 +101,14 @@ void SslStatsCollector::resetMetrics()
     }
 }
 
-void SslStatsCollector::mergePercentiles()
+auto SslStatsCollector::mergePercentiles() -> void
 {
     for (auto& i : aggregatedMap) {
         i.second->connections.merge();
     }
 }
 
-auto SslStatsCollector::getAggregatedPairs() -> const std::vector<AggregatedPairPointer>
+auto SslStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPairPointer>
 {
     std::vector<AggregatedPairPointer> tempVector;
 

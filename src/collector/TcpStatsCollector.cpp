@@ -73,7 +73,7 @@ auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcpFlow, const FlowId& fl
     return aggregatedFlows;
 }
 
-void TcpStatsCollector::processPacket(const Tins::Packet& packet)
+auto TcpStatsCollector::processPacket(const Tins::Packet& packet) -> void
 {
     advanceTick(packetToTimeval(packet));
     auto pdu = packet.pdu();
@@ -100,7 +100,7 @@ void TcpStatsCollector::processPacket(const Tins::Packet& packet)
     }
 }
 
-void TcpStatsCollector::advanceTick(timeval now)
+auto TcpStatsCollector::advanceTick(timeval now) -> void
 {
     if (now.tv_sec <= lastTick) {
         return;
@@ -137,7 +137,7 @@ void TcpStatsCollector::advanceTick(timeval now)
     }
 }
 
-void TcpStatsCollector::resetMetrics()
+auto TcpStatsCollector::resetMetrics() -> void
 {
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     for (auto& pair : aggregatedMap) {
@@ -172,7 +172,7 @@ auto TcpStatsCollector::getMetrics() -> std::vector<std::string>
     return lst;
 }
 
-void TcpStatsCollector::mergePercentiles()
+auto TcpStatsCollector::mergePercentiles() -> void
 {
     for (auto& i : aggregatedMap) {
         i.second->srts.merge();
@@ -205,7 +205,7 @@ auto sortAggregatedTcpByRequestRate(const AggregatedPairPointer& left,
     return rightTcp->srts.getCount() < leftTcp->srts.getCount();
 }
 
-auto TcpStatsCollector::getAggregatedPairs() -> const std::vector<AggregatedPairPointer>
+auto TcpStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPairPointer>
 {
     std::vector<AggregatedPairPointer> tempVector = std::vector<AggregatedPairPointer>(aggregatedMap.begin(), aggregatedMap.end());
     spdlog::info("Got {} tcp flows", tempVector.size());

@@ -90,11 +90,11 @@ void AggregatedDnsFlow::fillValues(std::map<std::string, std::string>& values,
     }
 }
 
-void AggregatedDnsFlow::addFlow(Flow* flow)
+auto AggregatedDnsFlow::addFlow(const Flow* flow) -> void
 {
     Flow::addFlow(flow);
 
-    auto* dnsFlow = dynamic_cast<DnsFlow*>(flow);
+    auto dnsFlow = dynamic_cast<const DnsFlow*>(flow);
     queries++;
     truncated += dnsFlow->truncated;
     records += dnsFlow->numberRecords;
@@ -108,26 +108,25 @@ void AggregatedDnsFlow::addFlow(Flow* flow)
     if (dnsFlow->hasResponse) {
         totalTruncated += dnsFlow->truncated;
         totalRecords += dnsFlow->numberRecords;
-        srts.addPoint(getTimevalDeltaMs(dnsFlow->m_StartTimestamp,
-            dnsFlow->m_EndTimestamp));
+        srts.addPoint(getTimevalDeltaMs(dnsFlow->startTv,
+            dnsFlow->endTv));
         totalSrt++;
         numSrt++;
     }
 }
 
-void AggregatedDnsFlow::addAggregatedFlow(Flow* flow)
+auto AggregatedDnsFlow::addAggregatedFlow(const Flow* flow) -> void
 {
     Flow::addFlow(flow);
 
-    auto* dnsFlow = dynamic_cast<AggregatedDnsFlow*>(flow);
+    auto* dnsFlow = dynamic_cast<const AggregatedDnsFlow*>(flow);
     queries += dnsFlow->queries;
     truncated += dnsFlow->truncated;
     records += dnsFlow->records;
     timeouts += !dnsFlow->timeouts;
 
-    std::map<int, int>::iterator it;
-    for (it = dnsFlow->sourceIps.begin(); it != dnsFlow->sourceIps.end(); it++) {
-        sourceIps[it->first] += it->second;
+    for (auto it : dnsFlow->sourceIps) {
+        sourceIps[it.first] += it.second;
     }
 
     totalQueries += dnsFlow->totalQueries;

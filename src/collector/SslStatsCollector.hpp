@@ -23,7 +23,7 @@ public:
     auto resetMetrics() -> void override;
 
     auto getProtocol() -> CollectorProtocol override { return SSL; };
-    auto getAggregatedPairs() -> std::vector<AggregatedPairPointer> const override;
+    auto getAggregatedPairs() const -> std::vector<AggregatedPairPointer> override;
     auto toString() -> std::string override { return "SslStatsCollector"; }
 
     std::map<AggregatedTcpKey, AggregatedSslFlow*> getAggregatedMap() { return aggregatedMap; }

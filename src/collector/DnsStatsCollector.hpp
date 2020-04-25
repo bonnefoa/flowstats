@@ -11,21 +11,18 @@ namespace flowstats {
 
 class DnsStatsCollector : public Collector {
 public:
-    DnsStatsCollector(FlowstatsConfiguration& conf,
-        DisplayConfiguration& displayConf);
+    DnsStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf);
     ~DnsStatsCollector();
 
     auto processPacket(const Tins::Packet& packet) -> void override;
     auto getMetrics() -> std::vector<std::string> override;
-    auto toString() -> std::string override { return "DnsStatsCollector"; }
-    std::map<AggregatedDnsKey, AggregatedDnsFlow*> getAggregatedFlow()
-    {
-        return aggregatedDnsFlows;
-    }
     auto advanceTick(timeval now) -> void override;
     auto resetMetrics() -> void override;
-    auto getAggregatedPairs() -> std::vector<AggregatedPairPointer> const override;
+    auto getAggregatedPairs() const -> std::vector<AggregatedPairPointer> override;
     auto mergePercentiles() -> void override;
+
+    auto toString() -> std::string override { return "DnsStatsCollector"; }
+    auto getAggregatedFlow() { return aggregatedDnsFlows; }
     auto getProtocol() -> CollectorProtocol override { return DNS; };
 
 private:
@@ -33,7 +30,7 @@ private:
     auto newDnsResponse(const Tins::Packet& packet, const Tins::DNS& dns, DnsFlow& flow) -> void;
     auto updateIpToFqdn(const Tins::DNS& dns, const std::string& fqdn) -> void;
 
-    void addFlowToAggregation(DnsFlow& flow);
+    auto addFlowToAggregation(const DnsFlow& flow) -> void;
     std::map<uint16_t, DnsFlow> transactionIdToDnsFlow;
     std::vector<DnsFlow> dnsFlows;
     std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedDnsFlows;

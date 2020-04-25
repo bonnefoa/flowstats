@@ -14,7 +14,7 @@ void Percentile::addPoint(uint32_t point)
     return points.push_back(point);
 }
 
-void Percentile::addPoints(Percentile& perc)
+void Percentile::addPoints(const Percentile& perc)
 {
     points.insert(points.end(), perc.points.begin(), perc.points.end());
 }
@@ -28,7 +28,7 @@ auto Percentile::getPercentile(float p) -> uint32_t
 {
     if (points.size() == 0) {
         return 0;
-}
+    }
     if (p == 0) {
         return points[0];
     }
@@ -39,7 +39,7 @@ auto Percentile::getPercentileStr(float p) -> std::string
 {
     if (points.size() == 0) {
         return "-";
-}
+    }
     uint32_t res = getPercentile(p);
     return fmt::format("{}ms", res);
 }
@@ -48,4 +48,4 @@ void Percentile::reset()
 {
     points.clear();
 }
-}  // namespace flowstats
+} // namespace flowstats

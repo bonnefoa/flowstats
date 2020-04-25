@@ -150,6 +150,7 @@ auto main(int argc, char* argv[]) -> int
     collectors.push_back(
         new TcpStatsCollector(conf, displayConf));
 
+    std::atomic_bool shouldStop = false;
     if (!localhostIp.empty()) {
         conf.ipToFqdn[Tins::IPv4Address(localhostIp)] = "localhost";
     }
@@ -160,8 +161,7 @@ auto main(int argc, char* argv[]) -> int
         for (auto& ip : localIps) {
             conf.ipToFqdn[ip] = "localhost";
         }
-        std::atomic_bool shouldStop = false;
-        Screen screen(shouldStop, conf.noCurses, conf,
+        Screen screen(&shouldStop, conf.noCurses, conf,
             displayConf, collectors);
         screen.StartDisplay();
         auto dev = getLiveDevice(conf);

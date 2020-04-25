@@ -29,36 +29,32 @@ public:
         , displayConf(displayConf) {};
     virtual ~Collector() = default;
 
-    virtual auto processPacket(const Tins::Packet& pdu) -> void
-        = 0;
-    virtual void advanceTick(timeval now) {};
-    virtual void resetMetrics() {};
+    virtual auto processPacket(const Tins::Packet& pdu) -> void = 0;
+    virtual auto advanceTick(timeval now) -> void {};
+    virtual auto resetMetrics() -> void {};
     virtual auto getMetrics() -> std::vector<std::string>
     {
         std::vector<std::string> empty;
         return empty;
     };
-    void sendMetrics();
-    virtual void mergePercentiles() {};
+
+    auto sendMetrics() -> void;
+    virtual auto mergePercentiles() -> void {};
 
     virtual auto toString() -> std::string = 0;
     virtual auto getProtocol() -> CollectorProtocol = 0;
-    auto getDisplayPairs() -> std::vector<DisplayPair>&
-    {
-        return displayPairs;
-    };
 
+    auto getDisplayPairs() { return displayPairs; };
     auto outputStatus(int duration) -> CollectorOutput;
     auto updateDisplayType(int displayIndex) -> void;
 
 protected:
-    virtual auto getAggregatedPairs() -> std::vector<AggregatedPairPointer> const { return {}; };
-
-    void fillOutputs(const std::vector<AggregatedPairPointer>& aggregatedPairs,
+    virtual auto getAggregatedPairs() const -> std::vector<AggregatedPairPointer> { return {}; };
+    auto fillOutputs(std::vector<AggregatedPairPointer>& aggregatedPairs,
         std::vector<std::string>& keyLines,
         std::vector<std::string>& valueLines, int duration);
 
-    void outputFlow(Flow* flow,
+    auto outputFlow(Flow* flow,
         std::vector<std::string>& keyLines,
         std::vector<std::string>& valueLines, int duration,
         int position);
@@ -66,7 +62,7 @@ protected:
     virtual FlowFormatter getFlowFormatter() { return flowFormatter; };
     FlowFormatter flowFormatter;
 
-    virtual std::mutex* getDataMutex() { return &dataMutex; };
+    auto getDataMutex() -> std::mutex* { return &dataMutex; };
 
     FlowstatsConfiguration& conf;
     DisplayConfiguration& displayConf;

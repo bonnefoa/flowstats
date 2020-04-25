@@ -1,7 +1,6 @@
 #include "TcpFlow.hpp"
 #include "Utils.hpp"
 #include <spdlog/spdlog.h>
-#include <string.h>
 
 namespace flowstats {
 
@@ -16,8 +15,8 @@ TcpFlow::TcpFlow(const Tins::IP& ip, const Tins::TCP& tcp, uint32_t flowHash)
 {
 }
 
-void TcpFlow::detectServer(const Tins::TCP& tcp, Direction direction,
-    std::map<uint16_t, int>& srvPortsCounter)
+auto TcpFlow::detectServer(const Tins::TCP& tcp, Direction direction,
+    std::map<uint16_t, int>& srvPortsCounter) -> void
 {
     auto const flags = tcp.flags();
     if (flags & Tins::TCP::SYN) {
@@ -48,7 +47,7 @@ void TcpFlow::detectServer(const Tins::TCP& tcp, Direction direction,
     spdlog::debug("Server port detected: {}", flowId.ports[srvPos]);
 }
 
-void TcpFlow::timeoutFlow()
+auto TcpFlow::timeoutFlow() -> void
 {
     if (opening) {
         for (auto& subflow : aggregatedFlows) {
@@ -60,7 +59,7 @@ void TcpFlow::timeoutFlow()
     }
 }
 
-void TcpFlow::closeConnection()
+auto TcpFlow::closeConnection() -> void
 {
     if (opened) {
         spdlog::debug("Closing connection {}", flowId.toString());
@@ -94,9 +93,9 @@ auto TcpFlow::getTcpPayloadSize(const Tins::PDU* packet, const Tins::IP& ip, con
     return ip.advertised_size() - ip.header_size() - tcp.header_size();
 }
 
-void TcpFlow::updateFlow(const Tins::Packet& packet, Direction direction,
+auto TcpFlow::updateFlow(const Tins::Packet& packet, Direction direction,
     const Tins::IP& ip,
-    const Tins::TCP& tcp)
+    const Tins::TCP& tcp) -> void
 {
     auto const flags = tcp.flags();
     timeval tv = packetToTimeval(packet);
