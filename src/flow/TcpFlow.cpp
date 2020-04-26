@@ -1,4 +1,5 @@
 #include "TcpFlow.hpp"
+#include "PduUtils.hpp"
 #include "Utils.hpp"
 #include <spdlog/spdlog.h>
 
@@ -9,9 +10,8 @@ TcpFlow::TcpFlow()
 {
 }
 
-TcpFlow::TcpFlow(const Tins::IP& ip, const Tins::TCP& tcp, uint32_t flowHash)
+TcpFlow::TcpFlow(const Tins::IP& ip, const Tins::TCP& tcp)
     : Flow(ip, tcp)
-    , flowHash(flowHash)
 {
 }
 
@@ -88,11 +88,6 @@ auto TcpFlow::nextSeqnum(const Tins::TCP& tcp, int tcpPayloadSize) -> uint32_t
     return tcp.seq() + tcpPayloadSize + tcp.has_flags(Tins::TCP::SYN) + tcp.has_flags(Tins::TCP::FIN);
 }
 
-auto TcpFlow::getTcpPayloadSize(const Tins::PDU* packet, const Tins::IP& ip, const Tins::TCP& tcp) -> int
-{
-    return ip.advertised_size() - ip.header_size() - tcp.header_size();
-}
-
 auto TcpFlow::updateFlow(const Tins::Packet& packet, Direction direction,
     const Tins::IP& ip,
     const Tins::TCP& tcp) -> void
@@ -100,8 +95,7 @@ auto TcpFlow::updateFlow(const Tins::Packet& packet, Direction direction,
     auto const flags = tcp.flags();
     timeval tv = packetToTimeval(packet);
 
-    auto pdu = packet.pdu();
-    int tcpPayloadSize = getTcpPayloadSize(pdu, ip, tcp);
+    int tcpPayloadSize = getTcpPayloadSize(ip, tcp);
     lastPacketTime[direction] = tv;
     uint32_t nextSeq = std::max(seqNum[direction], nextSeqnum(tcp, tcpPayloadSize));
     spdlog::debug("Update flow {}, nextSeq {}, ts {}ms, direction {}, tcp {}, payload {}", flowId.toString(), nextSeq,

@@ -1,5 +1,7 @@
 #include "SslStatsCollector.hpp"
+#include "SslProto.hpp"
 #include <fmt/format.h>
+#include <rawpdu.h>
 #include <spdlog/spdlog.h>
 
 namespace flowstats {
@@ -27,27 +29,29 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
 };
 
 auto SslStatsCollector::lookupSslFlow(
-    const Tins::IP& ipv4Layer,
-    const Tins::TCP& tcpLayer,
+    const Tins::IP& ip,
+    const Tins::TCP& tcp,
     FlowId& flowId) -> SslFlow&
 {
-    //uint32_t hashVal = hash5Tuple(ipv4Layer, tcpLayer);
-    SslFlow& sslFlow = hashToSslFlow[0];
-    //if (sslFlow.flowId.ports[0] == 0) {
-    //spdlog::debug("Create ssl flow {}", flowId.toString());
-    //sslFlow.flowId = flowId;
-    //std::optional<std::string> fqdn = getFlowFqdn(conf, sslFlow.getSrvIpInt());
-    //if (!fqdn.has_value()) {
-    //return sslFlow;
-    //}
-    //sslFlow.aggregatedFlows = lookupAggregatedFlows(tcpLayer, sslFlow, flowId, fqdn->data());
-    //}
+    std::hash<FlowId> hash_fn;
+    size_t flowHash = hash_fn(flowId);
+
+    SslFlow& sslFlow = hashToSslFlow[flowHash];
+    if (sslFlow.flowId.ports[0] == 0) {
+        spdlog::debug("Create ssl flow {}", flowId.toString());
+        sslFlow.flowId = flowId;
+        std::optional<std::string> fqdn = getFlowFqdn(conf, sslFlow.getSrvIpInt());
+        if (!fqdn.has_value()) {
+            return sslFlow;
+        }
+        sslFlow.aggregatedFlows = lookupAggregatedFlows(tcp, sslFlow, flowId, fqdn->data());
+    }
 
     return sslFlow;
 }
 
 auto SslStatsCollector::lookupAggregatedFlows(
-    const Tins::TCP& /*tcpLayer*/, SslFlow& sslFlow, FlowId& flowId,
+    const Tins::TCP& /*tcp*/, SslFlow& sslFlow, FlowId& flowId,
     const std::string& fqdn) -> std::vector<AggregatedSslFlow*>
 {
     std::vector<AggregatedSslFlow*> subflows;
@@ -72,25 +76,28 @@ auto SslStatsCollector::lookupAggregatedFlows(
 
 auto SslStatsCollector::processPacket(const Tins::Packet& packet) -> void
 {
-    //advanceTick(packet.getRawPacket()->getPacketTimeStamp());
-    //if (!packet.isPacketOfType(Tins::TCP) || packet.isPacketOfType(Tins::IPv6) || !packet.isPacketOfType(Tins::SSL)) {
-    //return;
-    //}
+    timeval pktTs = packetToTimeval(packet);
+    advanceTick(pktTs);
+    auto pdu = packet.pdu();
+    auto ip = pdu->rfind_pdu<Tins::IP>();
+    auto tcp = ip.rfind_pdu<Tins::TCP>();
 
-    //auto* sslLayer = packet.getLayerOfType<Tins::SSLLayer>(true);
-    //auto* tcpLayer = packet.getPrevLayerOfType<Tins::TCP>(sslLayer);
-    //auto* ipv4Layer = packet.getPrevLayerOfType<Tins::IP>(tcpLayer);
+    auto rawData = tcp.rfind_pdu<Tins::RawPDU>();
+    auto payload = rawData.payload();
+    auto cursor = Cursor(payload);
+    if (!isValidSsl(&cursor)) {
+        return;
+    }
 
-    //FlowId flowId(ipv4Layer, tcpLayer);
-    //SslFlow& sslFlow = lookupSslFlow(ipv4Layer, tcpLayer, flowId);
-    //sslFlow.addPacket(packet, flowId.direction);
-    //for (auto& subflow : sslFlow.aggregatedFlows) {
-    //subflow->addPacket(packet, flowId.direction);
-    //}
+    FlowId flowId(ip, tcp);
+    SslFlow& sslFlow = lookupSslFlow(ip, tcp, flowId);
+    sslFlow.addPacket(packet, flowId.direction);
+    for (auto& subflow : sslFlow.aggregatedFlows) {
+        subflow->addPacket(packet, flowId.direction);
+    }
 
-    //const std::lock_guard<std::mutex> lock(*getDataMutex());
-
-    //sslFlow.updateFlow(packet, flowId.direction, sslLayer);
+    const std::lock_guard<std::mutex> lock(*getDataMutex());
+    sslFlow.updateFlow(packet, flowId.direction, ip, tcp);
 }
 
 auto SslStatsCollector::resetMetrics() -> void

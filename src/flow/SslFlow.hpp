@@ -2,24 +2,28 @@
 
 #include "AggregatedSslFlow.hpp"
 #include "Flow.hpp"
+#include "PduUtils.hpp"
 #include "Stats.hpp"
 
 namespace flowstats {
 
 class SslFlow : public Flow {
 public:
+    SslFlow();
+    SslFlow(const Tins::IP& ip, const Tins::TCP& tcp);
+
     std::string domain;
 
-    int tickets[2] = { 0, 0 };
-    timeval startHandshake = { 0, 0 };
+    timeval startHandshake = {};
+    bool connectionEstablished = false;
 
-    void updateFlow(const Tins::Packet* packet, Direction direction,
+    void updateFlow(const Tins::Packet& packet, Direction direction,
+        const Tins::IP& ip,
         const Tins::TCP& sslLayer);
     std::vector<AggregatedSslFlow*> aggregatedFlows;
 
-    //private:
+private:
     //std::string getDomain(Tins::SSLClientHelloMessage* clientHelloMessage);
-    //void processHandshake(Tins::Packet* const packet, Tins::SSLLayer* sslLayer,
-    //Direction direction);
+    void processHandshake(const Tins::Packet& packet, Cursor* cursor);
 };
-}
+} // namespace flowstats

@@ -10,7 +10,7 @@ class TcpFlow : public Flow {
 
 public:
     TcpFlow();
-    TcpFlow(const Tins::IP& ip, const Tins::TCP& tcp, uint32_t flowHash);
+    TcpFlow(const Tins::IP& ip, const Tins::TCP& tcp);
 
     auto updateFlow(const Tins::Packet& packet, Direction direction,
         const Tins::IP& ip,
@@ -19,7 +19,6 @@ public:
     std::array<uint32_t, 2> seqNum = {};
     std::array<uint32_t, 2> finSeqnum = {};
     std::array<bool, 2> finAcked = {};
-    uint32_t flowHash = 0;
 
     std::array<bool, 2> synAcked = {};
     std::array<bool, 2> hadPacket = {};
@@ -50,6 +49,5 @@ private:
     std::vector<AggregatedTcpFlow*> aggregatedFlows;
     auto tcpToString(const Tins::TCP& hdr) -> std::string;
     auto nextSeqnum(const Tins::TCP& tcp, int payloadSize) -> uint32_t;
-    auto getTcpPayloadSize(const Tins::PDU* pdu, const Tins::IP& ip, const Tins::TCP& tcp) -> int;
 };
 }

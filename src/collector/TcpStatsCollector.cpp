@@ -35,14 +35,14 @@ auto TcpStatsCollector::lookupTcpFlow(
     std::hash<FlowId> hash_fn;
     size_t flowHash = hash_fn(flowId);
     TcpFlow& tcpFlow = hashToTcpFlow[flowHash];
-    if (tcpFlow.flowHash == 0) {
-        tcpFlow = TcpFlow(ip, tcp, flowHash);
+    if (tcpFlow.flowId.ports[0] == 0) {
+        tcpFlow = TcpFlow(ip, tcp);
         tcpFlow.detectServer(tcp, flowId.direction, srvPortsCounter);
         std::optional<std::string> fqdn = getFlowFqdn(conf, tcpFlow.getSrvIp());
         if (!fqdn.has_value()) {
             return tcpFlow;
         }
-        spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), tcpFlow.flowHash, fqdn->data());
+        spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), flowHash, fqdn->data());
         tcpFlow.fqdn = fqdn->data();
         tcpFlow.setAggregatedFlows(lookupAggregatedFlows(tcpFlow, flowId));
     }

@@ -62,6 +62,10 @@ auto DnsStatsCollector::newDnsQuery(const Tins::Packet& packet, const Tins::DNS&
     flow.addPacket(packet, FROM_CLIENT);
     flow.startTv = packetToTimeval(packet);
     auto queries = dns.queries();
+    if (queries.size() == 0) {
+        spdlog::debug("No queries in {}", dns.id());
+        return;
+    }
     auto firstQuery = queries.at(0);
     flow.type = firstQuery.query_type();
     flow.fqdn = firstQuery.dname();
