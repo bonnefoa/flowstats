@@ -44,14 +44,13 @@ auto SslStatsCollector::lookupSslFlow(
         if (!fqdn.has_value()) {
             return sslFlow;
         }
-        sslFlow.aggregatedFlows = lookupAggregatedFlows(tcp, sslFlow, flowId, fqdn->data());
+        sslFlow.aggregatedFlows = lookupAggregatedFlows(sslFlow, flowId, fqdn->data());
     }
 
     return sslFlow;
 }
 
-auto SslStatsCollector::lookupAggregatedFlows(
-    const Tins::TCP& /*tcp*/, SslFlow& sslFlow, FlowId& flowId,
+auto SslStatsCollector::lookupAggregatedFlows(SslFlow& sslFlow, FlowId& flowId,
     const std::string& fqdn) -> std::vector<AggregatedSslFlow*>
 {
     std::vector<AggregatedSslFlow*> subflows;
@@ -85,9 +84,7 @@ auto SslStatsCollector::processPacket(const Tins::Packet& packet) -> void
     auto rawData = tcp.rfind_pdu<Tins::RawPDU>();
     auto payload = rawData.payload();
     auto cursor = Cursor(payload);
-    if (!isValidSsl(&cursor)) {
-        return;
-    }
+    checkValidSsl(&cursor);
 
     FlowId flowId(ip, tcp);
     SslFlow& sslFlow = lookupSslFlow(ip, tcp, flowId);

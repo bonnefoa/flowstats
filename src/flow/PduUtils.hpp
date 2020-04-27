@@ -26,7 +26,9 @@ public:
     auto readUint16() -> uint16_t;
     auto readUint24() -> uint32_t;
     auto readUint32() -> uint32_t;
+    auto readString(int n) -> std::string;
 
+    auto skip(int n) -> void;
     auto skipUint8() -> void;
     auto skipUint16() -> void;
     auto skipUint24() -> void;

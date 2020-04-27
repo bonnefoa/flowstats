@@ -12,8 +12,7 @@ public:
     SslFlow();
     SslFlow(const Tins::IP& ip, const Tins::TCP& tcp);
 
-    std::string domain;
-
+    std::string domain = "";
     timeval startHandshake = {};
     bool connectionEstablished = false;
 

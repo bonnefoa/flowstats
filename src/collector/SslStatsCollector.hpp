@@ -35,8 +35,7 @@ private:
     std::map<AggregatedTcpKey, AggregatedSslFlow*> aggregatedMap;
     auto lookupSslFlow(const Tins::IP& ipv4Layer,
         const Tins::TCP& tcp, FlowId& flowId) -> SslFlow&;
-    auto lookupAggregatedFlows(const Tins::TCP& tcp,
-        SslFlow& sslFlow, FlowId& flowId,
+    auto lookupAggregatedFlows(SslFlow& sslFlow, FlowId& flowId,
         const std::string& fqdn) -> std::vector<AggregatedSslFlow*>;
 };
 }

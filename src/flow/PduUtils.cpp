@@ -45,28 +45,41 @@ auto Cursor::readUint32() -> uint32_t
     return res;
 }
 
+auto Cursor::readString(int n) -> std::string
+{
+    checkSize(n);
+    std::string res(n, 'x');
+    for (int i = 0; i < n; ++i) {
+        res[i] = payload[index + i];
+    }
+    index += n;
+    return res;
+}
+
+auto Cursor::skip(int n) -> void
+{
+    checkSize(n);
+    index += n;
+}
+
 auto Cursor::skipUint8() -> void
 {
-    checkSize(1);
-    index += 1;
+    skip(1);
 }
 
 auto Cursor::skipUint16() -> void
 {
-    checkSize(2);
-    index += 2;
+    skip(2);
 }
 
 auto Cursor::skipUint24() -> void
 {
-    checkSize(3);
-    index += 3;
+    skip(3);
 }
 
 auto Cursor::skipUint32() -> void
 {
-    checkSize(4);
-    index += 4;
+    skip(4);
 }
 
 } // flowstats

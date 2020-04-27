@@ -20,7 +20,7 @@ TEST_CASE("Ssl connection time", "[ssl]")
     REQUIRE(ipFlows.size() == 1);
     AggregatedTcpKey key("google.com", 0, 443);
     AggregatedSslFlow* flow = ipFlows[key];
-    //REQUIRE(flow->domain == "google.com");
+    REQUIRE(flow->domain == "google.com");
     REQUIRE(flow->packets[FROM_CLIENT] == 8);
     REQUIRE(flow->packets[FROM_SERVER] == 7);
     REQUIRE(flow->connections.getCount() == 1);
