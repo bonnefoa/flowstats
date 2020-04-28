@@ -5,7 +5,7 @@
 
 using namespace flowstats;
 
-int readPcap(const FlowstatsConfiguration& conf, Collector& collector,
+int readPcap(FlowstatsConfiguration const& conf, Collector& collector,
     bool advanceTick = true);
 
 class Tester {
@@ -16,9 +16,9 @@ public:
     auto readPcap(std::string pcap, std::string bpf = "",
         bool advanceTick = true) -> int;
 
-    auto getDnsStatsCollector() const -> const DnsStatsCollector& { return dnsStatsCollector; }
-    auto getTcpStatsCollector() const -> const TcpStatsCollector& { return tcpStatsCollector; }
-    auto getSslStatsCollector() const -> const SslStatsCollector& { return sslStatsCollector; }
+    auto getDnsStatsCollector() const -> DnsStatsCollector const& { return dnsStatsCollector; }
+    auto getTcpStatsCollector() const -> TcpStatsCollector const& { return tcpStatsCollector; }
+    auto getSslStatsCollector() const -> SslStatsCollector const& { return sslStatsCollector; }
     auto getFlowstatsConfiguration() -> FlowstatsConfiguration& { return conf; }
 
 private:

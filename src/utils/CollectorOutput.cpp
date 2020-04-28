@@ -3,7 +3,7 @@
 
 namespace flowstats {
 
-void CollectorOutput::print()
+auto CollectorOutput::print() -> void
 {
     for (int i = 0; i < keys.size(); ++i) {
         fmt::print("{} {}\n", keys[i], values[i]);

@@ -34,7 +34,7 @@ struct AggregatedDnsFlow : Flow {
         fqdn = "Total";
     };
 
-    AggregatedDnsFlow(const FlowId& flowId, std::string fqdn,
+    AggregatedDnsFlow(FlowId const& flowId, std::string fqdn,
         enum Tins::DNS::QueryType dnsType)
         : Flow(flowId, fqdn)
         , dnsType(dnsType) {};
@@ -43,8 +43,8 @@ struct AggregatedDnsFlow : Flow {
     auto operator<(AggregatedDnsFlow const& b) { return queries < b.queries; }
     auto fillValues(std::map<std::string, std::string>& values,
         Direction direction, int duration) -> void override;
-    auto addFlow(const Flow* flow) -> void override;
-    auto addAggregatedFlow(const Flow* flow) -> void override;
+    auto addFlow(Flow const* flow) -> void override;
+    auto addAggregatedFlow(Flow const* flow) -> void override;
 
 private:
     std::vector<std::pair<int, int>> getTopClientIps();
@@ -66,4 +66,4 @@ private:
     Tins::DNS::QueryType dnsType;
     bool isTcp;
 };
-}
+} // namespace flowstats

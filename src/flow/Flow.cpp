@@ -4,7 +4,7 @@
 
 namespace flowstats {
 
-void Flow::addPacket(const Tins::Packet& packet, const Direction direction)
+void Flow::addPacket(Tins::Packet const& packet, Direction const direction)
 {
     packets[direction]++;
     bytes[direction] += packet.pdu()->advertised_size();
@@ -32,7 +32,7 @@ void Flow::fillValues(std::map<std::string, std::string>& values,
     values["dir"] = directionToString(static_cast<Direction>(direction));
 }
 
-auto Flow::addFlow(const Flow* flow) -> void
+auto Flow::addFlow(Flow const* flow) -> void
 {
     packets[0] += flow->packets[0];
     packets[1] += flow->packets[1];
@@ -45,7 +45,7 @@ auto Flow::addFlow(const Flow* flow) -> void
     totalBytes[1] += flow->totalBytes[1];
 }
 
-auto Flow::addAggregatedFlow(const Flow* flow) -> void
+auto Flow::addAggregatedFlow(Flow const* flow) -> void
 {
     addFlow(flow);
 }

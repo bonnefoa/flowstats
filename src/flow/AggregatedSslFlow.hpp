@@ -10,18 +10,17 @@ struct AggregatedSslFlow : Flow {
     int numConnections = 0;
     int totalConnections = 0;
     Percentile connections;
-    int tickets[2] = { 0, 0 };
 
     AggregatedSslFlow() { fqdn = "Total"; };
-    AggregatedSslFlow(FlowId& _flowId, std::string _fqdn)
-        : Flow(_flowId, _fqdn) {};
+    AggregatedSslFlow(FlowId const& flowId, std::string const& fqdn)
+        : Flow(flowId, fqdn) {};
 
-    bool operator<(AggregatedSslFlow const& f)
+    auto operator<(AggregatedSslFlow const& f) -> bool
     {
         return bytes[0] + bytes[1] < f.bytes[0] + f.bytes[1];
     }
 
-    void fillValues(std::map<std::string, std::string>& map, Direction direction, int duration);
-    void resetFlow(bool resetTotal);
+    auto fillValues(std::map<std::string, std::string>& map, Direction direction, int duration) -> void override;
+    auto resetFlow(bool resetTotal) -> void override;
 };
-}
+} // namespace flowstats

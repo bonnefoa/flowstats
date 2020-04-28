@@ -43,7 +43,7 @@ auto directionToString(uint8_t direction) -> std::string
     return "S->C";
 }
 
-auto split(const std::string& s, char delimiter) -> std::vector<std::string>
+auto split(std::string const& s, char delimiter) -> std::vector<std::string>
 {
     std::vector<std::string> tokens;
     std::string token;
@@ -54,7 +54,7 @@ auto split(const std::string& s, char delimiter) -> std::vector<std::string>
     return tokens;
 }
 
-auto splitSet(const std::string& s, char delimiter) -> std::set<std::string>
+auto splitSet(std::string const& s, char delimiter) -> std::set<std::string>
 {
     std::set<std::string> res;
     std::string token;
@@ -66,21 +66,21 @@ auto splitSet(const std::string& s, char delimiter) -> std::set<std::string>
 }
 
 template <std::size_t... Is>
-auto fmtVector(const std::string& format,
-    const std::vector<std::string>& v,
+auto fmtVector(std::string const& format,
+    std::vector<std::string> const& v,
     std::index_sequence<Is...>) -> std::string
 {
     return fmt::format(format, v[Is]...);
 }
 
 template <std::size_t N>
-auto fmtVector(const std::string& format,
+auto fmtVector(std::string const& format,
     const std::vector<std::string>& v) -> std::string
 {
     return fmtVector(format, v, std::make_index_sequence<N>());
 }
 
-auto resolveDns(const std::string& domain) -> std::vector<std::string>
+auto resolveDns(std::string const& domain) -> std::vector<std::string>
 {
     struct addrinfo hints {
     }, *res;

@@ -26,31 +26,31 @@ public:
     }
     virtual ~Flow() {}
 
-    Flow(const Tins::Packet& packet)
+    Flow(Tins::Packet const& packet)
         : flowId(packet)
     {
         Flow();
     }
 
-    Flow(const Tins::IP& ipv4, const Tins::TCP& tcp)
+    Flow(Tins::IP const& ipv4, Tins::TCP const& tcp)
         : flowId(ipv4, tcp)
     {
         Flow();
     }
 
-    Flow(const Tins::IP& ipv4, const Tins::UDP& udp)
+    Flow(Tins::IP const& ipv4, Tins::UDP const& udp)
         : flowId(ipv4, udp)
     {
         Flow();
     }
 
-    Flow(const FlowId& flowId, const std::string fqdn)
+    Flow(FlowId const& flowId, std::string const& fqdn)
         : flowId(flowId)
         , fqdn(fqdn)
     {
     }
 
-    bool operator<(const Flow& flow) const
+    bool operator<(Flow const& flow) const
     {
         return (bytes[0] + bytes[1]) < (flow.bytes[0] + flow.bytes[1]);
     }
@@ -61,9 +61,9 @@ public:
     auto getCltIpInt() const -> IPv4;
     auto getSrvIpInt() const -> IPv4;
 
-    auto addPacket(const Tins::Packet& packet, const Direction direction) -> void;
-    virtual auto addFlow(const Flow* flow) -> void;
-    virtual auto addAggregatedFlow(const Flow* flow) -> void;
+    auto addPacket(Tins::Packet const& packet, Direction const direction) -> void;
+    virtual auto addFlow(Flow const* flow) -> void;
+    virtual auto addAggregatedFlow(Flow const* flow) -> void;
     virtual auto resetFlow(bool resetTotal) -> void;
     virtual auto fillValues(std::map<std::string, std::string>& map,
         Direction direction, int duration) -> void;

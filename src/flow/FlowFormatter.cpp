@@ -144,9 +144,9 @@ void FlowFormatter::outputHeaders(std::string& keyHeaders,
     valueHeaders = outputValue(headers);
 }
 
-void FlowFormatter::setDisplayKeys(const std::vector<std::string>& keys)
+void FlowFormatter::setDisplayKeys(std::vector<std::string> const& keys)
 {
-    for (const auto& key : keys) {
+    for (auto key : keys) {
         if (formatPatterns.find(key) == formatPatterns.end()) {
             spdlog::error("Could not find pattern for {}", key);
         }
@@ -154,9 +154,9 @@ void FlowFormatter::setDisplayKeys(const std::vector<std::string>& keys)
     displayKeys = keys;
 }
 
-void FlowFormatter::setDisplayValues(const std::vector<std::string>& values)
+void FlowFormatter::setDisplayValues(std::vector<std::string> const& values)
 {
-    for (const auto& key : values) {
+    for (auto key : values) {
         if (formatPatterns.find(key) == formatPatterns.end()) {
             spdlog::error("Could not find pattern for {}", key);
         }

@@ -6,7 +6,7 @@
 
 namespace flowstats {
 
-SslStatsCollector::SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf)
+SslStatsCollector::SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf)
     : Collector { conf, displayConf }
 {
     if (conf.perIpAggr) {
@@ -28,10 +28,7 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
     updateDisplayType(0);
 };
 
-auto SslStatsCollector::lookupSslFlow(
-    const Tins::IP& ip,
-    const Tins::TCP& tcp,
-    FlowId& flowId) -> SslFlow&
+auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow&
 {
     std::hash<FlowId> hash_fn;
     size_t flowHash = hash_fn(flowId);
@@ -50,8 +47,9 @@ auto SslStatsCollector::lookupSslFlow(
     return sslFlow;
 }
 
-auto SslStatsCollector::lookupAggregatedFlows(SslFlow& sslFlow, FlowId& flowId,
-    const std::string& fqdn) -> std::vector<AggregatedSslFlow*>
+auto SslStatsCollector::lookupAggregatedFlows(SslFlow const& sslFlow,
+    FlowId const& flowId,
+    std::string const& fqdn) -> std::vector<AggregatedSslFlow*>
 {
     std::vector<AggregatedSslFlow*> subflows;
     IPv4 ipSrvInt = 0;
@@ -73,7 +71,7 @@ auto SslStatsCollector::lookupAggregatedFlows(SslFlow& sslFlow, FlowId& flowId,
     return subflows;
 }
 
-auto SslStatsCollector::processPacket(const Tins::Packet& packet) -> void
+auto SslStatsCollector::processPacket(Tins::Packet const& packet) -> void
 {
     timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
@@ -87,7 +85,7 @@ auto SslStatsCollector::processPacket(const Tins::Packet& packet) -> void
     checkValidSsl(&cursor);
 
     FlowId flowId(ip, tcp);
-    SslFlow& sslFlow = lookupSslFlow(ip, tcp, flowId);
+    SslFlow& sslFlow = lookupSslFlow(flowId);
     sslFlow.addPacket(packet, flowId.direction);
     for (auto& subflow : sslFlow.aggregatedFlows) {
         subflow->addPacket(packet, flowId.direction);
@@ -124,7 +122,7 @@ auto SslStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPair
     spdlog::info("Got {} ssl flows", tempVector.size());
 
     std::sort(tempVector.begin(), tempVector.end(),
-        [](const AggregatedPairPointer& left, const AggregatedPairPointer& right) {
+        [](AggregatedPairPointer const& left, AggregatedPairPointer const& right) {
             return right.second->totalBytes[0] + right.second->totalBytes[1]
                 < left.second->totalBytes[0] + left.second->totalBytes[1];
         });

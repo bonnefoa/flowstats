@@ -7,7 +7,6 @@ void AggregatedSslFlow::fillValues(std::map<std::string, std::string>& values,
 {
     Flow::fillValues(values, direction, duration);
 
-    values["tickets"] = std::to_string(tickets[direction]);
     if (direction == FROM_CLIENT) {
         values["fqdn"] = fqdn;
         values["ip"] = getSrvIp().to_string();

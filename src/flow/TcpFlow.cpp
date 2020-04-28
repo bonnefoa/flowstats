@@ -10,12 +10,12 @@ TcpFlow::TcpFlow()
 {
 }
 
-TcpFlow::TcpFlow(const Tins::IP& ip, const Tins::TCP& tcp)
+TcpFlow::TcpFlow(Tins::IP const& ip, Tins::TCP const& tcp)
     : Flow(ip, tcp)
 {
 }
 
-auto TcpFlow::detectServer(const Tins::TCP& tcp, Direction direction,
+auto TcpFlow::detectServer(Tins::TCP const& tcp, Direction const direction,
     std::map<uint16_t, int>& srvPortsCounter) -> void
 {
     auto const flags = tcp.flags();
@@ -83,14 +83,14 @@ auto TcpFlow::closeConnection() -> void
     lastPayloadTime = {};
 }
 
-auto TcpFlow::nextSeqnum(const Tins::TCP& tcp, int tcpPayloadSize) -> uint32_t
+auto TcpFlow::nextSeqnum(Tins::TCP const& tcp, int tcpPayloadSize) -> uint32_t
 {
     return tcp.seq() + tcpPayloadSize + tcp.has_flags(Tins::TCP::SYN) + tcp.has_flags(Tins::TCP::FIN);
 }
 
-auto TcpFlow::updateFlow(const Tins::Packet& packet, Direction direction,
-    const Tins::IP& ip,
-    const Tins::TCP& tcp) -> void
+auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
+    Tins::IP const& ip,
+    Tins::TCP const& tcp) -> void
 {
     auto const flags = tcp.flags();
     timeval tv = packetToTimeval(packet);
@@ -193,7 +193,7 @@ auto TcpFlow::updateFlow(const Tins::Packet& packet, Direction direction,
     }
 }
 
-auto TcpFlow::tcpToString(const Tins::TCP& tcp) -> std::string
+auto TcpFlow::tcpToString(Tins::TCP const& tcp) -> std::string
 {
     std::string tcpFlag;
     auto flags = tcp.flags();

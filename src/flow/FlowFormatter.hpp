@@ -29,8 +29,8 @@ struct FlowFormatter {
     std::string outputValue(std::map<std::string, std::string>& values);
     void outputHeaders(std::string& keyHeaders, std::string& valueHeaders);
 
-    void setDisplayKeys(const std::vector<std::string>& keys);
-    void setDisplayValues(const std::vector<std::string>& values);
+    void setDisplayKeys(std::vector<std::string> const& keys);
+    void setDisplayValues(std::vector<std::string> const& values);
 
 private:
     std::map<std::string, std::string> formatPatterns;
@@ -38,4 +38,4 @@ private:
     std::vector<std::string> displayKeys;
     std::vector<std::string> displayValues;
 };
-}
+} // namespace flowstats

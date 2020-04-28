@@ -8,7 +8,7 @@
 
 namespace flowstats {
 
-TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf)
+TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf)
     : Collector { conf, displayConf }
 {
     if (conf.perIpAggr) {
@@ -28,9 +28,9 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
 };
 
 auto TcpStatsCollector::lookupTcpFlow(
-    const Tins::IP& ip,
-    const Tins::TCP& tcp,
-    const FlowId& flowId) -> TcpFlow&
+    Tins::IP const& ip,
+    Tins::TCP const& tcp,
+    FlowId const& flowId) -> TcpFlow&
 {
     std::hash<FlowId> hash_fn;
     size_t flowHash = hash_fn(flowId);
@@ -49,7 +49,7 @@ auto TcpStatsCollector::lookupTcpFlow(
     return tcpFlow;
 }
 
-auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcpFlow, const FlowId& flowId) -> std::vector<AggregatedTcpFlow*>
+auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcpFlow, FlowId const& flowId) -> std::vector<AggregatedTcpFlow*>
 {
     IPv4 ipSrvInt = 0;
     if (conf.perIpAggr) {
@@ -73,7 +73,7 @@ auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcpFlow, const FlowId& fl
     return aggregatedFlows;
 }
 
-auto TcpStatsCollector::processPacket(const Tins::Packet& packet) -> void
+auto TcpStatsCollector::processPacket(Tins::Packet const& packet) -> void
 {
     advanceTick(packetToTimeval(packet));
     auto pdu = packet.pdu();
@@ -181,24 +181,24 @@ auto TcpStatsCollector::mergePercentiles() -> void
     }
 }
 
-auto sortAggregatedTcpBySrt(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right) -> bool
+auto sortAggregatedTcpBySrt(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
 {
     auto* rightTcp = dynamic_cast<AggregatedTcpFlow*>(right.second);
     auto* leftTcp = dynamic_cast<AggregatedTcpFlow*>(left.second);
     return rightTcp->srts.getPercentile(1.0) < leftTcp->srts.getPercentile(1.0);
 }
 
-auto sortAggregatedTcpByRequest(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right) -> bool
+auto sortAggregatedTcpByRequest(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
 {
     auto* rightTcp = dynamic_cast<AggregatedTcpFlow*>(right.second);
     auto* leftTcp = dynamic_cast<AggregatedTcpFlow*>(left.second);
     return rightTcp->totalSrts < leftTcp->totalSrts;
 }
 
-auto sortAggregatedTcpByRequestRate(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right) -> bool
+auto sortAggregatedTcpByRequestRate(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
 {
     auto* rightTcp = dynamic_cast<AggregatedTcpFlow*>(right.second);
     auto* leftTcp = dynamic_cast<AggregatedTcpFlow*>(left.second);

@@ -38,9 +38,9 @@ auto Tester::readPcap(std::string pcap, std::string bpf, bool advanceTick) -> in
         for (auto collector : collectors) {
             try {
                 collector->processPacket(packet);
-            } catch (const payload_too_small&) {
-            } catch (const Tins::malformed_packet&) {
-            } catch (const Tins::pdu_not_found&) {
+            } catch (payload_too_small const&) {
+            } catch (Tins::malformed_packet const&) {
+            } catch (Tins::pdu_not_found const&) {
             }
         }
     }

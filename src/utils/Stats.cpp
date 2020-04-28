@@ -4,17 +4,17 @@
 
 namespace flowstats {
 
-void Percentile::merge()
+auto Percentile::merge() -> void
 {
     std::sort(points.begin(), points.end());
 }
 
-void Percentile::addPoint(uint32_t point)
+auto Percentile::addPoint(uint32_t point) -> void
 {
     return points.push_back(point);
 }
 
-void Percentile::addPoints(const Percentile& perc)
+auto Percentile::addPoints(Percentile const& perc) -> void
 {
     points.insert(points.end(), perc.points.begin(), perc.points.end());
 }
@@ -44,7 +44,7 @@ auto Percentile::getPercentileStr(float p) -> std::string
     return fmt::format("{}ms", res);
 }
 
-void Percentile::reset()
+auto Percentile::reset() -> void
 {
     points.clear();
 }

@@ -4,7 +4,7 @@
 
 namespace flowstats {
 
-DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf)
+DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf)
     : Collector { conf, displayConf }
 {
     flowFormatter.setDisplayKeys({ "fqdn", "ip", "port", "proto", "type", "dir" });
@@ -18,7 +18,7 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
     updateDisplayType(0);
 };
 
-auto DnsStatsCollector::processPacket(const Tins::Packet& packet) -> void
+auto DnsStatsCollector::processPacket(Tins::Packet const& packet) -> void
 {
     timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
@@ -37,7 +37,7 @@ auto DnsStatsCollector::processPacket(const Tins::Packet& packet) -> void
     }
 }
 
-auto DnsStatsCollector::updateIpToFqdn(const Tins::DNS& dns, const std::string& fqdn) -> void
+auto DnsStatsCollector::updateIpToFqdn(Tins::DNS const& dns, std::string const& fqdn) -> void
 {
     auto answers = dns.answers();
     std::vector<Tins::IPv4Address> ips;
@@ -56,7 +56,7 @@ auto DnsStatsCollector::updateIpToFqdn(const Tins::DNS& dns, const std::string& 
     }
 }
 
-auto DnsStatsCollector::newDnsQuery(const Tins::Packet& packet, const Tins::DNS& dns) -> void
+auto DnsStatsCollector::newDnsQuery(Tins::Packet const& packet, Tins::DNS const& dns) -> void
 {
     DnsFlow flow(packet);
     flow.addPacket(packet, FROM_CLIENT);
@@ -77,7 +77,7 @@ auto DnsStatsCollector::newDnsQuery(const Tins::Packet& packet, const Tins::DNS&
     transactionIdToDnsFlow[dns.id()] = flow;
 }
 
-auto DnsStatsCollector::newDnsResponse(const Tins::Packet& packet, const Tins::DNS& dns, DnsFlow& flow) -> void
+auto DnsStatsCollector::newDnsResponse(Tins::Packet const& packet, Tins::DNS const& dns, DnsFlow& flow) -> void
 {
     flow.addPacket(packet, FROM_SERVER);
     flow.endTv = packetToTimeval(packet);
@@ -96,7 +96,7 @@ auto DnsStatsCollector::newDnsResponse(const Tins::Packet& packet, const Tins::D
     transactionIdToDnsFlow.erase(dns.id());
 }
 
-auto DnsStatsCollector::addFlowToAggregation(const DnsFlow& flow) -> void
+auto DnsStatsCollector::addFlowToAggregation(DnsFlow const& flow) -> void
 {
     AggregatedDnsKey key(flow.fqdn, flow.type, flow.flowId.isTcp);
 
@@ -184,24 +184,24 @@ auto DnsStatsCollector::resetMetrics() -> void
     }
 }
 
-auto sortAggregatedDnsBySrt(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right) -> bool
+auto sortAggregatedDnsBySrt(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
 {
     auto* rightDns = dynamic_cast<AggregatedDnsFlow*>(right.second);
     auto* leftDns = dynamic_cast<AggregatedDnsFlow*>(left.second);
     return rightDns->srts.getPercentile(1.0) < leftDns->srts.getPercentile(1.0);
 }
 
-auto sortAggregatedDnsByRequest(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right) -> bool
+auto sortAggregatedDnsByRequest(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
 {
     auto* rightDns = dynamic_cast<AggregatedDnsFlow*>(right.second);
     auto* leftDns = dynamic_cast<AggregatedDnsFlow*>(left.second);
     return rightDns->totalQueries < leftDns->totalQueries;
 }
 
-auto sortAggregatedDnsByRequestRate(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right) -> bool
+auto sortAggregatedDnsByRequestRate(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
 {
     auto* rightDns = dynamic_cast<AggregatedDnsFlow*>(right.second);
     auto* leftDns = dynamic_cast<AggregatedDnsFlow*>(left.second);
@@ -213,8 +213,8 @@ auto DnsStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPair
     std::vector<AggregatedPairPointer> tempVector(aggregatedDnsFlows.begin(),
         aggregatedDnsFlows.end());
 
-    bool (*sortFunc)(const AggregatedPairPointer& left,
-        const AggregatedPairPointer& right)
+    bool (*sortFunc)(AggregatedPairPointer const& left,
+        AggregatedPairPointer const& right)
         = sortAggregatedDnsByRequest;
     switch (displayConf.sortType) {
     case SortFqdn:

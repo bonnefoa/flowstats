@@ -10,7 +10,6 @@
 #include <fmt/format.h>
 #include <map>
 #include <mutex>
-#include <stdio.h>
 #include <sys/time.h>
 
 namespace flowstats {
@@ -24,12 +23,12 @@ auto collectorProtocolToString(CollectorProtocol proto) -> std::string;
 
 class Collector {
 public:
-    Collector(FlowstatsConfiguration& conf, DisplayConfiguration& displayConf)
+    Collector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf)
         : conf(conf)
         , displayConf(displayConf) {};
     virtual ~Collector() = default;
 
-    virtual auto processPacket(const Tins::Packet& pdu) -> void = 0;
+    virtual auto processPacket(Tins::Packet const& pdu) -> void = 0;
     virtual auto advanceTick(timeval now) -> void {};
     virtual auto resetMetrics() -> void {};
     virtual auto getMetrics() -> std::vector<std::string>
@@ -65,11 +64,11 @@ protected:
     auto getDataMutex() -> std::mutex* { return &dataMutex; };
 
     FlowstatsConfiguration& conf;
-    DisplayConfiguration& displayConf;
-    Flow* totalFlow;
+    DisplayConfiguration const& displayConf;
+    Flow* totalFlow = nullptr;
     std::vector<DisplayPair> displayPairs;
 
 private:
     std::mutex dataMutex;
 };
-}
+} // namespace flowstats

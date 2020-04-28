@@ -10,12 +10,12 @@ SslFlow::SslFlow()
 {
 }
 
-SslFlow::SslFlow(const Tins::IP& ip, const Tins::TCP& tcp)
+SslFlow::SslFlow(Tins::IP const& ip, Tins::TCP const& tcp)
     : Flow(ip, tcp)
 {
 }
 
-void SslFlow::processHandshake(const Tins::Packet& packet,
+void SslFlow::processHandshake(Tins::Packet const& packet,
     Cursor* cursor)
 {
     checkSslHandshake(cursor);
@@ -51,9 +51,9 @@ void SslFlow::processHandshake(const Tins::Packet& packet,
     }
 }
 
-void SslFlow::updateFlow(const Tins::Packet& packet, Direction direction,
-    const Tins::IP& ip,
-    const Tins::TCP& tcp)
+void SslFlow::updateFlow(Tins::Packet const& packet, Direction direction,
+    Tins::IP const& ip,
+    Tins::TCP const& tcp)
 {
     if (connectionEstablished) {
         return;

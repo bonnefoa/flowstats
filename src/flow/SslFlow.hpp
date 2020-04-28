@@ -10,19 +10,18 @@ namespace flowstats {
 class SslFlow : public Flow {
 public:
     SslFlow();
-    SslFlow(const Tins::IP& ip, const Tins::TCP& tcp);
+    SslFlow(Tins::IP const& ip, Tins::TCP const& tcp);
 
     std::string domain = "";
     timeval startHandshake = {};
     bool connectionEstablished = false;
 
-    void updateFlow(const Tins::Packet& packet, Direction direction,
-        const Tins::IP& ip,
-        const Tins::TCP& sslLayer);
+    void updateFlow(Tins::Packet const& packet, Direction direction,
+        Tins::IP const& ip,
+        Tins::TCP const& sslLayer);
     std::vector<AggregatedSslFlow*> aggregatedFlows;
 
 private:
-    //std::string getDomain(Tins::SSLClientHelloMessage* clientHelloMessage);
-    void processHandshake(const Tins::Packet& packet, Cursor* cursor);
+    void processHandshake(Tins::Packet const& packet, Cursor* cursor);
 };
 } // namespace flowstats

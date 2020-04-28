@@ -10,11 +10,11 @@ class TcpFlow : public Flow {
 
 public:
     TcpFlow();
-    TcpFlow(const Tins::IP& ip, const Tins::TCP& tcp);
+    TcpFlow(Tins::IP const& ip, Tins::TCP const& tcp);
 
-    auto updateFlow(const Tins::Packet& packet, Direction direction,
-        const Tins::IP& ip,
-        const Tins::TCP& tcp) -> void;
+    auto updateFlow(Tins::Packet const& packet, Direction direction,
+        Tins::IP const& ip,
+        Tins::TCP const& tcp) -> void;
 
     std::array<uint32_t, 2> seqNum = {};
     std::array<uint32_t, 2> finSeqnum = {};
@@ -38,7 +38,7 @@ public:
     std::array<timeval, 2> lastPacketTime = {};
     timeval lastPayloadTime = {};
 
-    auto detectServer(const Tins::TCP& tcp, Direction direction,
+    auto detectServer(Tins::TCP const& tcp, Direction direction,
         std::map<uint16_t, int>& srvPortsCounter) -> void;
     auto closeConnection() -> void;
     auto timeoutFlow() -> void;
@@ -47,7 +47,7 @@ public:
 
 private:
     std::vector<AggregatedTcpFlow*> aggregatedFlows;
-    auto tcpToString(const Tins::TCP& hdr) -> std::string;
-    auto nextSeqnum(const Tins::TCP& tcp, int payloadSize) -> uint32_t;
+    auto tcpToString(Tins::TCP const& hdr) -> std::string;
+    auto nextSeqnum(Tins::TCP const& tcp, int payloadSize) -> uint32_t;
 };
 }

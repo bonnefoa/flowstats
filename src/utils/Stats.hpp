@@ -6,16 +6,16 @@ namespace flowstats {
 class Percentile {
 public:
     Percentile() {};
-    virtual ~Percentile() {};
+    virtual ~Percentile() = default;
 
-    void addPoint(uint32_t point);
-    void addPoints(const Percentile& perc);
-    void merge();
-    uint32_t getPercentile(float percentile);
-    std::string getPercentileStr(float p);
-    int getCount();
-    void reset();
-    std::vector<uint32_t> getPoints() { return points; };
+    auto addPoint(uint32_t point) -> void;
+    auto addPoints(Percentile const& perc) -> void;
+    auto merge() -> void;
+    auto getPercentile(float percentile) -> uint32_t;
+    auto getPercentileStr(float p) -> std::string;
+    auto getCount() -> int;
+    auto reset() -> void;
+    auto getPoints() -> std::vector<uint32_t> { return points; };
 
 private:
     std::vector<uint32_t> points;
