@@ -14,11 +14,6 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfig
     } else {
         flowFormatter.setDisplayKeys({ "fqdn", "port", "dir" });
     }
-    flowFormatter.setDisplayValues({ "conn", "conn_s",
-        "ctp95", "ctp99",
-        "tickets",
-        "pkts", "pkts_s",
-        "bytes", "bytes_s" });
 
     displayPairs = {
         DisplayPair(DisplayConnections, { "conn", "conn_s", "ctp95", "ctp99" }),
@@ -37,7 +32,7 @@ auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow&
     if (sslFlow.flowId.ports[0] == 0) {
         spdlog::debug("Create ssl flow {}", flowId.toString());
         sslFlow.flowId = flowId;
-        std::optional<std::string> fqdn = getFlowFqdn(conf, sslFlow.getSrvIpInt());
+        std::optional<std::string> fqdn = getFlowFqdn(&conf, sslFlow.getSrvIpInt());
         if (!fqdn.has_value()) {
             return sslFlow;
         }

@@ -51,7 +51,7 @@ auto prettyFormatMs(int ms) -> std::string;
 auto getIpToFqdn(std::vector<std::string> const& initialDomains) -> std::map<uint32_t, std::string>;
 auto getDomainToServerPort(std::vector<std::string> const& initialServerPorts) -> std::map<std::string, uint16_t>;
 
-auto getFlowFqdn(FlowstatsConfiguration& conf, uint32_t srvIp) -> std::optional<std::string>;
+auto getFlowFqdn(FlowstatsConfiguration* conf, uint32_t srvIp) -> std::optional<std::string>;
 
 auto packetToTimeval(Tins::Packet const& packet) -> timeval;
 } // namespace flowstats

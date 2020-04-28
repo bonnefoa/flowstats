@@ -57,7 +57,6 @@ FlowFormatter::FlowFormatter()
     formatPatterns["timeouts_s"] = "{:<8.8} ";
     formatPatterns["trunc"] = "{:<6.6} ";
     formatPatterns["type"] = "{:<6.6} ";
-    formatPatterns["tickets"] = "{:<8.8} ";
 
     headers["active_connections"] = "ActConn";
     headers["failed_connections"] = "FailConn";
@@ -101,7 +100,6 @@ FlowFormatter::FlowFormatter()
     headers["trunc"] = "Trunc";
     headers["type"] = "Type";
     headers["zwin"] = "0win";
-    headers["tickets"] = "Tickets";
 };
 
 FlowFormatter::FlowFormatter(std::map<std::string, std::string>

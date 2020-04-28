@@ -194,13 +194,13 @@ auto packetToTimeval(const Tins::Packet& packet) -> timeval
     return { ts.seconds(), ts.microseconds() };
 }
 
-auto getFlowFqdn(FlowstatsConfiguration& conf, uint32_t srvIp) -> std::optional<std::string>
+auto getFlowFqdn(FlowstatsConfiguration* conf, uint32_t srvIp) -> std::optional<std::string>
 {
     std::optional<std::string> fqdn;
-    const std::lock_guard<std::mutex> lock(conf.ipToFqdnMutex);
-    auto it = conf.ipToFqdn.find(srvIp);
-    if (it == conf.ipToFqdn.end()) {
-        if (conf.displayUnknownFqdn == false) {
+    const std::lock_guard<std::mutex> lock(conf->ipToFqdnMutex);
+    auto it = conf->ipToFqdn.find(srvIp);
+    if (it == conf->ipToFqdn.end()) {
+        if (conf->displayUnknownFqdn == false) {
             return {};
         }
         fqdn = "Unknown";
