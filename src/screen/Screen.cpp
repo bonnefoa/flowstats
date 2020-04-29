@@ -7,7 +7,6 @@
 #include <dns.h>
 #include <tcp.h>
 #include <utility>
-#include <utils/pdu_utils.h>
 #define ctrl(x) ((x)&0x1f)
 
 #define KEY_B 98

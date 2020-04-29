@@ -1,0 +1,43 @@
+language: cpp
+os: linux
+dist: bionic
+sudo: yes
+
+compiler:
+  - clang
+
+addons:
+  apt:
+    packages: libncurses5-dev catch libgoogle-perftools-dev libpcap-dev
+
+install:
+  - |
+    git clone --depth 1 --branch 6.1.2 https://github.com/fmtlib/fmt.git
+    mkdir -p fmt/build && cd fmt/build
+    cmake ../ -Dfmt_test=off
+    make
+    sudo make install
+    cd -
+
+  - |
+    git clone --depth 1 https://github.com/mfontanini/libtins.git
+    mkdir -p libtins/build && cd libtins/build
+    cmake ../
+    make
+    sudo make install
+    cd -
+
+  - |
+    git clone --depth 1 --branch v1.5.0 https://github.com/gabime/spdlog.git;
+    mkdir -p spdlog/build && cd spdlog/build
+    cmake ../ -DSPDLOG_FMT_EXTERNAL=on -DSPDLOG_BUILD_TESTS=off
+    make
+    sudo make install
+    cd -
+
+script:
+  - |
+    mkdir -p build && cd build
+    cmake -DBUILD_STATICS_EXEC=on ..
+    make
+    make test

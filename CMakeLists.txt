@@ -9,10 +9,9 @@ set (CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fPIE -fno-omit-frame-pointer")
 
 find_package (PkgConfig)
 find_package(Threads REQUIRED)
-find_package(Microsoft.GSL CONFIG)
+find_package(fmt REQUIRED)
 pkg_check_modules (TINS REQUIRED libtins)
 pkg_check_modules (NCURSES REQUIRED ncurses)
-pkg_check_modules (FMT REQUIRED fmt)
 pkg_check_modules (SPDLOG REQUIRED spdlog )
 pkg_check_modules (TCMALLOC REQUIRED libtcmalloc)
 
