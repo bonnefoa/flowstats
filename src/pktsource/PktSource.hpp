@@ -13,7 +13,7 @@ auto listInterfaces() -> void;
 class PktSource {
 public:
     PktSource(Screen* screen,
-        FlowstatsConfiguration& conf,
+        FlowstatsConfiguration const& conf,
         const std::vector<Collector*>& collectors,
         std::atomic_bool* shouldStop)
         : screen(screen)
@@ -29,8 +29,8 @@ public:
 
 private:
     Screen* screen;
-    FlowstatsConfiguration& conf;
-    const std::vector<Collector*>& collectors;
+    FlowstatsConfiguration const& conf;
+    std::vector<Collector*> const& collectors;
     std::atomic_bool* shouldStop;
 
     int lastUpdate = 0;

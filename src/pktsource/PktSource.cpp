@@ -40,7 +40,7 @@ auto PktSource::getLocalIps() -> std::vector<Tins::IPv4Address>
 auto PktSource::analyzePcapFile()
     -> int
 {
-    auto reader = new Tins::FileSniffer(conf.pcapFileName, conf.bpfFilter);
+    auto* reader = new Tins::FileSniffer(conf.pcapFileName, conf.bpfFilter);
     if (reader == nullptr) {
         return 1;
     }
@@ -66,7 +66,7 @@ auto PktSource::analyzePcapFile()
         }
     }
 
-    for (auto& collector : collectors) {
+    for (auto* collector : collectors) {
         collector->advanceTick(maxTimeval);
         int delta = getTimevalDeltaS(start, end);
         CollectorOutput o = collector->outputStatus(delta);
@@ -81,7 +81,7 @@ auto PktSource::getLiveDevice() -> Tins::Sniffer*
     Tins::SnifferConfiguration snifferConf;
     snifferConf.set_promisc_mode(true);
     snifferConf.set_filter(conf.bpfFilter);
-    auto dev = new Tins::Sniffer(conf.interfaceNameOrIP, snifferConf);
+    auto* dev = new Tins::Sniffer(conf.interfaceNameOrIP, snifferConf);
     return dev;
 }
 
@@ -90,7 +90,7 @@ auto PktSource::updateScreen(int currentTime) -> void
     if (lastUpdate < currentTime) {
         lastUpdate = currentTime;
         screen->updateDisplay(currentTime, true);
-        for (auto& collector : collectors) {
+        for (auto* collector : collectors) {
             collector->sendMetrics();
             collector->resetMetrics();
         }
@@ -104,12 +104,12 @@ auto PktSource::analyzeLiveTraffic() -> int
 {
     int64_t startTs = time(nullptr);
     spdlog::info("Start live traffic capture with filter {}", conf.bpfFilter);
-    auto dev = getLiveDevice();
+    auto* dev = getLiveDevice();
     for (const auto& packet : *dev) {
         if (shouldStop->load()) {
             break;
         }
-        for (auto& collector : collectors) {
+        for (auto* collector : collectors) {
             try {
                 collector->processPacket(packet);
             } catch (const Tins::malformed_packet&) {
@@ -127,18 +127,14 @@ auto PktSource::analyzeLiveTraffic() -> int
 
     fmt::print("\n");
     int64_t endTs = time(nullptr);
-    for (auto& collector : collectors) {
+    for (auto* collector : collectors) {
         collector->advanceTick(maxTimeval);
         collector->sendMetrics();
         collector->resetMetrics();
 
         int64_t delta = endTs - startTs;
         CollectorOutput o = collector->outputStatus(delta);
-        fmt::print("{} {}s\n", o.name, delta);
-        for (int i = 0; i < o.keys.size(); ++i) {
-            fmt::print("{} {}\n", o.keys[i], o.values[i]);
-        }
-        fmt::print("\n");
+        o.print();
     }
 
     return 0;

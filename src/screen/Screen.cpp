@@ -80,8 +80,8 @@ auto Screen::updateValues() -> void
     werase(keyWin);
     werase(valueWin);
 
-    numberElements = int(collectorOutput.keys.size() / 2);
-    for (int i = 0; i < collectorOutput.keys.size(); ++i) {
+    numberElements = int(collectorOutput.getKeys().size() / 2);
+    for (int i = 0; i < collectorOutput.getKeys().size(); ++i) {
         int line = i / 2;
         if (line == selectedLine) {
             wattron(keyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
@@ -89,11 +89,11 @@ auto Screen::updateValues() -> void
         }
         mvwprintw(keyWin, i, 0,
             fmt::format("{:<" STR(KEY_COLUMNS) "}",
-                collectorOutput.keys[i].c_str())
+                collectorOutput.getKeys()[i].c_str())
                 .c_str());
         mvwprintw(valueWin, i, 0,
             fmt::format("{:<" STR(VALUE_COLUMNS) "}",
-                collectorOutput.values[i].c_str())
+                collectorOutput.getValues()[i].c_str())
                 .c_str());
         if (line == selectedLine) {
             wattroff(keyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
@@ -144,7 +144,7 @@ auto Screen::updateHeaders() -> void
     werase(valueHeaderWin);
 
     wattron(keyHeaderWin, COLOR_PAIR(KEY_HEADER_COLOR));
-    waddstr(keyHeaderWin, fmt::format("{:<" STR(KEY_COLUMNS) "}", collectorOutput.keyHeaders).c_str());
+    waddstr(keyHeaderWin, fmt::format("{:<" STR(KEY_COLUMNS) "}", collectorOutput.getKeyHeaders()).c_str());
     wattroff(keyHeaderWin, COLOR_PAIR(KEY_HEADER_COLOR));
 
     int i = 0;
@@ -162,7 +162,7 @@ auto Screen::updateHeaders() -> void
     waddstr(valueHeaderWin, "\n");
 
     wattron(valueHeaderWin, COLOR_PAIR(VALUE_HEADER_COLOR));
-    waddstr(valueHeaderWin, fmt::format("{:<" STR(VALUE_COLUMNS) "}", collectorOutput.valueHeaders).c_str());
+    waddstr(valueHeaderWin, fmt::format("{:<" STR(VALUE_COLUMNS) "}", collectorOutput.getValueHeaders()).c_str());
     wattroff(valueHeaderWin, COLOR_PAIR(VALUE_HEADER_COLOR));
 }
 

@@ -5,7 +5,7 @@
 namespace flowstats {
 class Percentile {
 public:
-    Percentile() {};
+    Percentile() = default;
     virtual ~Percentile() = default;
 
     auto addPoint(uint32_t point) -> void;
@@ -20,4 +20,4 @@ public:
 private:
     std::vector<uint32_t> points;
 };
-}
+} // namespace flowstats
