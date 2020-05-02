@@ -22,7 +22,7 @@ install:
   - |
     git clone --depth 1 https://github.com/mfontanini/libtins.git
     mkdir -p libtins/build && cd libtins/build
-    cmake ../
+    cmake ../ -DLIBTINS_BUILD_SHARED=0
     make
     sudo make install
     cd -
