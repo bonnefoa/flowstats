@@ -8,13 +8,21 @@ compiler:
 
 addons:
   apt:
-    packages: libncurses5-dev catch libgoogle-perftools-dev libpcap-dev
+    packages: libncurses5-dev catch libgoogle-perftools-dev
 
 install:
   - |
+    git clone --depth 1 --branch libpcap-1.9.1 https://github.com/the-tcpdump-group/libpcap.git
+    mkdir -p libpcap/build && cd libpcap/build
+    cmake ../
+    make
+    sudo make install
+    cd -
+
+  - |
     git clone --depth 1 --branch 6.1.2 https://github.com/fmtlib/fmt.git
     mkdir -p fmt/build && cd fmt/build
-    cmake ../ -Dfmt_test=off
+    cmake ../ -DFMT_TEST=off
     make
     sudo make install
     cd -
@@ -41,3 +49,12 @@ script:
     cmake -DBUILD_STATICS_EXEC=on ..
     make
     make test
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "p+mwkt1O0TAhoNZLwQb1sAfelZI6bqE4KylrKc8kN6CI/HPDVOq213EC4RFEZ1jKvI0youw9oQ9ixrVr+R29JoEy+eyJKiLqrVxD1r+P6vrxX9bpSnvvDPvce1yQmlSTByy3bXbaAf81edP3bcSDQVqJoMsUgTyfikFu5EFqUM/H9TiOD119wxug5EtgtnHhZWMXdIYQZNnwdAqRoxG8eErscS52gaQOarIqb46s814pTc+O7EtHv07sDJPV7UfJD45rMRtl4A0G4+j6rvpj4HqYwlsXFIduCokU/OBBXy2WDhzEokZysMNTQWdbKqUq8/IzoZu7/G75IGGxxapjYtWGf1LuWzKAZ68+Vphtb2mstJrUJLiWsN9sGUnPM8USGr7lqCpNm8TIPhal3Su2F2e5A/GWKUjr42M8b0+/vFPjRSwifE2tf4x9qf68J+dTbkN/suePUsZFhy9/SHcmhoPvwfwcKzA/fMfSFygiAZuxTxXri8GM6rI8OwzLD8wexpbR8lURm96J59eKExvSu6rsNOx/hg7Q4lsgdnoqoBgrr0qpBubHhS8WvWZcG6Ocp4wUupj5Pbni7mHhYkpHAR+6CN7nhR96axT6MZa+9wRWpdD8il67/MnOX3H8HjOKhJUL0KITf+BrdbJ2VcEZXQrYhT9cutySVHlFWzKlNps="
+  file: "FILE TO UPLOAD"
+  skip_cleanup: true
+  on:
+    tags: true
