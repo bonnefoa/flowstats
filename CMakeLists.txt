@@ -14,6 +14,7 @@ pkg_check_modules (TINS REQUIRED libtins)
 pkg_check_modules (NCURSES REQUIRED ncurses)
 pkg_check_modules (SPDLOG REQUIRED spdlog )
 pkg_check_modules (TCMALLOC REQUIRED libtcmalloc)
+pkg_check_modules (PCAP REQUIRED libpcap)
 
 option(BUILD_STATICS_EXEC "Build statics executable" OFF)
 option(BUILD_TSAN "Build with tsan" OFF)
