@@ -1,10 +1,10 @@
 #pragma once
 #include "Utils.hpp"
 #include <arpa/inet.h>
-#include <ip.h>
 #include <sstream>
-#include <tcp.h>
-#include <udp.h>
+#include <tins/ip.h>
+#include <tins/tcp.h>
+#include <tins/udp.h>
 
 namespace flowstats {
 

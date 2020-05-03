@@ -1,6 +1,6 @@
 #include "DnsStatsCollector.hpp"
 #include "PrintHelper.hpp"
-#include "rawpdu.h"
+#include "tins/rawpdu.h"
 
 namespace flowstats {
 

@@ -5,9 +5,9 @@
 #include <cstring>
 #include <iostream>
 #include <netdb.h>
-#include <pdu.h>
 #include <spdlog/spdlog.h>
 #include <sys/socket.h>
+#include <tins/pdu.h>
 
 namespace flowstats {
 

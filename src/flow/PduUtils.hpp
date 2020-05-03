@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ip.h>
-#include <tcp.h>
+#include <tins/ip.h>
+#include <tins/tcp.h>
 
 namespace flowstats {
 

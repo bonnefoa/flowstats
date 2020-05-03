@@ -1,8 +1,8 @@
 #include "PktSource.hpp"
 #include "Utils.hpp"
 #include <cstdint>
-#include <network_interface.h>
 #include <spdlog/spdlog.h>
+#include <tins/network_interface.h>
 #include <utility>
 
 namespace flowstats {

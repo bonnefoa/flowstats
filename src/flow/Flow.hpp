@@ -2,7 +2,7 @@
 
 #include "FlowId.hpp"
 #include <map>
-#include <packet.h>
+#include <tins/packet.h>
 
 namespace flowstats {
 

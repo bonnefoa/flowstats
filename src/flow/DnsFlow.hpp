@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Flow.hpp"
-#include <dns.h>
+#include <tins/dns.h>
 
 namespace flowstats {
 

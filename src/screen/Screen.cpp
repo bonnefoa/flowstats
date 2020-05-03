@@ -1,13 +1,13 @@
 #include "Screen.hpp"
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #include "Utils.hpp"
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
-
-#include <dns.h>
-#include <tcp.h>
+#include <tins/dns.h>
+#include <tins/tcp.h>
 #include <utility>
-#define ctrl(x) ((x)&0x1f)
+
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+#define CTRL(x) ((x)&0x1f)
 
 #define KEY_B 98
 #define KEY_LETTER_F 102
@@ -281,7 +281,7 @@ auto Screen::refreshableAction(int c) -> bool
                 displayConf.filter = "";
                 editFilter = false;
             }
-        } else if (c == ctrl('u')) {
+        } else if (c == CTRL('u')) {
             displayConf.filter = "";
         } else if (c == '\n') {
             editFilter = false;
@@ -329,7 +329,7 @@ auto Screen::displayLoop() -> void
 
         c = getch();
         lastKey = c;
-        if (c == KEY_Q || c == ctrl('c')) {
+        if (c == KEY_Q || c == CTRL('c')) {
             shouldStop->store(true);
             return;
         }

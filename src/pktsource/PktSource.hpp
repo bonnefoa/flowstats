@@ -3,8 +3,8 @@
 #include "Collector.hpp"
 #include "Configuration.hpp"
 #include "Screen.hpp"
-#include <ip_address.h>
-#include <sniffer.h>
+#include <tins/ip_address.h>
+#include <tins/sniffer.h>
 
 namespace flowstats {
 

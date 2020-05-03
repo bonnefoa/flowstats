@@ -4,16 +4,16 @@
 #include <cstdint>
 #include <ctime> // for time_t, timeval
 #include <iosfwd> // for size_t
-#include <ip.h>
-#include <ip_address.h>
 #include <limits>
 #include <map>
 #include <optional> // for optional
-#include <packet.h>
 #include <set>
 #include <string>
-#include <tcp.h>
-#include <udp.h>
+#include <tins/ip.h>
+#include <tins/ip_address.h>
+#include <tins/packet.h>
+#include <tins/tcp.h>
+#include <tins/udp.h>
 #include <vector>
 
 #define QUOTE(name) #name
