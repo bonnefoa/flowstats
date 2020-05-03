@@ -6,11 +6,25 @@ sudo: yes
 compiler:
   - clang
 
+env:
+  global:
+    # Coverity token
+    - secure: "sexBL5TdobE01HXCdVYsYjD60+miD6E3+pU23fngPqwm3N0sOerfnyoSqNjfUyryAnPm6xxKQ37WbngBp/VwKzyEONxMKItZY1avKsaU5yvF3SDbWF6upYhrnVoSqS1QHqNog6zj5cT2LwrQzdhY5QACGGnTuHsv85fgneA0V0vvoQtBB3tijmVtb6EWquXOvfbQcRXI0Wa4nAlMpIpZqTCKCzCBtPvc4gi0mu/kcS7rsAjtkuQ3Pwy3Y+RsB3sJuJcn8FvcCOW2Y4kV+Z3fetZbBVxzMFbrUFxbdJxCr3kQqTzX7PkSCOjchpOGm349L3AzP+lMCKKctO98mymhtIZKVVybV0D2gTZoifiSeKT8YXa7AbnweNNHBQxcAbMwKbr5Ve/9+4Ye8B6/Eqale45ZBph3q4qoenP5R1Y0fE18EspFbYMFhBrAG3mB7SxTIK74kTZdQ8Evvby2sWWHlxQDuGSa2+DE+n1reJiUsUdKPtHF9X4X7YQvqcn+KywHtFcxL7ICa4uFJTNRPGG+0yUAPux6uf+poV1igQVIutEiD/JzNGyB6au+4YFVT1xU+N12TH0lPWfeePJdGzfItset31a3MnjvYchfAPvZLmeZFkLptsPX3xST26dEEcIlHuWUtez41SLH/D0WZcpxVmkYXeQuk4bfROiP3k4k66M="
+
 addons:
   apt:
     packages: libncurses5-dev libgoogle-perftools-dev
+  coverity_scan:
+    project:
+      name: "bonnefoa/flowstats"
+      description: "Flowstats"
+    notification_email: anthonin.bonnefoy@gmail.com
+    build_command_prepend: "mkdir build; cd build; cmake .. -DCMAKE_INSTALL_PREFIX:PATH=`pwd`/install -DCMAKE_BUILD_TYPE=Release"
+    build_command: "make install -j2"
+    branch_pattern: coverity_scan
 
-install:
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
   - |
     git clone --depth 1 --branch libpcap-1.9.1 https://github.com/the-tcpdump-group/libpcap.git
     mkdir -p libpcap/build && cd libpcap/build
