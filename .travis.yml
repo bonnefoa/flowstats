@@ -14,7 +14,7 @@ install:
   - |
     git clone --depth 1 --branch libpcap-1.9.1 https://github.com/the-tcpdump-group/libpcap.git
     mkdir -p libpcap/build && cd libpcap/build
-    cmake ../
+    cmake ../ -DBUILD_SHARED_LIBS=0
     make
     sudo make install
     cd -
