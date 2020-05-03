@@ -2,7 +2,7 @@ if(APPLE)
     list(APPEND ADDITIONAL_LIBRARIES "-framework SystemConfiguration -framework CoreFoundation")
 endif()
 
-link_directories (${TINS_LIBRARY_DIRS} ${PCAP_LIBRARY_DIRS} ${NCURSES_LIBRARY_DIRS})
+link_directories (${LIBTINS_LIBRARY_DIRS} ${PCAP_LIBRARY_DIRS} ${NCURSES_LIBRARY_DIRS})
 
 file(GLOB UTILS_SRCS utils/*.cpp)
 file(GLOB SCREEN_SRCS screen/*.cpp)
