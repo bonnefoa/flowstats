@@ -42,7 +42,7 @@ before_install:
     cd -
 
   - |
-    git clone --depth 1 https://github.com/mfontanini/libtins.git
+    git clone --depth 1 --libtins v4.2 https://github.com/mfontanini/libtins.git
     mkdir -p libtins/build && cd libtins/build
     cmake ../ -DLIBTINS_BUILD_SHARED=0 -DLIBTINS_ENABLE_CXX11=1 -DLIBTINS_ENABLE_WPA2=0
     make
@@ -50,9 +50,9 @@ before_install:
     cd -
 
   - |
-    git clone --depth 1 https://github.com/catchorg/Catch2.git
+    git clone --depth 1 --branch v2.12.1 https://github.com/catchorg/Catch2.git
     mkdir -p Catch2/build && cd Catch2/build
-    cmake ../ -DCATCH_BUILD_TESTING=off -DCATCH_INSTALL_DOCS=off -DCATCH_INSTALL_HELPERS=off
+    cmake ../ -DCATCH_BUILD_TESTING=off -DCATCH_INSTALL_DOCS=off -DCATCH_INSTALL_HELPERS=ON
     make
     sudo make install
     cd -
@@ -68,7 +68,7 @@ before_install:
 script:
   - |
     mkdir -p build && cd build
-    cmake -DBUILD_STATICS_EXEC=on -DENABLE_TESTS=on ..
+    cmake -DBUILD_STATIC_EXE=on -DENABLE_TESTS=on ..
     make
     ctest
 

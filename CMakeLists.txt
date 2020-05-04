@@ -15,7 +15,7 @@ pkg_check_modules (SPDLOG REQUIRED spdlog )
 pkg_check_modules (TCMALLOC REQUIRED libtcmalloc)
 pkg_check_modules (PCAP REQUIRED libpcap)
 
-option(BUILD_STATICS_EXEC "Build statics executable" OFF)
+option(BUILD_STATIC_EXE "Build statics executable" OFF)
 option(BUILD_TSAN "Build with tsan" OFF)
 option(BUILD_ASAN "Build with asan" OFF)
 option(BUILD_PROFILER "Build with profiler" OFF)
