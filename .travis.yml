@@ -19,8 +19,8 @@ addons:
       name: "bonnefoa/flowstats"
       description: "Flowstats"
     notification_email: anthonin.bonnefoy@gmail.com
-    build_command_prepend: "mkdir build; cd build; cmake .. -DCMAKE_INSTALL_PREFIX:PATH=`pwd`/install -DCMAKE_BUILD_TYPE=Release"
-    build_command: "make install -j2"
+    build_command_prepend: "mkdir build; cd build; cmake .. -DENABLE_TESTS=on"
+    build_command: "make -j2"
     branch_pattern: coverity_scan
 
 before_install:
