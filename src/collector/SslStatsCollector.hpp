@@ -2,6 +2,7 @@
 
 #include "AggregatedSslFlow.hpp"
 #include "Collector.hpp"
+#include "IpToFqdn.hpp"
 #include "PrintHelper.hpp"
 #include "SslFlow.hpp"
 #include <algorithm>
@@ -16,7 +17,7 @@ using hashFlow = std::pair<uint32_t, SslFlow>;
 
 class SslStatsCollector : public Collector {
 public:
-    SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf);
+    SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf, IpToFqdn* ipToFqdn);
     ~SslStatsCollector() override;
 
     auto processPacket(Tins::Packet const& packet) -> void override;
@@ -37,5 +38,6 @@ private:
     auto lookupAggregatedFlows(SslFlow const& sslFlow,
         FlowId const& flowId,
         std::string const& fqdn) -> std::vector<AggregatedSslFlow*>;
+    IpToFqdn* ipToFqdn;
 };
 }

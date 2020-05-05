@@ -2,13 +2,16 @@
 
 #include "AggregatedTcpFlow.hpp"
 #include "Collector.hpp"
+#include "IpToFqdn.hpp"
 #include "TcpFlow.hpp"
 
 namespace flowstats {
 
 class TcpStatsCollector : public Collector {
 public:
-    TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf);
+    TcpStatsCollector(FlowstatsConfiguration& conf,
+        DisplayConfiguration const& displayConf,
+        IpToFqdn* ipToFqdn);
     ~TcpStatsCollector() override;
 
     auto processPacket(Tins::Packet const& packet) -> void override;
@@ -25,8 +28,6 @@ public:
     [[nodiscard]] auto getAggregatedMap() const { return aggregatedMap; }
     [[nodiscard]] auto getTcpFlow() const { return hashToTcpFlow; }
 
-    int lastTick = 0;
-
 private:
     std::map<size_t, TcpFlow> hashToTcpFlow;
     std::map<uint16_t, int> srvPortsCounter;
@@ -36,9 +37,12 @@ private:
     auto lookupTcpFlow(Tins::IP const& ipv4Layer,
         Tins::TCP const& tcpLayer,
         FlowId const& flowId) -> TcpFlow&;
-    auto lookupAggregatedFlows(TcpFlow& tcp, FlowId const& flowId) -> std::vector<AggregatedTcpFlow*>;
+    auto lookupAggregatedFlows(TcpFlow const& tcp, FlowId const& flowId) -> std::vector<AggregatedTcpFlow*>;
 
     void timeoutOpeningConnections(timeval now);
     void timeoutFlows(timeval now);
+
+    int lastTick = 0;
+    IpToFqdn* ipToFqdn;
 };
 } // namespace flowstats

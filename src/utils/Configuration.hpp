@@ -39,7 +39,27 @@ struct DisplayConfiguration {
 };
 
 struct FlowstatsConfiguration {
-    std::string interfaceNameOrIP = "";
+    FlowstatsConfiguration() = default;
+
+    [[nodiscard]] auto getInterfaceName() const -> std::string const& { return iface; };
+    [[nodiscard]] auto getPcapFileName() const -> std::string const& { return pcapFileName; };
+    [[nodiscard]] auto getBpfFilter() const -> std::string const& { return bpfFilter; };
+    [[nodiscard]] auto getDomainToServerPort() const -> std::map<std::string, uint16_t> const& { return domainToServerPort; };
+    [[nodiscard]] auto getPerIpAggr() const -> bool const& { return perIpAggr; };
+    [[nodiscard]] auto getDisplayUnknownFqdn() const -> bool const& { return displayUnknownFqdn; };
+    [[nodiscard]] auto getAgentConf() const -> std::optional<DogFood::Configuration> const& { return agentConf; };
+    [[nodiscard]] auto getTimeoutFlow() const -> int const& { return timeoutFlow; };
+
+    auto setBpfFilter(std::string b) { bpfFilter = std::move(b); };
+    auto setPcapFileName(std::string p) { pcapFileName = std::move(p); };
+    auto setIface(std::string i) { iface = std::move(i); };
+    auto setDisplayUnknownFqdn(bool d) { displayUnknownFqdn = d; };
+    auto setPerIpAggr(bool p) { perIpAggr = p; };
+    auto setAgentConf(std::optional<DogFood::Configuration> a) { agentConf = std::move(a); };
+    auto setDomainToServerPort(std::map<std::string, uint16_t> d) { domainToServerPort = std::move(d); };
+
+private:
+    std::string iface = "";
     std::string pcapFileName = "";
     std::string bpfFilter = "";
 
@@ -49,11 +69,6 @@ struct FlowstatsConfiguration {
     bool displayUnknownFqdn = false;
     std::optional<DogFood::Configuration> agentConf;
     int timeoutFlow = 15;
-
-    std::mutex ipToFqdnMutex;
-    std::map<uint32_t, std::string> ipToFqdn;
-
-    FlowstatsConfiguration() = default;
 };
 
 using DisplayPair = std::pair<DisplayType, std::vector<std::string>>;

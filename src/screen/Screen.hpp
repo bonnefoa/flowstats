@@ -20,6 +20,16 @@ public:
     Screen(std::atomic_bool* shouldStop,
         DisplayConfiguration& displayConf,
         std::vector<Collector*> collectors);
+    Screen(Screen const& s)
+        : keyWin(s.keyWin)
+        , valueWin(s.valueWin)
+        , keyHeaderWin(s.keyHeaderWin)
+        , valueHeaderWin(s.valueHeaderWin)
+        , statusWin(s.statusWin)
+        , menuWin(s.menuWin)
+        , shouldStop(s.shouldStop)
+        , displayConf(s.displayConf)
+        , activeCollector(s.activeCollector) {};
     virtual ~Screen();
 
     auto StartDisplay() -> int;

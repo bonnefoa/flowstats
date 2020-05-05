@@ -1,12 +1,10 @@
 #include "Utils.hpp"
-#include <arpa/inet.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <netdb.h>
 #include <spdlog/spdlog.h>
-#include <sys/socket.h>
 #include <tins/pdu.h>
 
 namespace flowstats {
@@ -80,52 +78,6 @@ auto fmtVector(std::string const& format,
     return fmtVector(format, v, std::make_index_sequence<N>());
 }
 
-auto resolveDns(std::string const& domain) -> std::vector<std::string>
-{
-    struct addrinfo hints {
-    }, *res;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags |= AI_CANONNAME;
-    std::vector<std::string> ips;
-
-    int errcode = getaddrinfo(domain.c_str(), nullptr, &hints, &res);
-    if (errcode != 0) {
-        perror("getaddrinfo");
-        return ips;
-    }
-
-    char ip[20];
-    while (res) {
-        void* ptr = &(reinterpret_cast<struct sockaddr_in*>(res->ai_addr))->sin_addr;
-        inet_ntop(res->ai_family, ptr, ip, 20);
-        ips.emplace_back(ip);
-        spdlog::debug("Resolved {} -> {}", domain, ip);
-        res = res->ai_next;
-    }
-    return ips;
-}
-
-static void resolveDomains(const std::vector<std::string>& initialDomains,
-    std::map<uint32_t, std::string> ipToFqdn)
-{
-    for (const auto& domain : initialDomains) {
-        std::vector<std::string> ips = resolveDns(domain);
-        for (auto& ip : ips) {
-            ipToFqdn[Tins::IPv4Address(ip)] = domain;
-        }
-    }
-}
-
-auto getIpToFqdn(const std::vector<std::string>& initialDomains) -> std::map<uint32_t, std::string>
-{
-    std::map<uint32_t, std::string> ipToFqdn;
-    ipToFqdn[Tins::IPv4Address("127.0.0.1")] = "localhost";
-    resolveDomains(initialDomains, ipToFqdn);
-    return ipToFqdn;
-}
-
 auto stringsToInts(const std::vector<std::string>& strInts) -> std::set<int>
 {
     std::set<int> res;
@@ -194,19 +146,4 @@ auto packetToTimeval(const Tins::Packet& packet) -> timeval
     return { ts.seconds(), ts.microseconds() };
 }
 
-auto getFlowFqdn(FlowstatsConfiguration* conf, uint32_t srvIp) -> std::optional<std::string>
-{
-    std::optional<std::string> fqdn;
-    const std::lock_guard<std::mutex> lock(conf->ipToFqdnMutex);
-    auto it = conf->ipToFqdn.find(srvIp);
-    if (it == conf->ipToFqdn.end()) {
-        if (conf->displayUnknownFqdn == false) {
-            return {};
-        }
-        fqdn = "Unknown";
-        return fqdn;
-    }
-    fqdn = it->second;
-    return fqdn;
-}
 } // namespace flowstats

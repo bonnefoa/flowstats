@@ -4,6 +4,7 @@
 #include "Collector.hpp"
 #include "Configuration.hpp"
 #include "DnsFlow.hpp"
+#include "IpToFqdn.hpp"
 #include "Utils.hpp"
 #include <spdlog/spdlog.h>
 
@@ -11,7 +12,9 @@ namespace flowstats {
 
 class DnsStatsCollector : public Collector {
 public:
-    DnsStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf);
+    DnsStatsCollector(FlowstatsConfiguration& conf,
+        DisplayConfiguration const& displayConf,
+        IpToFqdn* ipToFqdn);
     ~DnsStatsCollector() override;
 
     auto processPacket(Tins::Packet const& packet) -> void override;
@@ -31,6 +34,7 @@ private:
     auto updateIpToFqdn(Tins::DNS const& dns, std::string const& fqdn) -> void;
 
     auto addFlowToAggregation(DnsFlow const& flow) -> void;
+    IpToFqdn* ipToFqdn;
     std::map<uint16_t, DnsFlow> transactionIdToDnsFlow;
     std::vector<DnsFlow> dnsFlows;
     std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedDnsFlows;

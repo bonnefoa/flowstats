@@ -389,5 +389,13 @@ auto Screen::StopDisplay() -> void
 }
 
 Screen::~Screen()
-    = default;
+{
+    delwin(keyWin);
+    delwin(valueWin);
+    delwin(keyHeaderWin);
+    delwin(valueHeaderWin);
+    delwin(statusWin);
+    delwin(menuWin);
+}
+
 } // namespace flowstats

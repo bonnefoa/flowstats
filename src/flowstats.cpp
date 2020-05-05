@@ -1,5 +1,6 @@
 #include "Configuration.hpp"
 #include "DnsStatsCollector.hpp"
+#include "IpToFqdn.hpp"
 #include "PktSource.hpp"
 #include "Screen.hpp"
 #include "SslStatsCollector.hpp"
@@ -81,10 +82,10 @@ auto main(int argc, char* argv[]) -> int
         case 0:
             break;
         case 'b':
-            conf.bpfFilter = optarg;
+            conf.setBpfFilter(optarg);
             break;
         case 'i':
-            conf.interfaceNameOrIP = optarg;
+            conf.setIface(optarg);
             break;
         case 'a':
             agentAddr = optarg;
@@ -93,7 +94,7 @@ auto main(int argc, char* argv[]) -> int
             displayConf.maxResults = atoi(optarg);
             break;
         case 'f':
-            conf.pcapFileName = optarg;
+            conf.setPcapFileName(optarg);
             break;
         case 'p':
             localhostIp = optarg;
@@ -112,13 +113,13 @@ auto main(int argc, char* argv[]) -> int
             break;
 
         case 'u':
-            conf.displayUnknownFqdn = true;
+            conf.setDisplayUnknownFqdn(true);
             break;
         case 'n':
             displayConf.noCurses = true;
             break;
         case 'w':
-            conf.perIpAggr = true;
+            conf.setPerIpAggr(true);
             break;
         case 'l':
             flowstats::listInterfaces();
@@ -129,7 +130,7 @@ auto main(int argc, char* argv[]) -> int
         }
     }
 
-    if (conf.pcapFileName == "" && conf.interfaceNameOrIP == "") {
+    if (conf.getPcapFileName() == "" && conf.getInterfaceName() == "") {
         EXIT_WITH_ERROR("Neither interface nor input pcap file were provided");
     }
 
@@ -137,30 +138,27 @@ auto main(int argc, char* argv[]) -> int
     spdlog::set_default_logger(file_logger);
     spdlog::set_pattern("[%H:%M:%S %z] [thread %t] %v");
 
-    conf.agentConf = DogFood::Configure(agentAddr);
+    conf.setAgentConf(DogFood::Configure(agentAddr));
     std::vector<flowstats::Collector*> collectors;
-    conf.ipToFqdn = flowstats::getIpToFqdn(initialDomains);
-    conf.domainToServerPort = flowstats::getDomainToServerPort(initialServerPorts);
+    conf.setDomainToServerPort(flowstats::getDomainToServerPort(initialServerPorts));
+
+    flowstats::IpToFqdn ipToFqdn(conf, initialDomains, localhostIp);
 
     collectors.push_back(
-        new flowstats::DnsStatsCollector(conf, displayConf));
-    collectors.push_back(new flowstats::SslStatsCollector(conf, displayConf));
+        new flowstats::DnsStatsCollector(conf, displayConf, &ipToFqdn));
+    collectors.push_back(new flowstats::SslStatsCollector(conf,
+        displayConf, &ipToFqdn));
     collectors.push_back(
-        new flowstats::TcpStatsCollector(conf, displayConf));
+        new flowstats::TcpStatsCollector(conf, displayConf, &ipToFqdn));
 
     std::atomic_bool shouldStop = false;
     flowstats::Screen screen(&shouldStop, displayConf, collectors);
     flowstats::PktSource pktSource(&screen, conf, collectors, &shouldStop);
-    if (!localhostIp.empty()) {
-        conf.ipToFqdn[Tins::IPv4Address(localhostIp)] = "localhost";
-    }
-    if (conf.pcapFileName != "") {
+    if (conf.getPcapFileName() != "") {
         pktSource.analyzePcapFile();
     } else {
         std::vector<Tins::IPv4Address> localIps = pktSource.getLocalIps();
-        for (auto& ip : localIps) {
-            conf.ipToFqdn[ip] = "localhost";
-        }
+        ipToFqdn.updateFqdn("localhost", localIps);
         screen.StartDisplay();
         pktSource.analyzeLiveTraffic();
     }

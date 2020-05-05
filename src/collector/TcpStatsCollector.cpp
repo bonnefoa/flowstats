@@ -8,10 +8,13 @@
 
 namespace flowstats {
 
-TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf)
+TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration& conf,
+    DisplayConfiguration const& displayConf,
+    IpToFqdn* ipToFqdn)
     : Collector { conf, displayConf }
+    , ipToFqdn(ipToFqdn)
 {
-    if (conf.perIpAggr) {
+    if (conf.getPerIpAggr()) {
         flowFormatter.setDisplayKeys({ "fqdn", "ip", "port", "dir" });
     } else {
         flowFormatter.setDisplayKeys({ "fqdn", "port", "dir" });
@@ -38,7 +41,7 @@ auto TcpStatsCollector::lookupTcpFlow(
     if (tcpFlow.flowId.ports[0] == 0) {
         tcpFlow = TcpFlow(ip, tcp);
         tcpFlow.detectServer(tcp, flowId.direction, srvPortsCounter);
-        std::optional<std::string> fqdn = getFlowFqdn(&conf, tcpFlow.getSrvIp());
+        std::optional<std::string> fqdn = ipToFqdn->getFlowFqdn(tcpFlow.getSrvIp());
         if (!fqdn.has_value()) {
             return tcpFlow;
         }
@@ -49,10 +52,10 @@ auto TcpStatsCollector::lookupTcpFlow(
     return tcpFlow;
 }
 
-auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow& tcpFlow, FlowId const& flowId) -> std::vector<AggregatedTcpFlow*>
+auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow const& tcpFlow, FlowId const& flowId) -> std::vector<AggregatedTcpFlow*>
 {
     IPv4 ipSrvInt = 0;
-    if (conf.perIpAggr) {
+    if (conf.getPerIpAggr()) {
         ipSrvInt = tcpFlow.getSrvIpInt();
     }
     AggregatedTcpFlow* aggregatedFlow;
@@ -125,9 +128,10 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
         }
         uint32_t maxDelta = std::max(deltas[0], deltas[1]);
         spdlog::debug("flow.{}, maxDelta: {}", flow.flowId.toString(), maxDelta);
-        if (maxDelta > conf.timeoutFlow) {
+        auto timeoutFlow = conf.getTimeoutFlow();
+        if (maxDelta > timeoutFlow) {
             spdlog::debug("Timeout flow {}, now {}, maxDelta {} > {}",
-                flow.flowId.toString(), now.tv_sec, maxDelta, conf.timeoutFlow);
+                flow.flowId.toString(), now.tv_sec, maxDelta, timeoutFlow);
             toTimeout.push_back(it.first);
             flow.timeoutFlow();
         }
@@ -186,6 +190,9 @@ auto sortAggregatedTcpBySrt(AggregatedPairPointer const& left,
 {
     auto* rightTcp = dynamic_cast<AggregatedTcpFlow*>(right.second);
     auto* leftTcp = dynamic_cast<AggregatedTcpFlow*>(left.second);
+    if (rightTcp == nullptr || leftTcp == nullptr) {
+        return false;
+    }
     return rightTcp->srts.getPercentile(1.0) < leftTcp->srts.getPercentile(1.0);
 }
 
@@ -194,6 +201,9 @@ auto sortAggregatedTcpByRequest(AggregatedPairPointer const& left,
 {
     auto* rightTcp = dynamic_cast<AggregatedTcpFlow*>(right.second);
     auto* leftTcp = dynamic_cast<AggregatedTcpFlow*>(left.second);
+    if (rightTcp == nullptr || leftTcp == nullptr) {
+        return false;
+    }
     return rightTcp->totalSrts < leftTcp->totalSrts;
 }
 
@@ -202,6 +212,9 @@ auto sortAggregatedTcpByRequestRate(AggregatedPairPointer const& left,
 {
     auto* rightTcp = dynamic_cast<AggregatedTcpFlow*>(right.second);
     auto* leftTcp = dynamic_cast<AggregatedTcpFlow*>(left.second);
+    if (rightTcp == nullptr || leftTcp == nullptr) {
+        return false;
+    }
     return rightTcp->srts.getCount() < leftTcp->srts.getCount();
 }
 

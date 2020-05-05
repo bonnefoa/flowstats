@@ -6,10 +6,11 @@
 
 namespace flowstats {
 
-SslStatsCollector::SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf)
+SslStatsCollector::SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf, IpToFqdn* ipToFqdn)
     : Collector { conf, displayConf }
+    , ipToFqdn(ipToFqdn)
 {
-    if (conf.perIpAggr) {
+    if (conf.getPerIpAggr()) {
         flowFormatter.setDisplayKeys({ "fqdn", "ip", "port", "dir" });
     } else {
         flowFormatter.setDisplayKeys({ "fqdn", "port", "dir" });
@@ -32,7 +33,7 @@ auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow&
     if (sslFlow.flowId.ports[0] == 0) {
         spdlog::debug("Create ssl flow {}", flowId.toString());
         sslFlow.flowId = flowId;
-        std::optional<std::string> fqdn = getFlowFqdn(&conf, sslFlow.getSrvIpInt());
+        std::optional<std::string> fqdn = ipToFqdn->getFlowFqdn(sslFlow.getSrvIpInt());
         if (!fqdn.has_value()) {
             return sslFlow;
         }
@@ -48,7 +49,7 @@ auto SslStatsCollector::lookupAggregatedFlows(SslFlow const& sslFlow,
 {
     std::vector<AggregatedSslFlow*> subflows;
     IPv4 ipSrvInt = 0;
-    if (conf.perIpAggr) {
+    if (conf.getPerIpAggr()) {
         ipSrvInt = sslFlow.getSrvIpInt();
     }
     AggregatedTcpKey tcpKey = AggregatedTcpKey(fqdn, ipSrvInt, sslFlow.getSrvPort());

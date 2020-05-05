@@ -13,13 +13,14 @@ namespace flowstats {
 
 void Collector::sendMetrics()
 {
-    if (!conf.agentConf.has_value()) {
+    auto agentConf = conf.getAgentConf();
+    if (!agentConf.has_value()) {
         return;
     }
     std::vector<std::string> metrics = getMetrics();
     for (auto& metric : metrics) {
         spdlog::debug("Sending {}", metric);
-        DogFood::Send(metric, conf.agentConf.value());
+        DogFood::Send(metric, agentConf.value());
     }
 }
 

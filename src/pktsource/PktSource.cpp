@@ -40,7 +40,7 @@ auto PktSource::getLocalIps() -> std::vector<Tins::IPv4Address>
 auto PktSource::analyzePcapFile()
     -> int
 {
-    auto* reader = new Tins::FileSniffer(conf.pcapFileName, conf.bpfFilter);
+    auto* reader = new Tins::FileSniffer(conf.getPcapFileName(), conf.getBpfFilter());
     if (reader == nullptr) {
         return 1;
     }
@@ -80,8 +80,8 @@ auto PktSource::getLiveDevice() -> Tins::Sniffer*
 {
     Tins::SnifferConfiguration snifferConf;
     snifferConf.set_promisc_mode(true);
-    snifferConf.set_filter(conf.bpfFilter);
-    auto* dev = new Tins::Sniffer(conf.interfaceNameOrIP, snifferConf);
+    snifferConf.set_filter(conf.getBpfFilter());
+    auto* dev = new Tins::Sniffer(conf.getInterfaceName(), snifferConf);
     return dev;
 }
 
@@ -103,7 +103,8 @@ auto PktSource::updateScreen(int currentTime) -> void
 auto PktSource::analyzeLiveTraffic() -> int
 {
     int64_t startTs = time(nullptr);
-    spdlog::info("Start live traffic capture with filter {}", conf.bpfFilter);
+    spdlog::info("Start live traffic capture with filter {}",
+        conf.getBpfFilter());
     auto* dev = getLiveDevice();
     for (const auto& packet : *dev) {
         if (shouldStop->load()) {

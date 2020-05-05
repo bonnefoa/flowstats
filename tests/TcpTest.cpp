@@ -156,10 +156,8 @@ TEST_CASE("Tcp double", "[tcp]")
 TEST_CASE("Tcp 0 win", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
-    auto tester = Tester();
+    auto tester = Tester(true);
     auto& tcpStatsCollector = tester.getTcpStatsCollector();
-    FlowstatsConfiguration& conf = tester.getFlowstatsConfiguration();
-    conf.perIpAggr = true;
 
     SECTION("0 wins are correctly counted")
     {
@@ -178,13 +176,12 @@ TEST_CASE("Tcp 0 win", "[tcp]")
 TEST_CASE("Tcp rst", "[tcp]")
 {
 
-    auto tester = Tester();
+    auto tester = Tester(true);
     auto& tcpStatsCollector = tester.getTcpStatsCollector();
 
-    FlowstatsConfiguration& conf = tester.getFlowstatsConfiguration();
+    auto& ipToFqdn = tester.getIpToFqdn();
     Tins::IPv4Address ip("10.142.226.42");
-    conf.ipToFqdn[ip] = "whatever";
-    conf.perIpAggr = true;
+    ipToFqdn.updateFqdn("whatever", ip);
 
     SECTION("Rst only close once")
     {

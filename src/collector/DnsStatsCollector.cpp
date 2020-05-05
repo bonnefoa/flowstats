@@ -4,8 +4,11 @@
 
 namespace flowstats {
 
-DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf)
+DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration& conf,
+    DisplayConfiguration const& displayConf,
+    IpToFqdn* ipToFqdn)
     : Collector { conf, displayConf }
+    , ipToFqdn(ipToFqdn)
 {
     flowFormatter.setDisplayKeys({ "fqdn", "ip", "port", "proto", "type", "dir" });
     displayPairs = {
@@ -41,19 +44,13 @@ auto DnsStatsCollector::updateIpToFqdn(Tins::DNS const& dns, std::string const& 
 {
     auto answers = dns.answers();
     std::vector<Tins::IPv4Address> ips;
-    for (auto answer : answers) {
+    for (auto const& answer : answers) {
         if (answer.query_type() == Tins::DNS::A) {
             ips.push_back(Tins::IPv4Address(answer.data()));
         }
     }
 
-    {
-        const std::lock_guard<std::mutex> lock(conf.ipToFqdnMutex);
-        for (auto ip : ips) {
-            spdlog::debug("Fqdn mapping {} -> {}", ip.to_string(), fqdn);
-            conf.ipToFqdn[ip] = fqdn;
-        }
-    }
+    ipToFqdn->updateFqdn(fqdn, ips);
 }
 
 auto DnsStatsCollector::newDnsQuery(Tins::Packet const& packet, Tins::DNS const& dns) -> void
@@ -189,6 +186,9 @@ auto sortAggregatedDnsBySrt(AggregatedPairPointer const& left,
 {
     auto* rightDns = dynamic_cast<AggregatedDnsFlow*>(right.second);
     auto* leftDns = dynamic_cast<AggregatedDnsFlow*>(left.second);
+    if (rightDns == nullptr || leftDns == nullptr) {
+        return false;
+    }
     return rightDns->srts.getPercentile(1.0) < leftDns->srts.getPercentile(1.0);
 }
 
@@ -197,6 +197,9 @@ auto sortAggregatedDnsByRequest(AggregatedPairPointer const& left,
 {
     auto* rightDns = dynamic_cast<AggregatedDnsFlow*>(right.second);
     auto* leftDns = dynamic_cast<AggregatedDnsFlow*>(left.second);
+    if (rightDns == nullptr || leftDns == nullptr) {
+        return false;
+    }
     return rightDns->totalQueries < leftDns->totalQueries;
 }
 
@@ -205,6 +208,9 @@ auto sortAggregatedDnsByRequestRate(AggregatedPairPointer const& left,
 {
     auto* rightDns = dynamic_cast<AggregatedDnsFlow*>(right.second);
     auto* leftDns = dynamic_cast<AggregatedDnsFlow*>(left.second);
+    if (rightDns == nullptr || leftDns == nullptr) {
+        return false;
+    }
     return rightDns->queries < leftDns->queries;
 }
 

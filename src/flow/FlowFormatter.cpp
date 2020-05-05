@@ -107,13 +107,10 @@ FlowFormatter::FlowFormatter(std::map<std::string, std::string>
     std::map<std::string, std::string> headers,
     std::vector<std::string> displayKeys,
     std::vector<std::string> displayValues)
-    : formatPatterns(std::move(std::move(formatPatterns)))
-    , headers(std::move(std::move(headers)))
-    , displayKeys(std::move(std::move(displayKeys)))
-    , displayValues(std::move(std::move(displayValues)))
-{
-    FlowFormatter();
-};
+    : formatPatterns(std::move(formatPatterns))
+    , headers(std::move(headers))
+    , displayKeys(std::move(displayKeys))
+    , displayValues(std::move(displayValues)) {};
 
 auto FlowFormatter::outputKey(std::map<std::string,
     std::string>& values) -> std::string
@@ -144,7 +141,7 @@ void FlowFormatter::outputHeaders(std::string& keyHeaders,
 
 void FlowFormatter::setDisplayKeys(std::vector<std::string> const& keys)
 {
-    for (auto key : keys) {
+    for (auto const& key : keys) {
         if (formatPatterns.find(key) == formatPatterns.end()) {
             spdlog::error("Could not find pattern for {}", key);
         }
@@ -154,7 +151,7 @@ void FlowFormatter::setDisplayKeys(std::vector<std::string> const& keys)
 
 void FlowFormatter::setDisplayValues(std::vector<std::string> const& values)
 {
-    for (auto key : values) {
+    for (auto const& key : values) {
         if (formatPatterns.find(key) == formatPatterns.end()) {
             spdlog::error("Could not find pattern for {}", key);
         }

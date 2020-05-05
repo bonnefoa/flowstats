@@ -10,7 +10,7 @@ int readPcap(FlowstatsConfiguration const& conf, Collector& collector,
 
 class Tester {
 public:
-    Tester();
+    Tester(bool perIpAggr = false);
     virtual ~Tester() = default;
 
     auto readPcap(std::string pcap, std::string bpf = "",
@@ -19,11 +19,13 @@ public:
     auto getDnsStatsCollector() const -> DnsStatsCollector const& { return dnsStatsCollector; }
     auto getTcpStatsCollector() const -> TcpStatsCollector const& { return tcpStatsCollector; }
     auto getSslStatsCollector() const -> SslStatsCollector const& { return sslStatsCollector; }
-    auto getFlowstatsConfiguration() -> FlowstatsConfiguration& { return conf; }
+    auto getFlowstatsConfiguration() const -> FlowstatsConfiguration const& { return conf; }
+    auto getIpToFqdn() -> IpToFqdn& { return ipToFqdn; }
 
 private:
     DisplayConfiguration displayConf;
     FlowstatsConfiguration conf;
+    IpToFqdn ipToFqdn;
 
     DnsStatsCollector dnsStatsCollector;
     SslStatsCollector sslStatsCollector;

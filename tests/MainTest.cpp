@@ -7,13 +7,15 @@
 
 using namespace flowstats;
 
-Tester::Tester()
+Tester::Tester(bool perIpAggr)
     : conf()
-    , dnsStatsCollector(conf, displayConf)
-    , sslStatsCollector(conf, displayConf)
-    , tcpStatsCollector(conf, displayConf)
+    , ipToFqdn(conf)
+    , dnsStatsCollector(conf, displayConf, &ipToFqdn)
+    , sslStatsCollector(conf, displayConf, &ipToFqdn)
+    , tcpStatsCollector(conf, displayConf, &ipToFqdn)
 {
-    conf.displayUnknownFqdn = true;
+    conf.setDisplayUnknownFqdn(true);
+    conf.setPerIpAggr(perIpAggr);
     collectors.push_back(&dnsStatsCollector);
     collectors.push_back(&sslStatsCollector);
     collectors.push_back(&tcpStatsCollector);
