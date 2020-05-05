@@ -17,7 +17,7 @@ using hashFlow = std::pair<uint32_t, SslFlow>;
 
 class SslStatsCollector : public Collector {
 public:
-    SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf, IpToFqdn* ipToFqdn);
+    SslStatsCollector(FlowstatsConfiguration const& conf, DisplayConfiguration const& displayConf, IpToFqdn* ipToFqdn);
     ~SslStatsCollector() override;
 
     auto processPacket(Tins::Packet const& packet) -> void override;

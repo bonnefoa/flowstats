@@ -6,7 +6,7 @@
 
 namespace flowstats {
 
-SslStatsCollector::SslStatsCollector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf, IpToFqdn* ipToFqdn)
+SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, DisplayConfiguration const& displayConf, IpToFqdn* ipToFqdn)
     : Collector { conf, displayConf }
     , ipToFqdn(ipToFqdn)
 {

@@ -8,7 +8,7 @@
 
 namespace flowstats {
 
-TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration& conf,
+TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
     DisplayConfiguration const& displayConf,
     IpToFqdn* ipToFqdn)
     : Collector { conf, displayConf }

@@ -12,7 +12,7 @@ namespace flowstats {
 
 class DnsStatsCollector : public Collector {
 public:
-    DnsStatsCollector(FlowstatsConfiguration& conf,
+    DnsStatsCollector(FlowstatsConfiguration const& conf,
         DisplayConfiguration const& displayConf,
         IpToFqdn* ipToFqdn);
     ~DnsStatsCollector() override;

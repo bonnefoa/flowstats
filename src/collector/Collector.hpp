@@ -23,7 +23,7 @@ auto collectorProtocolToString(CollectorProtocol proto) -> std::string;
 
 class Collector {
 public:
-    Collector(FlowstatsConfiguration& conf, DisplayConfiguration const& displayConf)
+    Collector(FlowstatsConfiguration const& conf, DisplayConfiguration const& displayConf)
         : conf(conf)
         , displayConf(displayConf) {};
     virtual ~Collector() = default;
@@ -63,7 +63,7 @@ protected:
 
     auto getDataMutex() -> std::mutex* { return &dataMutex; };
 
-    FlowstatsConfiguration& conf;
+    FlowstatsConfiguration const& conf;
     DisplayConfiguration const& displayConf;
     Flow* totalFlow = nullptr;
     std::vector<DisplayPair> displayPairs;

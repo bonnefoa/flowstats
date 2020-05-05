@@ -9,7 +9,7 @@ namespace flowstats {
 
 class TcpStatsCollector : public Collector {
 public:
-    TcpStatsCollector(FlowstatsConfiguration& conf,
+    TcpStatsCollector(FlowstatsConfiguration const& conf,
         DisplayConfiguration const& displayConf,
         IpToFqdn* ipToFqdn);
     ~TcpStatsCollector() override;

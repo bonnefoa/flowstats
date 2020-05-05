@@ -4,7 +4,7 @@
 
 namespace flowstats {
 
-DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration& conf,
+DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
     DisplayConfiguration const& displayConf,
     IpToFqdn* ipToFqdn)
     : Collector { conf, displayConf }
@@ -25,7 +25,7 @@ auto DnsStatsCollector::processPacket(Tins::Packet const& packet) -> void
 {
     timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
-    auto pdu = packet.pdu();
+    auto const* pdu = packet.pdu();
     auto dns = pdu->rfind_pdu<Tins::RawPDU>().to<Tins::DNS>();
 
     if (dns.type() == Tins::DNS::QUERY) {
@@ -46,7 +46,7 @@ auto DnsStatsCollector::updateIpToFqdn(Tins::DNS const& dns, std::string const& 
     std::vector<Tins::IPv4Address> ips;
     for (auto const& answer : answers) {
         if (answer.query_type() == Tins::DNS::A) {
-            ips.push_back(Tins::IPv4Address(answer.data()));
+            ips.emplace_back(Tins::IPv4Address(answer.data()));
         }
     }
 
@@ -155,7 +155,7 @@ auto DnsStatsCollector::getMetrics() -> std::vector<std::string>
                 tags));
         }
         if (val->records) {
-            lst.push_back(DogFood::Metric("flowstats.dns.records", val->totalRecords / val->totalQueries, DogFood::Counter, 1,
+            lst.push_back(DogFood::Metric("flowstats.dns.records", int(val->totalRecords / val->totalQueries), DogFood::Counter, 1,
                 tags));
         }
         if (val->truncated) {
