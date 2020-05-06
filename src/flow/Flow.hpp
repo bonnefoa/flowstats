@@ -55,17 +55,17 @@ public:
         return (bytes[0] + bytes[1]) < (flow.bytes[0] + flow.bytes[1]);
     }
 
-    auto getSrvPort() const -> uint16_t;
-    auto getSrvIp() const -> Tins::IPv4Address;
-    auto getCltIp() const -> Tins::IPv4Address;
-    auto getCltIpInt() const -> IPv4;
-    auto getSrvIpInt() const -> IPv4;
+    [[nodiscard]] auto getSrvPort() const -> uint16_t;
+    [[nodiscard]] auto getSrvIp() const -> Tins::IPv4Address;
+    [[nodiscard]] auto getCltIp() const -> Tins::IPv4Address;
+    [[nodiscard]] auto getCltIpInt() const -> IPv4;
+    [[nodiscard]] auto getSrvIpInt() const -> IPv4;
 
     auto addPacket(Tins::Packet const& packet, Direction const direction) -> void;
     virtual auto addFlow(Flow const* flow) -> void;
     virtual auto addAggregatedFlow(Flow const* flow) -> void;
     virtual auto resetFlow(bool resetTotal) -> void;
     virtual auto fillValues(std::map<std::string, std::string>& map,
-        Direction direction, int duration) -> void;
+        Direction direction, int duration) const -> void;
 };
-}
+} // namespace flowstats

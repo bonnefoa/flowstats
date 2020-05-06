@@ -2,8 +2,8 @@
 
 namespace flowstats {
 
-void AggregatedSslFlow::fillValues(std::map<std::string, std::string>& values,
-    Direction direction, int duration)
+auto AggregatedSslFlow::fillValues(std::map<std::string, std::string>& values,
+    Direction direction, int duration) const -> void
 {
     Flow::fillValues(values, direction, duration);
 

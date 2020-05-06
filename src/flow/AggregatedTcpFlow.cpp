@@ -27,8 +27,8 @@ void AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
         packet.pdu()->advertised_size());
 }
 
-void AggregatedTcpFlow::fillValues(std::map<std::string, std::string>& values,
-    Direction direction, int duration)
+auto AggregatedTcpFlow::fillValues(std::map<std::string, std::string>& values,
+    Direction direction, int duration) const -> void
 {
     Flow::fillValues(values, direction, duration);
     values["syn"] = std::to_string(syns[direction]);

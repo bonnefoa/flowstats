@@ -25,9 +25,9 @@ struct FlowFormatter {
         std::vector<std::string> displayValues);
     virtual ~FlowFormatter() {};
 
-    std::string outputKey(std::map<std::string, std::string>& values);
-    std::string outputValue(std::map<std::string, std::string>& values);
-    void outputHeaders(std::string& keyHeaders, std::string& valueHeaders);
+    auto outputKey(std::map<std::string, std::string> const& values) const -> std::string;
+    auto outputValue(std::map<std::string, std::string> const& values) const -> std::string;
+    auto outputHeaders(std::string& keyHeaders, std::string& valueHeaders) const -> void;
 
     void setDisplayKeys(std::vector<std::string> const& keys);
     void setDisplayValues(std::vector<std::string> const& values);

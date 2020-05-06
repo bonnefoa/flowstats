@@ -42,13 +42,13 @@ struct AggregatedDnsFlow : Flow {
     auto resetFlow(bool resetTotal) -> void override;
     auto operator<(AggregatedDnsFlow const& b) { return queries < b.queries; }
     auto fillValues(std::map<std::string, std::string>& values,
-        Direction direction, int duration) -> void override;
+        Direction direction, int duration) const -> void override;
     auto addFlow(Flow const* flow) -> void override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
 
 private:
-    std::vector<std::pair<int, int>> getTopClientIps();
-    std::string getTopClientIpsStr();
+    auto getTopClientIps() const -> std::vector<std::pair<int, int>>;
+    auto getTopClientIpsStr() const -> std::string;
 };
 
 struct AggregatedDnsKey : AggregatedKey {

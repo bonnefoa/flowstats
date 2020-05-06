@@ -46,11 +46,11 @@ struct AggregatedTcpFlow : Flow {
         return syns[0] < b.syns[0];
     }
 
-    void updateFlow(Tins::Packet const& packet, FlowId const& flowId,
+    auto updateFlow(Tins::Packet const& packet, FlowId const& flowId,
         Tins::IP const& ip,
-        Tins::TCP const& tcpLayer);
+        Tins::TCP const& tcpLayer) -> void;
 
-    void resetFlow(bool resetTotal);
-    void fillValues(std::map<std::string, std::string>& map, Direction direction, int duration);
+    auto resetFlow(bool resetTotal) -> void;
+    auto fillValues(std::map<std::string, std::string>& map, Direction direction, int duration) const -> void;
 };
 }

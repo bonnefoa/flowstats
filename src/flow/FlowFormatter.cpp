@@ -113,27 +113,27 @@ FlowFormatter::FlowFormatter(std::map<std::string, std::string>
     , displayValues(std::move(displayValues)) {};
 
 auto FlowFormatter::outputKey(std::map<std::string,
-    std::string>& values) -> std::string
+    std::string> const& values) const -> std::string
 {
     fmt::memory_buffer keyBuf;
     for (auto& el : displayKeys) {
-        fmt::format_to(keyBuf, formatPatterns[el], values[el]);
+        fmt::format_to(keyBuf, formatPatterns.at(el), values.at(el));
     }
     return to_string(keyBuf);
 }
 
 auto FlowFormatter::outputValue(std::map<std::string,
-    std::string>& values) -> std::string
+    std::string> const& values) const -> std::string
 {
     fmt::memory_buffer valueBuf;
     for (auto& el : displayValues) {
-        fmt::format_to(valueBuf, formatPatterns[el], values[el]);
+        fmt::format_to(valueBuf, formatPatterns.at(el), values.at(el));
     }
     return to_string(valueBuf);
 }
 
-void FlowFormatter::outputHeaders(std::string& keyHeaders,
-    std::string& valueHeaders)
+auto FlowFormatter::outputHeaders(std::string& keyHeaders,
+    std::string& valueHeaders) const -> void
 {
     keyHeaders = outputKey(headers);
     valueHeaders = outputValue(headers);

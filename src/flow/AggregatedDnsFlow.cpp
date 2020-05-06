@@ -5,7 +5,7 @@
 
 namespace flowstats {
 
-auto AggregatedDnsFlow::getTopClientIps() -> std::vector<std::pair<int, int>>
+auto AggregatedDnsFlow::getTopClientIps() const -> std::vector<std::pair<int, int>>
 {
     int size = std::min(5, static_cast<int>(sourceIps.size()));
     std::vector<std::pair<int, int>> topIps(size);
@@ -18,7 +18,7 @@ auto AggregatedDnsFlow::getTopClientIps() -> std::vector<std::pair<int, int>>
     return topIps;
 }
 
-auto AggregatedDnsFlow::getTopClientIpsStr() -> std::string
+auto AggregatedDnsFlow::getTopClientIpsStr() const -> std::string
 {
     auto topIps = getTopClientIps();
     std::vector<std::string> topIpsStr;
@@ -31,8 +31,8 @@ auto AggregatedDnsFlow::getTopClientIpsStr() -> std::string
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
 
-void AggregatedDnsFlow::fillValues(std::map<std::string, std::string>& values,
-    Direction direction, int duration)
+auto AggregatedDnsFlow::fillValues(std::map<std::string, std::string>& values,
+    Direction direction, int duration) const -> void
 {
     Flow::fillValues(values, direction, duration);
     if (fqdn == "Total") {

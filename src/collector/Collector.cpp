@@ -24,10 +24,10 @@ void Collector::sendMetrics()
     }
 }
 
-auto Collector::outputFlow(Flow* flow,
+auto Collector::outputFlow(Flow const* flow,
     std::vector<std::string>& keyLines,
-    std::vector<std::string>& valueLines, int duration,
-    int position)
+    std::vector<std::string>& valueLines,
+    int duration, int position) const -> void
 {
     for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
         auto direction = static_cast<Direction>(j);
@@ -55,8 +55,8 @@ auto Collector::fillOutputs(std::vector<AggregatedPairPointer>& aggregatedPairs,
     valueLines.resize(2);
 
     int i = 0;
-    for (auto pair : aggregatedPairs) {
-        auto flow = pair.second;
+    for (auto const& pair : aggregatedPairs) {
+        auto* flow = pair.second;
         if (flow->fqdn.find(displayConf.filter) == std::string::npos) {
             continue;
         }

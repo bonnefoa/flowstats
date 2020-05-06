@@ -19,12 +19,12 @@ auto Percentile::addPoints(Percentile const& perc) -> void
     points.insert(points.end(), perc.points.begin(), perc.points.end());
 }
 
-auto Percentile::getCount() -> int
+auto Percentile::getCount() const -> int
 {
     return points.size();
 }
 
-auto Percentile::getPercentile(float p) -> uint32_t
+auto Percentile::getPercentile(float p) const -> uint32_t
 {
     if (points.size() == 0) {
         return 0;
@@ -35,7 +35,7 @@ auto Percentile::getPercentile(float p) -> uint32_t
     return points[int(points.size() * p + 0.5) - 1];
 }
 
-auto Percentile::getPercentileStr(float p) -> std::string
+auto Percentile::getPercentileStr(float p) const -> std::string
 {
     if (points.size() == 0) {
         return "-";

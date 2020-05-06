@@ -4,7 +4,8 @@
 
 namespace flowstats {
 
-void Flow::addPacket(Tins::Packet const& packet, Direction const direction)
+auto Flow::addPacket(Tins::Packet const& packet,
+    Direction const direction) -> void
 {
     packets[direction]++;
     bytes[direction] += packet.pdu()->advertised_size();
@@ -17,8 +18,8 @@ void Flow::addPacket(Tins::Packet const& packet, Direction const direction)
     end = tv;
 }
 
-void Flow::fillValues(std::map<std::string, std::string>& values,
-    Direction direction, int duration)
+auto Flow::fillValues(std::map<std::string, std::string>& values,
+    Direction direction, int duration) const -> void
 {
     if (duration) {
         values["pkts_s"] = prettyFormatNumber(totalPackets[direction] / duration);

@@ -53,12 +53,12 @@ protected:
         std::vector<std::string>& keyLines,
         std::vector<std::string>& valueLines, int duration);
 
-    auto outputFlow(Flow* flow,
+    auto outputFlow(Flow const* flow,
         std::vector<std::string>& keyLines,
-        std::vector<std::string>& valueLines, int duration,
-        int position);
+        std::vector<std::string>& valueLines,
+        int duration, int position) const -> void;
 
-    virtual FlowFormatter getFlowFormatter() { return flowFormatter; };
+    virtual auto getFlowFormatter() -> FlowFormatter { return flowFormatter; };
     FlowFormatter flowFormatter;
 
     auto getDataMutex() -> std::mutex* { return &dataMutex; };

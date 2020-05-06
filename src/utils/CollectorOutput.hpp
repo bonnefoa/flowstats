@@ -32,6 +32,6 @@ private:
     std::vector<std::string> values;
     std::string keyHeaders;
     std::string valueHeaders;
-    int delta;
+    int delta = 0;
 };
 } // namespace flowstats
