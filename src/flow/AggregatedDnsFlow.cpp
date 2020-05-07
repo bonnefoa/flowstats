@@ -1,4 +1,5 @@
 #include "AggregatedDnsFlow.hpp"
+#include "Field.hpp"
 #include "FlowFormatter.hpp"
 #include <algorithm>
 #include <fmt/format.h>
@@ -31,7 +32,7 @@ auto AggregatedDnsFlow::getTopClientIpsStr() const -> std::string
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
 
-auto AggregatedDnsFlow::fillValues(std::map<std::string, std::string>& values,
+auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>& values,
     Direction direction, int duration) const -> void
 {
     Flow::fillValues(values, direction, duration);
@@ -39,53 +40,53 @@ auto AggregatedDnsFlow::fillValues(std::map<std::string, std::string>& values,
         if (direction == FROM_SERVER) {
             return;
         }
-        values["fqdn"] = fqdn;
-        values["ip"] = "-";
-        values["port"] = "-";
-        values["proto"] = "-";
-        values["type"] = "-";
+        values[Field::FQDN] = fqdn;
+        values[Field::IP] = "-";
+        values[Field::PORT] = "-";
+        values[Field::PROTO] = "-";
+        values[Field::TYPE] = "-";
 
-        values["timeouts_s"] = std::to_string(timeouts);
-        values["timeouts"] = std::to_string(totalTimeouts);
-        values["req"] = prettyFormatNumber(totalQueries);
-        values["req_s"] = prettyFormatNumber(queries);
+        values[Field::TIMEOUTS_RATE] = std::to_string(timeouts);
+        values[Field::TIMEOUTS] = std::to_string(totalTimeouts);
+        values[Field::REQ] = prettyFormatNumber(totalQueries);
+        values[Field::REQ_RATE] = prettyFormatNumber(queries);
 
-        values["srt"] = prettyFormatNumber(totalSrt);
-        values["srt_s"] = prettyFormatNumber(numSrt);
-        values["srt95"] = srts.getPercentileStr(0.95);
-        values["srt99"] = srts.getPercentileStr(0.99);
+        values[Field::SRT] = prettyFormatNumber(totalSrt);
+        values[Field::SRT_RATE] = prettyFormatNumber(numSrt);
+        values[Field::SRT_P95] = srts.getPercentileStr(0.95);
+        values[Field::SRT_P99] = srts.getPercentileStr(0.99);
 
-        values["trunc"] = std::to_string(totalTruncated);
-        values["rcrd_rsp"] = "-";
+        values[Field::TRUNC] = std::to_string(totalTruncated);
+        values[Field::RCRD_RSP] = "-";
 
-        values["top_client_ips"] = getTopClientIpsStr();
+        values[Field::TOP_CLIENT_IPS] = getTopClientIpsStr();
         return;
     }
 
     if (direction == FROM_CLIENT) {
-        values["fqdn"] = fqdn;
-        values["proto"] = flowId.isTcp ? "Tcp" : "Udp";
-        values["type"] = dnsTypeToString(dnsType);
-        values["ip"] = getSrvIp().to_string();
-        values["timeouts_s"] = std::to_string(timeouts);
-        values["timeouts"] = std::to_string(totalTimeouts);
-        values["port"] = std::to_string(getSrvPort());
-        values["req"] = prettyFormatNumber(totalQueries);
-        values["req_s"] = prettyFormatNumber(queries);
-        values["top_client_ips"] = getTopClientIpsStr();
+        values[Field::FQDN] = fqdn;
+        values[Field::PROTO] = flowId.isTcp ? "Tcp" : "Udp";
+        values[Field::TYPE] = dnsTypeToString(dnsType);
+        values[Field::IP] = getSrvIp().to_string();
+        values[Field::TIMEOUTS_RATE] = std::to_string(timeouts);
+        values[Field::TIMEOUTS] = std::to_string(totalTimeouts);
+        values[Field::PORT] = std::to_string(getSrvPort());
+        values[Field::REQ] = prettyFormatNumber(totalQueries);
+        values[Field::REQ_RATE] = prettyFormatNumber(queries);
+        values[Field::TOP_CLIENT_IPS] = getTopClientIpsStr();
 
-        values["srt"] = prettyFormatNumber(totalSrt);
-        values["srt_s"] = prettyFormatNumber(numSrt);
-        values["srt95"] = srts.getPercentileStr(0.95);
-        values["srt99"] = srts.getPercentileStr(0.99);
+        values[Field::SRT] = prettyFormatNumber(totalSrt);
+        values[Field::SRT_RATE] = prettyFormatNumber(numSrt);
+        values[Field::SRT_P95] = srts.getPercentileStr(0.95);
+        values[Field::SRT_P99] = srts.getPercentileStr(0.99);
 
-        values["trunc"] = std::to_string(totalTruncated);
+        values[Field::TRUNC] = std::to_string(totalTruncated);
         if (totalQueries > 0) {
-            values["rcrd_rsp"] = std::to_string(totalRecords / totalQueries);
+            values[Field::RCRD_RSP] = std::to_string(totalRecords / totalQueries);
         }
     } else {
         if (fqdn.size() > FQDN_SIZE) {
-            values["fqdn"] = fqdn.substr(FQDN_SIZE);
+            values[Field::FQDN] = fqdn.substr(FQDN_SIZE);
         }
     }
 }

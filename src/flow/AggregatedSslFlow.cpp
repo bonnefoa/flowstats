@@ -2,21 +2,21 @@
 
 namespace flowstats {
 
-auto AggregatedSslFlow::fillValues(std::map<std::string, std::string>& values,
+auto AggregatedSslFlow::fillValues(std::map<Field, std::string>& values,
     Direction direction, int duration) const -> void
 {
     Flow::fillValues(values, direction, duration);
 
     if (direction == FROM_CLIENT) {
-        values["fqdn"] = fqdn;
-        values["ip"] = getSrvIp().to_string();
-        values["port"] = std::to_string(getSrvPort());
-        values["domain"] = domain;
+        values[Field::FQDN] = fqdn;
+        values[Field::IP] = getSrvIp().to_string();
+        values[Field::PORT] = std::to_string(getSrvPort());
+        values[Field::DOMAIN] = domain;
 
-        values["conn"] = prettyFormatNumber(totalConnections);
-        values["conn_s"] = prettyFormatNumber(numConnections);
-        values["ctp95"] = connections.getPercentileStr(0.95);
-        values["ctp99"] = connections.getPercentileStr(0.99);
+        values[Field::CONN] = prettyFormatNumber(totalConnections);
+        values[Field::CONN_RATE] = prettyFormatNumber(numConnections);
+        values[Field::CT_P95] = connections.getPercentileStr(0.95);
+        values[Field::CT_P99] = connections.getPercentileStr(0.99);
     }
 }
 

@@ -22,17 +22,23 @@ TEST_CASE("Tcp simple", "[tcp]")
         AggregatedTcpKey tcpKey = AggregatedTcpKey("google.com", 0, 80);
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
+
         AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
         REQUIRE(aggregatedFlow != NULL);
-        CHECK(aggregatedFlow->syns[0] == 1);
-        CHECK(aggregatedFlow->fins[0] == 1);
-        CHECK(aggregatedFlow->totalCloses == 1);
-        CHECK(aggregatedFlow->activeConnections == 0);
-        CHECK(aggregatedFlow->connections.getCount() == 1);
-        CHECK(aggregatedFlow->connections.getPercentile(1.0) == 50);
-        CHECK(aggregatedFlow->srts.getPercentile(1.0) == 81);
-        CHECK(aggregatedFlow->mtu[0] == 140);
-        CHECK(aggregatedFlow->mtu[1] == 594);
+
+        std::map<Field, std::string> cltValues;
+        aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
+        std::map<Field, std::string> srvValues;
+        aggregatedFlow->fillValues(srvValues, FROM_SERVER, 0);
+
+        CHECK(cltValues[Field::SYN] == "1");
+        CHECK(cltValues[Field::FIN] == "1");
+        CHECK(cltValues[Field::CLOSE] == "1");
+        CHECK(cltValues[Field::ACTIVE_CONNECTIONS] == "0");
+        CHECK(cltValues[Field::CONN] == "1");
+        CHECK(cltValues[Field::CT_P99] == "50ms");
+        CHECK(cltValues[Field::MTU] == "140");
+        CHECK(srvValues[Field::MTU] == "594");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         CHECK(flows.size() == 1);
@@ -54,12 +60,16 @@ TEST_CASE("https pcap", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
         AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
-        CHECK(aggregatedFlow->syns[0] == 1);
-        CHECK(aggregatedFlow->fins[0] == 1);
-        CHECK(aggregatedFlow->totalCloses == 1);
-        CHECK(aggregatedFlow->activeConnections == 0);
-        CHECK(aggregatedFlow->connections.getCount() == 1);
-        CHECK(aggregatedFlow->connections.getPercentile(1.0) == 1);
+
+        std::map<Field, std::string> cltValues;
+        aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
+
+        CHECK(cltValues[Field::SYN] == "1");
+        CHECK(cltValues[Field::FIN] == "1");
+        CHECK(cltValues[Field::CLOSE] == "1");
+        CHECK(cltValues[Field::ACTIVE_CONNECTIONS] == "0");
+        CHECK(cltValues[Field::CONN] == "1");
+        CHECK(cltValues[Field::CT_P99] == "1ms");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         REQUIRE(flows.size() == 1);
@@ -80,13 +90,17 @@ TEST_CASE("Tcp reused port", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
         AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
-        REQUIRE(aggregatedFlow->syns[0] == 6);
-        REQUIRE(aggregatedFlow->fins[0] == 5);
-        REQUIRE(aggregatedFlow->totalCloses == 5);
-        REQUIRE(aggregatedFlow->activeConnections == 0);
-        REQUIRE(aggregatedFlow->connections.getCount() == 5);
-        REQUIRE(aggregatedFlow->connections.getPercentile(1.0) == 0);
-        REQUIRE(aggregatedFlow->srts.getPercentile(1.0) == 0);
+
+        std::map<Field, std::string> cltValues;
+        aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
+
+        CHECK(cltValues[Field::SYN] == "6");
+        CHECK(cltValues[Field::FIN] == "5");
+        CHECK(cltValues[Field::CLOSE] == "5");
+        CHECK(cltValues[Field::ACTIVE_CONNECTIONS] == "0");
+        CHECK(cltValues[Field::CONN] == "5");
+        CHECK(cltValues[Field::CT_P99] == "0ms");
+        CHECK(cltValues[Field::SRT_P99] == "0ms");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         REQUIRE(flows.size() == 0);
@@ -105,11 +119,15 @@ TEST_CASE("Ssl stream ack + srt", "[tcp]")
 
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
+
         AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
-        REQUIRE(aggregatedFlow->totalSrts == 2);
-        aggregatedFlow->srts.merge();
-        REQUIRE(aggregatedFlow->srts.getPercentile(1.0) == 2);
-        REQUIRE(aggregatedFlow->srts.getPercentile(0) == 2);
+
+        std::map<Field, std::string> cltValues;
+        aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
+
+        REQUIRE(cltValues[Field::SRT] == "2");
+        REQUIRE(cltValues[Field::SRT_P99] == "2ms");
+        REQUIRE(cltValues[Field::SRT_P95] == "2ms");
     }
 }
 
@@ -126,11 +144,13 @@ TEST_CASE("Ssl stream multiple srts", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
         AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
-        REQUIRE(aggregatedFlow->totalSrts == 11);
-        aggregatedFlow->srts.merge();
-        REQUIRE(aggregatedFlow->srts.getPercentile(1.0) == 9);
-        REQUIRE(aggregatedFlow->srts.getPercentile(0.95) == 5);
-        REQUIRE(aggregatedFlow->srts.getPercentile(0) == 2);
+
+        std::map<Field, std::string> cltValues;
+        aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
+
+        REQUIRE(cltValues[Field::SRT] == "11");
+        REQUIRE(cltValues[Field::SRT_P99] == "9ms");
+        REQUIRE(cltValues[Field::SRT_P95] == "3ms");
     }
 }
 
@@ -147,9 +167,13 @@ TEST_CASE("Tcp double", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
         AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
-        REQUIRE(aggregatedFlow->srts.getCount() == 2);
-        REQUIRE(aggregatedFlow->srts.getPercentile(1.0) == 499);
-        REQUIRE(aggregatedFlow->srts.getPercentile(0.5) == 79);
+
+        std::map<Field, std::string> cltValues;
+        aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
+
+        CHECK(cltValues[Field::SRT] == "2");
+        CHECK(cltValues[Field::SRT_P99] == "499ms");
+        CHECK(cltValues[Field::SRT_P95] == "499ms");
     }
 }
 
@@ -168,8 +192,12 @@ TEST_CASE("Tcp 0 win", "[tcp]")
 
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", Tins::IPv4Address("127.0.0.1"), 443);
         auto flow = ipFlows[tcpKey];
-        REQUIRE(flow->zeroWins[FROM_SERVER] == 3);
-        REQUIRE(flow->rsts[FROM_SERVER] == 1);
+
+        std::map<Field, std::string> srvValues;
+        flow->fillValues(srvValues, FROM_SERVER, 0);
+
+        CHECK(srvValues[Field::ZWIN] == "3");
+        CHECK(srvValues[Field::RST] == "1");
     }
 }
 
@@ -192,8 +220,12 @@ TEST_CASE("Tcp rst", "[tcp]")
 
         AggregatedTcpKey tcpKey = AggregatedTcpKey("whatever", ip, 3834);
         auto flow = ipFlows[tcpKey];
-        REQUIRE(flow->rsts[FROM_CLIENT] == 2);
-        REQUIRE(flow->closes == 1);
+
+        std::map<Field, std::string> cltValues;
+        flow->fillValues(cltValues, FROM_CLIENT, 0);
+
+        CHECK(cltValues[Field::RST] == "2");
+        CHECK(cltValues[Field::CLOSE] == "1");
     }
 }
 
@@ -231,9 +263,13 @@ TEST_CASE("Request size", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
-        REQUIRE(aggregatedFlow != NULL);
-        REQUIRE(aggregatedFlow->requestSizes.getPercentile(1.0) == 187910);
+        auto flow = aggregatedMap[tcpKey];
+        REQUIRE(flow != nullptr);
+
+        std::map<Field, std::string> cltValues;
+        flow->fillValues(cltValues, FROM_CLIENT, 0);
+
+        REQUIRE(cltValues[Field::DSMAX] == "183.5 KB");
     }
 }
 
@@ -251,9 +287,13 @@ TEST_CASE("Srv port detection", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
-        REQUIRE(aggregatedFlow != NULL);
-        REQUIRE(aggregatedFlow->activeConnections == 3);
+        auto flow = aggregatedMap[tcpKey];
+        REQUIRE(flow != nullptr);
+
+        std::map<Field, std::string> cltValues;
+        flow->fillValues(cltValues, FROM_CLIENT, 0);
+
+        REQUIRE(cltValues[Field::ACTIVE_CONNECTIONS] == "3");
     }
 }
 
@@ -271,10 +311,14 @@ TEST_CASE("Gap in capture", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
-        REQUIRE(aggregatedFlow != NULL);
-        REQUIRE(aggregatedFlow->totalSrts == 1);
-        REQUIRE(aggregatedFlow->srts.getPercentile(1.0) == 26);
+        auto flow = aggregatedMap[tcpKey];
+        REQUIRE(flow != nullptr);
+
+        std::map<Field, std::string> cltValues;
+        flow->fillValues(cltValues, FROM_CLIENT, 0);
+
+        CHECK(cltValues[Field::SRT] == "1");
+        CHECK(cltValues[Field::SRT_P99] == "26ms");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         CHECK(flows.size() == 1);
@@ -294,10 +338,16 @@ TEST_CASE("Mtu is correctly computed", "[tcp]")
         std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 80);
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
-        REQUIRE(aggregatedFlow != NULL);
-        CHECK(aggregatedFlow->mtu[FROM_CLIENT] == 15346);
-        CHECK(aggregatedFlow->mtu[FROM_SERVER] == 413);
+        auto tcpKey = AggregatedTcpKey("Unknown", 0, 80);
+        auto flow = aggregatedMap[tcpKey];
+        REQUIRE(flow != nullptr);
+
+        std::map<Field, std::string> cltValues;
+        flow->fillValues(cltValues, FROM_CLIENT, 0);
+        std::map<Field, std::string> srvValues;
+        flow->fillValues(srvValues, FROM_SERVER, 0);
+
+        CHECK(cltValues[Field::MTU] == "15346");
+        CHECK(srvValues[Field::MTU] == "413");
     }
 }

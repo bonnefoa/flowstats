@@ -20,7 +20,7 @@ struct AggregatedSslFlow : Flow {
         return bytes[0] + bytes[1] < f.bytes[0] + f.bytes[1];
     }
 
-    auto fillValues(std::map<std::string, std::string>& map, Direction direction, int duration) const -> void override;
+    auto fillValues(std::map<Field, std::string>& map, Direction direction, int duration) const -> void override;
     auto resetFlow(bool resetTotal) -> void override;
 };
 } // namespace flowstats

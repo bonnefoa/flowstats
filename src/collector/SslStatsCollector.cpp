@@ -11,14 +11,14 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, Display
     , ipToFqdn(ipToFqdn)
 {
     if (conf.getPerIpAggr()) {
-        flowFormatter.setDisplayKeys({ "fqdn", "ip", "port", "dir" });
+        flowFormatter.setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::DIR });
     } else {
-        flowFormatter.setDisplayKeys({ "fqdn", "port", "dir" });
+        flowFormatter.setDisplayKeys({ Field::FQDN, Field::PORT, Field::DIR });
     }
 
     displayPairs = {
-        DisplayPair(DisplayConnections, { "conn", "conn_s", "ctp95", "ctp99" }),
-        DisplayPair(DisplayTraffic, { "pkts", "pkts_s", "bytes", "bytes_s" }),
+        DisplayPair(DisplayConnections, { Field::CONN, Field::CONN_RATE, Field::CT_P95, Field::CT_P99 }),
+        DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     };
     totalFlow = new AggregatedSslFlow();
     updateDisplayType(0);

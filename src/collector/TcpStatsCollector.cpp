@@ -15,16 +15,16 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
     , ipToFqdn(ipToFqdn)
 {
     if (conf.getPerIpAggr()) {
-        flowFormatter.setDisplayKeys({ "fqdn", "ip", "port", "dir" });
+        flowFormatter.setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::DIR });
     } else {
-        flowFormatter.setDisplayKeys({ "fqdn", "port", "dir" });
+        flowFormatter.setDisplayKeys({ Field::FQDN, Field::PORT, Field::DIR });
     }
 
     displayPairs = {
-        DisplayPair(DisplayFlags, { "syn", "synack", "fin", "rst", "zwin" }),
-        DisplayPair(DisplayConnections, { "active_connections", "failed_connections", "conn", "conn_s", "ctp95", "ctp99", "close", "close_s" }),
-        DisplayPair(DisplayResponses, { "srt", "srt_s", "srt95", "srt99", "srtMax", "ds95", "ds99", "dsMax" }),
-        DisplayPair(DisplayTraffic, { "mtu", "pkts", "pkts_s", "bytes", "bytes_s" }),
+        DisplayPair(DisplayFlags, { Field::SYN, Field::SYNACK, Field::FIN, Field::RST, Field::ZWIN }),
+        DisplayPair(DisplayConnections, { Field::ACTIVE_CONNECTIONS, Field::FAILED_CONNECTIONS, Field::CONN, Field::CONN_RATE, Field::CT_P95, Field::CT_P99, Field::CLOSE, Field::CLOSE_RATE }),
+        DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::SRTMAX, Field::DS_P95, Field::DS_P99, Field::DSMAX }),
+        DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     };
     totalFlow = new AggregatedTcpFlow();
     updateDisplayType(0);
@@ -154,24 +154,7 @@ auto TcpStatsCollector::getMetrics() -> std::vector<std::string>
     std::vector<std::string> lst;
     for (auto& pair : aggregatedMap) {
         struct AggregatedTcpFlow* val = pair.second;
-        DogFood::Tags tags = DogFood::Tags({ { "fqdn", val->fqdn },
-            { "ip", val->getSrvIp().to_string() },
-            { "port", std::to_string(val->getSrvPort()) } });
-        for (auto& i : val->srts.getPoints()) {
-            lst.push_back(DogFood::Metric("flowstats.tcp.srt", i,
-                DogFood::Histogram, 1, tags));
-        }
-        for (auto& i : val->connections.getPoints()) {
-            lst.push_back(DogFood::Metric("flowstats.tcp.ct", i,
-                DogFood::Histogram, 1, tags));
-        }
-        if (val->activeConnections) {
-            lst.push_back(DogFood::Metric("flowstats.tcp.activeConnections", val->activeConnections, DogFood::Counter, 1, tags));
-        }
-        if (val->failedConnections) {
-            lst.push_back(DogFood::Metric("flowstats.tcp.failedConnections", val->failedConnections,
-                DogFood::Counter, 1, tags));
-        }
+        val->getMetrics(lst);
     }
     return lst;
 }
@@ -179,9 +162,7 @@ auto TcpStatsCollector::getMetrics() -> std::vector<std::string>
 auto TcpStatsCollector::mergePercentiles() -> void
 {
     for (auto& i : aggregatedMap) {
-        i.second->srts.merge();
-        i.second->connections.merge();
-        i.second->requestSizes.merge();
+        i.second->mergePercentiles();
     }
 }
 
@@ -193,7 +174,7 @@ auto sortAggregatedTcpBySrt(AggregatedPairPointer const& left,
     if (rightTcp == nullptr || leftTcp == nullptr) {
         return false;
     }
-    return rightTcp->srts.getPercentile(1.0) < leftTcp->srts.getPercentile(1.0);
+    return rightTcp->sortBySrt(*leftTcp);
 }
 
 auto sortAggregatedTcpByRequest(AggregatedPairPointer const& left,
@@ -204,7 +185,7 @@ auto sortAggregatedTcpByRequest(AggregatedPairPointer const& left,
     if (rightTcp == nullptr || leftTcp == nullptr) {
         return false;
     }
-    return rightTcp->totalSrts < leftTcp->totalSrts;
+    return rightTcp->sortByRequest(*leftTcp);
 }
 
 auto sortAggregatedTcpByRequestRate(AggregatedPairPointer const& left,
@@ -215,7 +196,7 @@ auto sortAggregatedTcpByRequestRate(AggregatedPairPointer const& left,
     if (rightTcp == nullptr || leftTcp == nullptr) {
         return false;
     }
-    return rightTcp->srts.getCount() < leftTcp->srts.getCount();
+    return rightTcp->sortByRequestRate(*leftTcp);
 }
 
 auto TcpStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPairPointer>

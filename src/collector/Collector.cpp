@@ -31,7 +31,7 @@ auto Collector::outputFlow(Flow const* flow,
 {
     for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
         auto direction = static_cast<Direction>(j);
-        std::map<std::string, std::string> values;
+        std::map<Field, std::string> values;
         flow->fillValues(values, direction, duration);
         if (position == -1) {
             keyLines.push_back(flowFormatter.outputKey(values));

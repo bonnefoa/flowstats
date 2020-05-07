@@ -10,12 +10,12 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
     : Collector { conf, displayConf }
     , ipToFqdn(ipToFqdn)
 {
-    flowFormatter.setDisplayKeys({ "fqdn", "ip", "port", "proto", "type", "dir" });
+    flowFormatter.setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::PROTO, Field::TYPE, Field::DIR });
     displayPairs = {
-        DisplayPair(DisplayRequests, { "req", "req_s", "timeout", "timeout_s" }),
-        DisplayPair(DisplayResponses, { "srt", "srt_s", "srt95", "srt99", "rcrd_rsp" }),
-        DisplayPair(DisplayClients, { "top_client_ips" }),
-        DisplayPair(DisplayTraffic, { "pkts", "pkts_s", "bytes", "bytes_s" }),
+        DisplayPair(DisplayRequests, { Field::REQ, Field::REQ_RATE, Field::TIMEOUTS, Field::TIMEOUTS_RATE }),
+        DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::RCRD_RSP }),
+        DisplayPair(DisplayClients, { Field::TOP_CLIENT_IPS }),
+        DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     };
     totalFlow = new AggregatedDnsFlow();
     updateDisplayType(0);

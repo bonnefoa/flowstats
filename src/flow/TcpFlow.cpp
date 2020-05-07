@@ -51,7 +51,7 @@ auto TcpFlow::timeoutFlow() -> void
 {
     if (opening) {
         for (auto& subflow : aggregatedFlows) {
-            subflow->failedConnections++;
+            subflow->failConnection();
         }
     }
     if (opened) {
@@ -64,9 +64,7 @@ auto TcpFlow::closeConnection() -> void
     if (opened) {
         spdlog::debug("Closing connection {}", flowId.toString());
         for (auto& aggregatedFlow : aggregatedFlows) {
-            aggregatedFlow->closes++;
-            aggregatedFlow->totalCloses++;
-            aggregatedFlow->activeConnections--;
+            aggregatedFlow->closeConnection();
         }
     }
     closed = true;
@@ -117,15 +115,12 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         if (synAcked[!direction]) {
             timeval start = synTime[direction];
             timeval end = tv;
-            uint32_t delta = getTimevalDeltaMs(start, end);
+            uint32_t connectionTime = getTimevalDeltaMs(start, end);
             opened = true;
             opening = false;
-            spdlog::debug("Full tcp handshake, connection is now opened, ct {}", delta);
+            spdlog::debug("Full tcp handshake, connection is now opened, ct {}", connectionTime);
             for (auto& aggregatedFlow : aggregatedFlows) {
-                aggregatedFlow->connections.addPoint(delta);
-                aggregatedFlow->numConnections++;
-                aggregatedFlow->activeConnections++;
-                aggregatedFlow->totalConnections++;
+                aggregatedFlow->openConnection(connectionTime);
             }
         }
     }
@@ -149,10 +144,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
                 directionToString(currentDirection),
                 delta, requestSize);
             for (auto& aggregatedFlow : aggregatedFlows) {
-                aggregatedFlow->srts.addPoint(delta);
-                aggregatedFlow->requestSizes.addPoint(requestSize);
-                aggregatedFlow->numSrts++;
-                aggregatedFlow->totalSrts++;
+                aggregatedFlow->addSrt(delta, requestSize);
             }
         }
         lastPayloadTime = tv;
@@ -168,7 +160,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         spdlog::debug("Detected ongoing conversation");
         opened = true;
         for (auto& aggregatedFlow : aggregatedFlows) {
-            aggregatedFlow->activeConnections++;
+            aggregatedFlow->ongoingConnection();
         }
     }
 

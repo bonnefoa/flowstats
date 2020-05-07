@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Field.hpp"
 #include "FlowId.hpp"
 #include <map>
 #include <tins/packet.h>
@@ -65,7 +66,7 @@ public:
     virtual auto addFlow(Flow const* flow) -> void;
     virtual auto addAggregatedFlow(Flow const* flow) -> void;
     virtual auto resetFlow(bool resetTotal) -> void;
-    virtual auto fillValues(std::map<std::string, std::string>& map,
+    virtual auto fillValues(std::map<Field, std::string>& map,
         Direction direction, int duration) const -> void;
 };
 } // namespace flowstats
