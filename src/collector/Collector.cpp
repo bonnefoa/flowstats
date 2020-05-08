@@ -25,8 +25,8 @@ void Collector::sendMetrics()
 }
 
 auto Collector::outputFlow(Flow const* flow,
-    std::vector<std::string>& keyLines,
-    std::vector<std::string>& valueLines,
+    std::vector<std::string>* keyLines,
+    std::vector<std::string>* valueLines,
     int duration, int position) const -> void
 {
     for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
@@ -34,25 +34,25 @@ auto Collector::outputFlow(Flow const* flow,
         std::map<Field, std::string> values;
         flow->fillValues(values, direction, duration);
         if (position == -1) {
-            keyLines.push_back(flowFormatter.outputKey(values));
-            valueLines.push_back(flowFormatter.outputValue(values));
+            keyLines->push_back(flowFormatter.outputKey(values));
+            valueLines->push_back(flowFormatter.outputValue(values));
         } else {
-            keyLines[position] = flowFormatter.outputKey(values);
-            valueLines[position++] = flowFormatter.outputValue(values);
+            keyLines->at(position) = flowFormatter.outputKey(values);
+            valueLines->at(position++) = flowFormatter.outputValue(values);
         }
     }
 }
 
-auto Collector::fillOutputs(std::vector<AggregatedPairPointer>& aggregatedPairs,
-    std::vector<std::string>& keyLines,
-    std::vector<std::string>& valueLines, int duration)
+auto Collector::fillOutputs(std::vector<AggregatedPairPointer> const& aggregatedPairs,
+    std::vector<std::string>* keyLines,
+    std::vector<std::string>* valueLines, int duration)
 {
     FlowFormatter flowFormatter = getFlowFormatter();
 
     totalFlow->resetFlow(true);
 
-    keyLines.resize(2);
-    valueLines.resize(2);
+    keyLines->resize(2);
+    valueLines->resize(2);
 
     int i = 0;
     for (auto const& pair : aggregatedPairs) {
@@ -88,7 +88,7 @@ auto Collector::outputStatus(int duration) -> CollectorOutput
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     mergePercentiles();
     std::vector<AggregatedPairPointer> tempVector = getAggregatedPairs();
-    fillOutputs(tempVector, keyLines, valueLines, duration);
+    fillOutputs(tempVector, &keyLines, &valueLines, duration);
     return CollectorOutput(toString(), keyLines, valueLines,
         keyHeaders, valueHeaders, duration);
 }

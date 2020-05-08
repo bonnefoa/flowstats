@@ -48,14 +48,14 @@ public:
     auto updateDisplayType(int displayIndex) -> void;
 
 protected:
-    virtual auto getAggregatedPairs() const -> std::vector<AggregatedPairPointer> { return {}; };
-    auto fillOutputs(std::vector<AggregatedPairPointer>& aggregatedPairs,
-        std::vector<std::string>& keyLines,
-        std::vector<std::string>& valueLines, int duration);
+    [[nodiscard]] virtual auto getAggregatedPairs() const -> std::vector<AggregatedPairPointer> { return {}; };
+    auto fillOutputs(std::vector<AggregatedPairPointer> const& aggregatedPairs,
+        std::vector<std::string>* keyLines,
+        std::vector<std::string>* valueLines, int duration);
 
     auto outputFlow(Flow const* flow,
-        std::vector<std::string>& keyLines,
-        std::vector<std::string>& valueLines,
+        std::vector<std::string>* keyLines,
+        std::vector<std::string>* valueLines,
         int duration, int position) const -> void;
 
     virtual auto getFlowFormatter() -> FlowFormatter { return flowFormatter; };

@@ -110,7 +110,7 @@ auto SslStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPair
 {
     std::vector<AggregatedPairPointer> tempVector;
 
-    for (auto& pair : aggregatedMap) {
+    for (auto const& pair : aggregatedMap) {
         pair.second->connections.merge();
         tempVector.emplace_back(pair.first, pair.second);
     }

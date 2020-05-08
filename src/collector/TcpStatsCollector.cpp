@@ -79,7 +79,7 @@ auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow const& tcpFlow, FlowId con
 auto TcpStatsCollector::processPacket(Tins::Packet const& packet) -> void
 {
     advanceTick(packetToTimeval(packet));
-    auto pdu = packet.pdu();
+    auto const* pdu = packet.pdu();
     auto ip = pdu->rfind_pdu<Tins::IP>();
     auto tcp = ip.rfind_pdu<Tins::TCP>();
     FlowId flowId(ip, tcp);

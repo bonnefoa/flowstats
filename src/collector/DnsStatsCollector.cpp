@@ -35,7 +35,7 @@ auto DnsStatsCollector::processPacket(Tins::Packet const& packet) -> void
 
     auto it = transactionIdToDnsFlow.find(dns.id());
     if (it != transactionIdToDnsFlow.end()) {
-        DnsFlow& flow = it->second;
+        DnsFlow* flow = &it->second;
         newDnsResponse(packet, dns, flow);
     }
 }
@@ -74,41 +74,41 @@ auto DnsStatsCollector::newDnsQuery(Tins::Packet const& packet, Tins::DNS const&
     transactionIdToDnsFlow[dns.id()] = flow;
 }
 
-auto DnsStatsCollector::newDnsResponse(Tins::Packet const& packet, Tins::DNS const& dns, DnsFlow& flow) -> void
+auto DnsStatsCollector::newDnsResponse(Tins::Packet const& packet,
+    Tins::DNS const& dns, DnsFlow* flow) -> void
 {
-    flow.addPacket(packet, FROM_SERVER);
-    flow.endTv = packetToTimeval(packet);
-    flow.hasResponse = true;
-    flow.truncated = dns.truncated();
-    flow.numberRecords = dns.answers_count();
-    flow.responseCode = dns.rcode();
+    flow->addPacket(packet, FROM_SERVER);
+    flow->endTv = packetToTimeval(packet);
+    flow->hasResponse = true;
+    flow->truncated = dns.truncated();
+    flow->numberRecords = dns.answers_count();
+    flow->responseCode = dns.rcode();
 
-    updateIpToFqdn(dns, flow.fqdn);
+    updateIpToFqdn(dns, flow->fqdn);
     spdlog::debug("Dns tid {}, {}, {} finished, {}", dns.id(),
-        flow.flowId.isTcp ? "Tcp" : "Udp",
-        flow.fqdn,
-        flow.numberRecords);
-    dnsFlows.push_back(flow);
+        flow->flowId.isTcp ? "Tcp" : "Udp",
+        flow->fqdn,
+        flow->numberRecords);
     addFlowToAggregation(flow);
     transactionIdToDnsFlow.erase(dns.id());
 }
 
-auto DnsStatsCollector::addFlowToAggregation(DnsFlow const& flow) -> void
+auto DnsStatsCollector::addFlowToAggregation(DnsFlow const* flow) -> void
 {
-    AggregatedDnsKey key(flow.fqdn, flow.type, flow.flowId.isTcp);
+    AggregatedDnsKey key(flow->fqdn, flow->type, flow->flowId.isTcp);
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto it = aggregatedDnsFlows.find(key);
     AggregatedDnsFlow* aggregatedFlow;
     if (it == aggregatedDnsFlows.end()) {
-        spdlog::debug("Create new dns aggregation for {} {} {}", flow.fqdn,
-            dnsTypeToString(flow.type), flow.flowId.isTcp);
-        aggregatedFlow = new AggregatedDnsFlow(flow.flowId, flow.fqdn, flow.type);
+        spdlog::debug("Create new dns aggregation for {} {} {}", flow->fqdn,
+            dnsTypeToString(flow->type), flow->flowId.isTcp);
+        aggregatedFlow = new AggregatedDnsFlow(flow->flowId, flow->fqdn, flow->type);
         aggregatedDnsFlows[key] = aggregatedFlow;
     } else {
         aggregatedFlow = it->second;
     }
-    aggregatedFlow->addFlow(&flow);
+    aggregatedFlow->addFlow(flow);
 }
 
 auto DnsStatsCollector::advanceTick(timeval now) -> void
@@ -127,7 +127,7 @@ auto DnsStatsCollector::advanceTick(timeval now) -> void
         spdlog::debug("Flow {}, delta {}, hasResponse {}", flow.fqdn,
             delta_time, flow.hasResponse);
         if (delta_time > 5) {
-            addFlowToAggregation(flow);
+            addFlowToAggregation(&flow);
             toErase.push_back(pair.first);
         }
     }
