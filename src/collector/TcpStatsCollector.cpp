@@ -15,18 +15,18 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
     , ipToFqdn(ipToFqdn)
 {
     if (conf.getPerIpAggr()) {
-        flowFormatter.setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::DIR });
+        setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::DIR });
     } else {
-        flowFormatter.setDisplayKeys({ Field::FQDN, Field::PORT, Field::DIR });
+        setDisplayKeys({ Field::FQDN, Field::PORT, Field::DIR });
     }
 
-    displayPairs = {
+    setDisplayPairs({
         DisplayPair(DisplayFlags, { Field::SYN, Field::SYNACK, Field::FIN, Field::RST, Field::ZWIN }),
         DisplayPair(DisplayConnections, { Field::ACTIVE_CONNECTIONS, Field::FAILED_CONNECTIONS, Field::CONN, Field::CONN_RATE, Field::CT_P95, Field::CT_P99, Field::CLOSE, Field::CLOSE_RATE }),
         DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::SRTMAX, Field::DS_P95, Field::DS_P99, Field::DSMAX }),
         DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
-    };
-    totalFlow = new AggregatedTcpFlow();
+    });
+    setTotalFlow(new AggregatedTcpFlow());
     updateDisplayType(0);
 };
 
@@ -55,7 +55,7 @@ auto TcpStatsCollector::lookupTcpFlow(
 auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow const& tcpFlow, FlowId const& flowId) -> std::vector<AggregatedTcpFlow*>
 {
     IPv4 ipSrvInt = 0;
-    if (conf.getPerIpAggr()) {
+    if (getFlowstatsConfiguration().getPerIpAggr()) {
         ipSrvInt = tcpFlow.getSrvIpInt();
     }
     AggregatedTcpFlow* aggregatedFlow;
@@ -128,7 +128,7 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
         }
         uint32_t maxDelta = std::max(deltas[0], deltas[1]);
         spdlog::debug("flow.{}, maxDelta: {}", flow.flowId.toString(), maxDelta);
-        auto timeoutFlow = conf.getTimeoutFlow();
+        auto timeoutFlow = getFlowstatsConfiguration().getTimeoutFlow();
         if (maxDelta > timeoutFlow) {
             spdlog::debug("Timeout flow {}, now {}, maxDelta {} > {}",
                 flow.flowId.toString(), now.tv_sec, maxDelta, timeoutFlow);
@@ -205,7 +205,7 @@ auto TcpStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPair
     spdlog::info("Got {} tcp flows", tempVector.size());
 
     auto sortFunc = sortAggregatedPairByByte;
-    switch (displayConf.sortType) {
+    switch (getDisplayConf().sortType) {
     case SortFqdn:
         sortFunc = sortAggregatedPairByFqdn;
         break;
@@ -234,6 +234,5 @@ TcpStatsCollector::~TcpStatsCollector()
     for (auto& pair : aggregatedMap) {
         delete pair.second;
     }
-    delete totalFlow;
 }
 } // namespace flowstats

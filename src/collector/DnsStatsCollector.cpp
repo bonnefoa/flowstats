@@ -10,14 +10,14 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
     : Collector { conf, displayConf }
     , ipToFqdn(ipToFqdn)
 {
-    flowFormatter.setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::PROTO, Field::TYPE, Field::DIR });
-    displayPairs = {
+    getFlowFormatter().setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::PROTO, Field::TYPE, Field::DIR });
+    setDisplayPairs({
         DisplayPair(DisplayRequests, { Field::REQ, Field::REQ_RATE, Field::TIMEOUTS, Field::TIMEOUTS_RATE }),
         DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::RCRD_RSP }),
         DisplayPair(DisplayClients, { Field::TOP_CLIENT_IPS }),
         DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
-    };
-    totalFlow = new AggregatedDnsFlow();
+    });
+    setTotalFlow(new AggregatedDnsFlow());
     updateDisplayType(0);
 };
 
@@ -222,7 +222,7 @@ auto DnsStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPair
     bool (*sortFunc)(AggregatedPairPointer const& left,
         AggregatedPairPointer const& right)
         = sortAggregatedDnsByRequest;
-    switch (displayConf.sortType) {
+    switch (getDisplayConf().sortType) {
     case SortFqdn:
         sortFunc = sortAggregatedPairByFqdn;
         break;
@@ -252,6 +252,5 @@ DnsStatsCollector::~DnsStatsCollector()
     for (auto& pair : aggregatedDnsFlows) {
         delete pair.second;
     }
-    delete totalFlow;
 }
 } // namespace flowstats

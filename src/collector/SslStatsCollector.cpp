@@ -11,16 +11,16 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, Display
     , ipToFqdn(ipToFqdn)
 {
     if (conf.getPerIpAggr()) {
-        flowFormatter.setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::DIR });
+        setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::DIR });
     } else {
-        flowFormatter.setDisplayKeys({ Field::FQDN, Field::PORT, Field::DIR });
+        setDisplayKeys({ Field::FQDN, Field::PORT, Field::DIR });
     }
 
-    displayPairs = {
+    setDisplayPairs({
         DisplayPair(DisplayConnections, { Field::CONN, Field::CONN_RATE, Field::CT_P95, Field::CT_P99 }),
         DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
-    };
-    totalFlow = new AggregatedSslFlow();
+    });
+    setTotalFlow(new AggregatedSslFlow());
     updateDisplayType(0);
 };
 
@@ -49,7 +49,7 @@ auto SslStatsCollector::lookupAggregatedFlows(SslFlow const& sslFlow,
 {
     std::vector<AggregatedSslFlow*> subflows;
     IPv4 ipSrvInt = 0;
-    if (conf.getPerIpAggr()) {
+    if (getFlowstatsConfiguration().getPerIpAggr()) {
         ipSrvInt = sslFlow.getSrvIpInt();
     }
     AggregatedTcpKey tcpKey = AggregatedTcpKey(fqdn, ipSrvInt, sslFlow.getSrvPort());
@@ -130,6 +130,5 @@ SslStatsCollector::~SslStatsCollector()
     for (auto& pair : aggregatedMap) {
         delete pair.second;
     }
-    delete totalFlow;
 }
 } // namespace flowstats

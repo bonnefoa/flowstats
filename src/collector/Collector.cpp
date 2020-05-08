@@ -105,4 +105,9 @@ auto collectorProtocolToString(CollectorProtocol proto) -> std::string
     }
 }
 
+Collector::~Collector()
+{
+    delete totalFlow;
+}
+
 } // namespace flowstats

@@ -26,7 +26,7 @@ public:
     Collector(FlowstatsConfiguration const& conf, DisplayConfiguration const& displayConf)
         : conf(conf)
         , displayConf(displayConf) {};
-    virtual ~Collector() = default;
+    virtual ~Collector();
 
     virtual auto processPacket(Tins::Packet const& pdu) -> void = 0;
     virtual auto advanceTick(timeval now) -> void {};
@@ -58,17 +58,21 @@ protected:
         std::vector<std::string>* valueLines,
         int duration, int position) const -> void;
 
-    virtual auto getFlowFormatter() -> FlowFormatter { return flowFormatter; };
-    FlowFormatter flowFormatter;
-
     auto getDataMutex() -> std::mutex* { return &dataMutex; };
+    auto getFlowFormatter() -> FlowFormatter { return flowFormatter; };
+    auto getDisplayConf() const -> DisplayConfiguration const& { return displayConf; };
+    auto getFlowstatsConfiguration() const -> FlowstatsConfiguration const& { return conf; };
 
+    auto setDisplayKeys(std::vector<Field> const& keys) -> void { flowFormatter.setDisplayKeys(keys); };
+    auto setDisplayPairs(std::vector<DisplayPair> pairs) -> void { displayPairs = std::move(pairs); };
+    auto setTotalFlow(Flow* flow) -> void { totalFlow = flow; };
+
+private:
+    std::mutex dataMutex;
+    FlowFormatter flowFormatter;
     FlowstatsConfiguration const& conf;
     DisplayConfiguration const& displayConf;
     Flow* totalFlow = nullptr;
     std::vector<DisplayPair> displayPairs;
-
-private:
-    std::mutex dataMutex;
 };
 } // namespace flowstats

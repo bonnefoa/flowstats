@@ -12,6 +12,7 @@ namespace flowstats {
 struct FlowFormatter {
 
     FlowFormatter();
+    FlowFormatter(std::vector<Field> displayKeys);
     FlowFormatter(std::vector<Field> displayKeys,
         std::vector<Field> displayValues);
     virtual ~FlowFormatter() {};

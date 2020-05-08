@@ -11,6 +11,10 @@ namespace flowstats {
 FlowFormatter::FlowFormatter() {};
 
 FlowFormatter::FlowFormatter(
+    std::vector<Field> displayKeys)
+    : displayKeys(std::move(displayKeys)) {};
+
+FlowFormatter::FlowFormatter(
     std::vector<Field> displayKeys,
     std::vector<Field> displayValues)
     : displayKeys(std::move(displayKeys))
