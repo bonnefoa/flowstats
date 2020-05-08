@@ -39,4 +39,4 @@ private:
     std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedDnsFlows;
     time_t lastTick = 0;
 };
-}
+} // namespace flowstats

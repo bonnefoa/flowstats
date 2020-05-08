@@ -71,7 +71,7 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet) -> void
 {
     timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
-    auto pdu = packet.pdu();
+    auto const* pdu = packet.pdu();
     auto ip = pdu->rfind_pdu<Tins::IP>();
     auto tcp = ip.rfind_pdu<Tins::TCP>();
 

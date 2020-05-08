@@ -40,4 +40,4 @@ private:
         std::string const& fqdn) -> std::vector<AggregatedSslFlow*>;
     IpToFqdn* ipToFqdn;
 };
-}
+} // namespace flowstats

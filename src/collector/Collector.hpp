@@ -60,8 +60,8 @@ protected:
 
     auto getDataMutex() -> std::mutex* { return &dataMutex; };
     auto getFlowFormatter() -> FlowFormatter { return flowFormatter; };
-    auto getDisplayConf() const -> DisplayConfiguration const& { return displayConf; };
-    auto getFlowstatsConfiguration() const -> FlowstatsConfiguration const& { return conf; };
+    [[nodiscard]] auto getDisplayConf() const -> DisplayConfiguration const& { return displayConf; };
+    [[nodiscard]] auto getFlowstatsConfiguration() const -> FlowstatsConfiguration const& { return conf; };
 
     auto setDisplayKeys(std::vector<Field> const& keys) -> void { flowFormatter.setDisplayKeys(keys); };
     auto setDisplayPairs(std::vector<DisplayPair> pairs) -> void { displayPairs = std::move(pairs); };
