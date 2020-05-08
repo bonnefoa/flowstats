@@ -1,5 +1,6 @@
 #pragma once
 #include "Utils.hpp"
+#include "enum.h"
 #include <arpa/inet.h>
 #include <sstream>
 #include <tins/ip.h>
@@ -10,15 +11,17 @@ namespace flowstats {
 
 using Port = uint16_t;
 using IPv4 = uint32_t;
+BETTER_ENUM(Transport, char, TCP, UDP);
 
 struct FlowId {
     std::array<Tins::IPv4Address, 2> ips = {};
     std::array<Port, 2> ports = {};
-    bool isTcp = false;
+    Transport transport = Transport::TCP;
     Direction direction = FROM_CLIENT;
 
     FlowId() = default;
-    FlowId(std::array<uint16_t, 2> ports, std::array<IPv4, 2> pktIps, bool isTcp);
+    FlowId(std::array<uint16_t, 2> ports, std::array<IPv4, 2> pktIps,
+        Transport transport);
     FlowId(const Tins::IP& ipv4Layer, const Tins::TCP& tcpLayer);
     FlowId(const Tins::IP& ipv4Layer, const Tins::UDP& udpLayer);
     explicit FlowId(const Tins::Packet& packet);

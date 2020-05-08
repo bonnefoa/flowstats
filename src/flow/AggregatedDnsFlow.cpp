@@ -65,7 +65,7 @@ auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>& values,
 
     if (direction == FROM_CLIENT) {
         values[Field::FQDN] = fqdn;
-        values[Field::PROTO] = flowId.isTcp ? "Tcp" : "Udp";
+        values[Field::PROTO] = flowId.transport._to_string();
         values[Field::TYPE] = dnsTypeToString(dnsType);
         values[Field::IP] = getSrvIp().to_string();
         values[Field::TIMEOUTS_RATE] = std::to_string(timeouts);
@@ -95,7 +95,7 @@ auto AggregatedDnsFlow::addFlow(const Flow* flow) -> void
 {
     Flow::addFlow(flow);
 
-    auto dnsFlow = dynamic_cast<const DnsFlow*>(flow);
+    auto const* dnsFlow = dynamic_cast<const DnsFlow*>(flow);
     queries++;
     truncated += dnsFlow->truncated;
     records += dnsFlow->numberRecords;
@@ -120,7 +120,7 @@ auto AggregatedDnsFlow::addAggregatedFlow(const Flow* flow) -> void
 {
     Flow::addFlow(flow);
 
-    auto* dnsFlow = dynamic_cast<const AggregatedDnsFlow*>(flow);
+    auto const* dnsFlow = dynamic_cast<const AggregatedDnsFlow*>(flow);
     queries += dnsFlow->queries;
     truncated += dnsFlow->truncated;
     records += dnsFlow->records;

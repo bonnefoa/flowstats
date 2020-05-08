@@ -86,7 +86,7 @@ auto DnsStatsCollector::newDnsResponse(Tins::Packet const& packet,
 
     updateIpToFqdn(dns, flow->fqdn);
     spdlog::debug("Dns tid {}, {}, {} finished, {}", dns.id(),
-        flow->flowId.isTcp ? "Tcp" : "Udp",
+        flow->flowId.transport._to_string(),
         flow->fqdn,
         flow->numberRecords);
     addFlowToAggregation(flow);
@@ -95,14 +95,14 @@ auto DnsStatsCollector::newDnsResponse(Tins::Packet const& packet,
 
 auto DnsStatsCollector::addFlowToAggregation(DnsFlow const* flow) -> void
 {
-    AggregatedDnsKey key(flow->fqdn, flow->type, flow->flowId.isTcp);
+    AggregatedDnsKey key(flow->fqdn, flow->type, flow->flowId.transport);
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto it = aggregatedDnsFlows.find(key);
     AggregatedDnsFlow* aggregatedFlow;
     if (it == aggregatedDnsFlows.end()) {
         spdlog::debug("Create new dns aggregation for {} {} {}", flow->fqdn,
-            dnsTypeToString(flow->type), flow->flowId.isTcp);
+            dnsTypeToString(flow->type), flow->flowId.transport);
         aggregatedFlow = new AggregatedDnsFlow(flow->flowId, flow->fqdn, flow->type);
         aggregatedDnsFlows[key] = aggregatedFlow;
     } else {
@@ -143,7 +143,7 @@ auto DnsStatsCollector::getMetrics() -> std::vector<std::string>
         struct AggregatedDnsFlow* val = pair.second;
         DogFood::Tags tags = DogFood::Tags({
             { "fqdn", val->fqdn },
-            { "proto", val->flowId.isTcp ? "tcp" : "udp" },
+            { "proto", val->flowId.transport._to_string() },
             { "type", dnsTypeToString(val->dnsType) },
         });
         if (val->queries) {

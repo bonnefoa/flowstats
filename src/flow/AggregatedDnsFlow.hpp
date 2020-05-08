@@ -47,23 +47,23 @@ struct AggregatedDnsFlow : Flow {
     auto addAggregatedFlow(Flow const* flow) -> void override;
 
 private:
-    auto getTopClientIps() const -> std::vector<std::pair<int, int>>;
-    auto getTopClientIpsStr() const -> std::string;
+    [[nodiscard]] auto getTopClientIps() const -> std::vector<std::pair<int, int>>;
+    [[nodiscard]] auto getTopClientIpsStr() const -> std::string;
 };
 
 struct AggregatedDnsKey : AggregatedKey {
-    AggregatedDnsKey(std::string _fqdn, Tins::DNS::QueryType _dnsType, bool _isTcp)
+    AggregatedDnsKey(std::string _fqdn, Tins::DNS::QueryType _dnsType, Transport transport)
         : AggregatedKey(_fqdn)
         , dnsType(_dnsType)
-        , isTcp(_isTcp) {};
+        , transport(transport) {};
 
-    bool operator<(AggregatedDnsKey const& b) const
+    auto operator<(AggregatedDnsKey const& b) const -> bool
     {
-        return std::tie(fqdn, dnsType, isTcp) < std::tie(b.fqdn, b.dnsType, b.isTcp);
+        return std::tie(fqdn, dnsType, transport) < std::tie(b.fqdn, b.dnsType, b.transport);
     }
 
 private:
     Tins::DNS::QueryType dnsType;
-    bool isTcp;
+    Transport transport;
 };
 } // namespace flowstats

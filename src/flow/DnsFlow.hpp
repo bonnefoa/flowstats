@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Flow.hpp"
+#include <enum.h>
 #include <tins/dns.h>
 
 namespace flowstats {
@@ -10,7 +11,6 @@ class DnsFlow : public Flow {
 public:
     std::string fqdn = "";
     bool hasResponse = false;
-    bool isTcp = false;
     bool truncated = false;
     enum Tins::DNS::QueryType type = Tins::DNS::A;
     uint16_t numberRecords = 0;
@@ -28,4 +28,4 @@ public:
 };
 
 auto dnsTypeToString(Tins::DNS::QueryType queryType) -> std::string;
-}
+} // namespace flowstats

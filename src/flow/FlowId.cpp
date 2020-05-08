@@ -7,14 +7,14 @@ FlowId::FlowId(Tins::IP const& ip, Tins::TCP const& tcp)
 {
     std::array<Port, 2> pktPorts = { tcp.sport(), tcp.dport() };
     std::array<IPv4, 2> pktIps = { ip.src_addr(), ip.dst_addr() };
-    *this = FlowId(pktPorts, pktIps, true);
+    *this = FlowId(pktPorts, pktIps, Transport::TCP);
 }
 
 FlowId::FlowId(Tins::IP const& ip, Tins::UDP const& udp)
 {
     std::array<Port, 2> pktPorts = { udp.sport(), udp.dport() };
     std::array<IPv4, 2> pktIps = { ip.src_addr(), ip.dst_addr() };
-    *this = FlowId(pktPorts, pktIps, false);
+    *this = FlowId(pktPorts, pktIps, Transport::UDP);
 }
 
 FlowId::FlowId(Tins::Packet const& packet)
@@ -30,8 +30,8 @@ FlowId::FlowId(Tins::Packet const& packet)
     }
 }
 
-FlowId::FlowId(std::array<uint16_t, 2> pktPorts, std::array<IPv4, 2> pktIps, bool isTcp)
-    : isTcp(isTcp)
+FlowId::FlowId(std::array<uint16_t, 2> pktPorts, std::array<IPv4, 2> pktIps, Transport transport)
+    : transport(transport)
 {
     if (pktPorts[0] < pktPorts[1]) {
         direction = FROM_SERVER;
