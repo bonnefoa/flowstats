@@ -80,6 +80,7 @@ auto PktSource::getLiveDevice() -> Tins::Sniffer*
 {
     Tins::SnifferConfiguration snifferConf;
     snifferConf.set_promisc_mode(true);
+    snifferConf.set_immediate_mode(true);
     snifferConf.set_filter(conf.getBpfFilter());
     auto* dev = new Tins::Sniffer(conf.getInterfaceName(), snifferConf);
     return dev;
