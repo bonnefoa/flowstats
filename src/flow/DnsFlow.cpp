@@ -3,6 +3,31 @@
 
 namespace flowstats {
 
+DnsFlow::DnsFlow(const Tins::Packet& packet, Tins::DNS const& dns)
+    : Flow(packet)
+{
+    addPacket(packet, FROM_CLIENT);
+    startTv = packetToTimeval(packet);
+    auto queries = dns.queries();
+    auto firstQuery = queries.at(0);
+    type = firstQuery.query_type();
+    fqdn = firstQuery.dname();
+    hasResponse = false;
+}
+
+auto DnsFlow::processDnsResponse(Tins::Packet const& packet,
+    Tins::DNS const& dns) -> void
+{
+    addPacket(packet, FROM_SERVER);
+    endTv = packetToTimeval(packet);
+    hasResponse = true;
+    truncated = dns.truncated();
+    numberRecords = dns.answers_count();
+    responseCode = dns.rcode();
+    spdlog::debug("Dns tid {}, {}, {} finished, {}", dns.id(),
+        flowId.transport._to_string(), fqdn, numberRecords);
+}
+
 auto dnsTypeToString(Tins::DNS::QueryType dnsType) -> std::string
 {
 #define ENUM_TEXT(p)                \

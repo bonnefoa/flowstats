@@ -9,6 +9,21 @@ namespace flowstats {
 class DnsFlow : public Flow {
 
 public:
+    DnsFlow() = default;
+    DnsFlow(const Tins::Packet& packet, Tins::DNS const& dns);
+
+    auto processDnsResponse(Tins::Packet const& packet, Tins::DNS const& dns) -> void;
+
+    [[nodiscard]] auto getFqdn() const { return fqdn; };
+    [[nodiscard]] auto getTruncated() const { return truncated; };
+    [[nodiscard]] auto getHasResponse() const { return hasResponse; };
+    [[nodiscard]] auto getType() const { return type; };
+    [[nodiscard]] auto getResponseCode() const { return responseCode; };
+    [[nodiscard]] auto getNumberRecords() const { return numberRecords; };
+    [[nodiscard]] auto getDeltaTv() const { return getTimevalDeltaMs(startTv, endTv); };
+    [[nodiscard]] auto getStartTv() const { return startTv; };
+
+private:
     std::string fqdn = "";
     bool hasResponse = false;
     bool truncated = false;
@@ -18,13 +33,6 @@ public:
 
     timeval startTv = {};
     timeval endTv = {};
-
-    DnsFlow() {}
-    DnsFlow(const Tins::Packet& packet)
-        : Flow(packet)
-    {
-        DnsFlow();
-    }
 };
 
 auto dnsTypeToString(Tins::DNS::QueryType queryType) -> std::string;

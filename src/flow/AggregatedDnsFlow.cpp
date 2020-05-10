@@ -91,26 +91,25 @@ auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>& values,
     }
 }
 
-auto AggregatedDnsFlow::addFlow(const Flow* flow) -> void
+auto AggregatedDnsFlow::addFlow(Flow const* flow) -> void
 {
     Flow::addFlow(flow);
 
-    auto const* dnsFlow = dynamic_cast<const DnsFlow*>(flow);
+    auto const* dnsFlow = dynamic_cast<DnsFlow const*>(flow);
     queries++;
-    truncated += dnsFlow->truncated;
-    records += dnsFlow->numberRecords;
-    timeouts += !dnsFlow->hasResponse;
+    truncated += dnsFlow->getTruncated();
+    records += dnsFlow->getNumberRecords();
+    timeouts += !dnsFlow->getHasResponse();
 
     sourceIps[dnsFlow->getCltIp()]++;
 
     totalQueries++;
-    totalTimeouts += !dnsFlow->hasResponse;
-    totalResponses += dnsFlow->hasResponse;
-    if (dnsFlow->hasResponse) {
-        totalTruncated += dnsFlow->truncated;
-        totalRecords += dnsFlow->numberRecords;
-        srts.addPoint(getTimevalDeltaMs(dnsFlow->startTv,
-            dnsFlow->endTv));
+    totalTimeouts += !dnsFlow->getHasResponse();
+    totalResponses += dnsFlow->getHasResponse();
+    if (dnsFlow->getHasResponse()) {
+        totalTruncated += dnsFlow->getTruncated();
+        totalRecords += dnsFlow->getNumberRecords();
+        srts.addPoint(dnsFlow->getDeltaTv());
         totalSrt++;
         numSrt++;
     }
