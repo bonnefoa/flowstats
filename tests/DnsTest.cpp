@@ -13,16 +13,23 @@ TEST_CASE("Dns queries timeout", "[dns]")
 
     tester.readPcap("dns_simple.pcap");
 
-    std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedFlows = dnsStatsCollector.getAggregatedFlow();
+    auto collectorOutput = dnsStatsCollector.outputStatus(0);
+    auto keys = collectorOutput.getKeyHeaders();
+    CHECK(keys.find("Fqdn") == 0);
+
+    auto aggregatedFlows = dnsStatsCollector.getAggregatedFlow();
     REQUIRE(aggregatedFlows.size() == 3);
 
     AggregatedDnsKey firstKey("test.com", Tins::DNS::A, Transport::UDP);
-    REQUIRE(aggregatedFlows[firstKey]->queries == 1);
-    REQUIRE(aggregatedFlows[firstKey]->timeouts == 0);
+    auto firstFlow = aggregatedFlows.at(firstKey);
+    std::map<Field, std::string> cltValues;
+    firstFlow->fillValues(cltValues, FROM_CLIENT, 0);
+    CHECK(cltValues[Field::REQ] == "1");
+    CHECK(cltValues[Field::TIMEOUTS] == "0");
 
     AggregatedDnsKey thirdKey("google.com", Tins::DNS::A, Transport::UDP);
-    REQUIRE(aggregatedFlows[thirdKey]->queries == 1);
-    REQUIRE(aggregatedFlows[thirdKey]->timeouts == 1);
+    CHECK(aggregatedFlows[thirdKey]->queries == 1);
+    CHECK(aggregatedFlows[thirdKey]->timeouts == 1);
 }
 
 TEST_CASE("Dns rcrd/rsps", "[dns]")
