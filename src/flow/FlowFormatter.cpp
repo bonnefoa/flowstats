@@ -10,22 +10,17 @@ namespace flowstats {
 
 FlowFormatter::FlowFormatter() {};
 
-FlowFormatter::FlowFormatter(
-    std::vector<Field> displayKeys)
-    : displayKeys(std::move(displayKeys)) {};
-
-FlowFormatter::FlowFormatter(
-    std::vector<Field> displayKeys,
-    std::vector<Field> displayValues)
-    : displayKeys(std::move(displayKeys))
-    , displayValues(std::move(displayValues)) {};
-
 auto FlowFormatter::outputKey(std::map<Field,
     std::string> const& values) const -> std::string
 {
     fmt::memory_buffer keyBuf;
     for (auto& el : displayKeys) {
-        fmt::format_to(keyBuf, fieldToFormat(el), values.at(el));
+        auto it = values.find(el);
+        if (it == values.end()) {
+            fmt::format_to(keyBuf, fieldToFormat(el), "");
+        } else {
+            fmt::format_to(keyBuf, fieldToFormat(el), it->second);
+        }
     }
     return to_string(keyBuf);
 }
@@ -35,7 +30,12 @@ auto FlowFormatter::outputValue(std::map<Field,
 {
     fmt::memory_buffer valueBuf;
     for (auto& el : displayValues) {
-        fmt::format_to(valueBuf, fieldToFormat(el), values.at(el));
+        auto it = values.find(el);
+        if (it == values.end()) {
+            fmt::format_to(valueBuf, fieldToFormat(el), "");
+        } else {
+            fmt::format_to(valueBuf, fieldToFormat(el), it->second);
+        }
     }
     return to_string(valueBuf);
 }
@@ -58,7 +58,7 @@ auto FlowFormatter::outputHeaders(std::string& keyHeaders,
 
 void FlowFormatter::setDisplayKeys(std::vector<Field> const& keys)
 {
-    displayKeys = keys;
+    displayKeys = std::move(keys);
 }
 
 void FlowFormatter::setDisplayValues(std::vector<Field> const& values)

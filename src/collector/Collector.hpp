@@ -59,11 +59,12 @@ protected:
         int duration, int position) const -> void;
 
     auto getDataMutex() -> std::mutex* { return &dataMutex; };
-    auto getFlowFormatter() -> FlowFormatter { return flowFormatter; };
+    auto getFlowFormatter() -> FlowFormatter& { return flowFormatter; };
+    auto getFlowFormatter() const -> FlowFormatter const& { return flowFormatter; };
     [[nodiscard]] auto getDisplayConf() const -> DisplayConfiguration const& { return displayConf; };
     [[nodiscard]] auto getFlowstatsConfiguration() const -> FlowstatsConfiguration const& { return conf; };
 
-    auto setDisplayKeys(std::vector<Field> const& keys) -> void { flowFormatter.setDisplayKeys(keys); };
+    auto setDisplayKeys(std::vector<Field> const& keys) -> void { getFlowFormatter().setDisplayKeys(keys); };
     auto setDisplayPairs(std::vector<DisplayPair> pairs) -> void { displayPairs = std::move(pairs); };
     auto setTotalFlow(Flow* flow) -> void { totalFlow = flow; };
 

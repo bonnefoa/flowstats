@@ -12,9 +12,6 @@ namespace flowstats {
 struct FlowFormatter {
 
     FlowFormatter();
-    FlowFormatter(std::vector<Field> displayKeys);
-    FlowFormatter(std::vector<Field> displayKeys,
-        std::vector<Field> displayValues);
     virtual ~FlowFormatter() {};
 
     auto outputKey(std::map<Field, std::string> const& values) const -> std::string;

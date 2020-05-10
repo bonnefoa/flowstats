@@ -7,10 +7,16 @@ auto fieldToFormat(Field field) -> char const*
     switch (field) {
     case Field::FQDN:
         return "{:<42.42} ";
+    case Field::TRUNC:
+    case Field::TYPE:
     case Field::DIR:
         return "{:<6.6} ";
     case Field::DOMAIN:
         return "{:<34.34} ";
+    case Field::BYTES:
+        return "{:<10.10} ";
+    case Field::TOP_CLIENT_IPS:
+        return "{:<60.60} ";
     case Field::IP:
         return "{:<16.16} ";
     case Field::PORT:
@@ -106,6 +112,8 @@ auto fieldToHeader(Field field) -> char const*
         return "Type";
     case Field::ZWIN:
         return "0win";
+    default:
+        return "Unknown";
     }
     return "needed for gcc 5";
 }
