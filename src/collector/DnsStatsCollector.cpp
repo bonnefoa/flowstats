@@ -138,38 +138,19 @@ auto DnsStatsCollector::advanceTick(timeval now) -> void
 
 auto DnsStatsCollector::getMetrics() -> std::vector<std::string>
 {
-    std::vector<std::string> lst;
+    std::vector<std::string> res;
     for (auto& pair : aggregatedDnsFlows) {
         struct AggregatedDnsFlow* val = pair.second;
-        DogFood::Tags tags = DogFood::Tags({
-            { "fqdn", val->fqdn },
-            { "proto", val->flowId.transport._to_string() },
-            { "type", dnsTypeToString(val->dnsType) },
-        });
-        if (val->queries) {
-            lst.push_back(DogFood::Metric("flowstats.dns.queries", val->queries,
-                DogFood::Counter, 1, tags));
-        }
-        if (val->timeouts) {
-            lst.push_back(DogFood::Metric("flowstats.dns.timeouts", val->timeouts, DogFood::Counter, 1,
-                tags));
-        }
-        if (val->records) {
-            lst.push_back(DogFood::Metric("flowstats.dns.records", int(val->totalRecords / val->totalQueries), DogFood::Counter, 1,
-                tags));
-        }
-        if (val->truncated) {
-            lst.push_back(DogFood::Metric("flowstats.dns.truncated", val->truncated, DogFood::Counter, 1,
-                tags));
-        }
+        auto dnsMetrics = val->getStatsdMetrics();
+        res.insert(res.end(), dnsMetrics.begin(), dnsMetrics.end());
     }
-    return lst;
+    return res;
 }
 
 auto DnsStatsCollector::mergePercentiles() -> void
 {
     for (auto& pair : aggregatedDnsFlows) {
-        pair.second->srts.merge();
+        pair.second->mergePercentiles();
     }
 }
 
@@ -189,7 +170,7 @@ auto sortAggregatedDnsBySrt(AggregatedPairPointer const& left,
     if (rightDns == nullptr || leftDns == nullptr) {
         return false;
     }
-    return rightDns->srts.getPercentile(1.0) < leftDns->srts.getPercentile(1.0);
+    return rightDns->sortBySrt(*leftDns);
 }
 
 auto sortAggregatedDnsByRequest(AggregatedPairPointer const& left,
@@ -200,7 +181,7 @@ auto sortAggregatedDnsByRequest(AggregatedPairPointer const& left,
     if (rightDns == nullptr || leftDns == nullptr) {
         return false;
     }
-    return rightDns->totalQueries < leftDns->totalQueries;
+    return rightDns->sortByRequest(*leftDns);
 }
 
 auto sortAggregatedDnsByRequestRate(AggregatedPairPointer const& left,
@@ -211,7 +192,7 @@ auto sortAggregatedDnsByRequestRate(AggregatedPairPointer const& left,
     if (rightDns == nullptr || leftDns == nullptr) {
         return false;
     }
-    return rightDns->queries < leftDns->queries;
+    return rightDns->sortByRequestRate(*leftDns);
 }
 
 auto DnsStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPairPointer>

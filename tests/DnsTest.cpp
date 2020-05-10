@@ -28,8 +28,10 @@ TEST_CASE("Dns queries timeout", "[dns]")
     CHECK(cltValues[Field::TIMEOUTS] == "0");
 
     AggregatedDnsKey thirdKey("google.com", Tins::DNS::A, Transport::UDP);
-    CHECK(aggregatedFlows[thirdKey]->queries == 1);
-    CHECK(aggregatedFlows[thirdKey]->timeouts == 1);
+    auto thirdFlow = aggregatedFlows.at(firstKey);
+    thirdFlow->fillValues(cltValues, FROM_CLIENT, 0);
+    CHECK(cltValues[Field::REQ] == "1");
+    CHECK(cltValues[Field::TIMEOUTS] == "1");
 }
 
 TEST_CASE("Dns rcrd/rsps", "[dns]")
@@ -43,6 +45,9 @@ TEST_CASE("Dns rcrd/rsps", "[dns]")
     REQUIRE(aggregatedFlows.size() == 1);
 
     AggregatedDnsKey udpKey("all.alb-metrics-agent-shard1-770518637.us-east-1.elb.amazonaws.com", Tins::DNS::A, Transport::UDP);
-    REQUIRE(aggregatedFlows[udpKey]->queries == 1);
-    REQUIRE(aggregatedFlows[udpKey]->totalRecords == 48);
+    auto firstFlow = aggregatedFlows.at(udpKey);
+    std::map<Field, std::string> cltValues;
+    firstFlow->fillValues(cltValues, FROM_CLIENT, 0);
+    CHECK(cltValues[Field::REQ] == "1");
+    CHECK(cltValues[Field::RCRD_RSP] == "48");
 }
