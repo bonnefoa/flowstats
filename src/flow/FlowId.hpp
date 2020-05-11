@@ -14,12 +14,11 @@ using IPv4 = uint32_t;
 BETTER_ENUM(Transport, char, TCP, UDP);
 
 struct FlowId {
-    std::array<Tins::IPv4Address, 2> ips = {};
-    std::array<Port, 2> ports = {};
-    Transport transport = Transport::TCP;
-    Direction direction = FROM_CLIENT;
-
     FlowId() = default;
+    FlowId(FlowId const& flowId);
+    FlowId(FlowId const&& flowId);
+    FlowId& operator=(FlowId const& other);
+
     FlowId(std::array<uint16_t, 2> ports, std::array<IPv4, 2> pktIps,
         Transport transport);
     FlowId(const Tins::IP& ipv4Layer, const Tins::TCP& tcpLayer);
@@ -27,6 +26,22 @@ struct FlowId {
     explicit FlowId(const Tins::Packet& packet);
 
     [[nodiscard]] auto toString() const -> std::string;
+    [[nodiscard]] auto getIps() const { return ips; };
+    [[nodiscard]] auto getIp(uint8_t pos) const { return ips[pos]; };
+    [[nodiscard]] auto getPorts() const { return ports; };
+    [[nodiscard]] auto getPort(uint8_t pos) const { return ports[pos]; };
+    [[nodiscard]] auto getTransport() const { return transport; };
+    [[nodiscard]] auto getDirection() const { return direction; };
+    [[nodiscard]] auto hash() const
+    {
+        return std::hash<Tins::IPv4Address>()(ips[0]) + std::hash<Tins::IPv4Address>()(ips[1]) + std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1]);
+    };
+
+private:
+    std::array<Tins::IPv4Address, 2> ips = {};
+    std::array<Port, 2> ports = {};
+    Transport transport = Transport::TCP;
+    Direction direction = FROM_CLIENT;
 };
 } // namespace flowstats
 
@@ -36,7 +51,7 @@ template <>
 struct hash<flowstats::FlowId> {
     auto operator()(const flowstats::FlowId& flowId) const -> size_t
     {
-        return std::hash<Tins::IPv4Address>()(flowId.ips[0]) + std::hash<Tins::IPv4Address>()(flowId.ips[1]) + std::hash<uint16_t>()(flowId.ports[0]) + std::hash<uint16_t>()(flowId.ports[1]);
+        return flowId.hash();
         //+ std::hash<std::underlying_type<flowstats::Direction>::type>()(flowId.direction);
     }
 };

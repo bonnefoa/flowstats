@@ -30,9 +30,9 @@ auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow&
     size_t flowHash = hash_fn(flowId);
 
     SslFlow& sslFlow = hashToSslFlow[flowHash];
-    if (sslFlow.flowId.ports[0] == 0) {
+    if (sslFlow.getPort(0) == 0) {
         spdlog::debug("Create ssl flow {}", flowId.toString());
-        sslFlow.flowId = flowId;
+        sslFlow.setFlowId(flowId);
         std::optional<std::string> fqdn = ipToFqdn->getFlowFqdn(sslFlow.getSrvIpInt());
         if (!fqdn.has_value()) {
             return sslFlow;
@@ -82,13 +82,14 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet) -> void
 
     FlowId flowId(ip, tcp);
     SslFlow& sslFlow = lookupSslFlow(flowId);
-    sslFlow.addPacket(packet, flowId.direction);
+    auto direction = flowId.getDirection();
+    sslFlow.addPacket(packet, direction);
     for (auto& subflow : sslFlow.aggregatedFlows) {
-        subflow->addPacket(packet, flowId.direction);
+        subflow->addPacket(packet, direction);
     }
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
-    sslFlow.updateFlow(packet, flowId.direction, ip, tcp);
+    sslFlow.updateFlow(packet, direction, ip, tcp);
 }
 
 auto SslStatsCollector::resetMetrics() -> void
@@ -119,8 +120,7 @@ auto SslStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPair
 
     std::sort(tempVector.begin(), tempVector.end(),
         [](AggregatedPairPointer const& left, AggregatedPairPointer const& right) {
-            return right.second->totalBytes[0] + right.second->totalBytes[1]
-                < left.second->totalBytes[0] + left.second->totalBytes[1];
+            return right.second < left.second;
         });
     return tempVector;
 }

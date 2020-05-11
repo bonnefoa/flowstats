@@ -17,6 +17,33 @@ FlowId::FlowId(Tins::IP const& ip, Tins::UDP const& udp)
     *this = FlowId(pktPorts, pktIps, Transport::UDP);
 }
 
+FlowId::FlowId(FlowId const&& flowId)
+{
+    transport = std::move(flowId.transport);
+    direction = std::move(flowId.direction);
+    ips = std::move(flowId.ips);
+    ports = std::move(flowId.ports);
+}
+
+FlowId::FlowId(FlowId const& flowId)
+{
+    *this = flowId;
+}
+
+FlowId& FlowId::operator=(FlowId const& flowId)
+{
+    if (this == &flowId) {
+        return *this;
+    }
+    transport = flowId.transport;
+    direction = flowId.direction;
+    ips[0] = flowId.ips[0];
+    ips[1] = flowId.ips[1];
+    ports[0] = flowId.ports[0];
+    ports[1] = flowId.ports[1];
+    return *this;
+}
+
 FlowId::FlowId(Tins::Packet const& packet)
 {
     auto ip = packet.pdu()->rfind_pdu<Tins::IP>();

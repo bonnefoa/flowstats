@@ -51,31 +51,6 @@ auto Flow::addAggregatedFlow(Flow const* flow) -> void
     addFlow(flow);
 }
 
-auto Flow::getSrvPort() const -> uint16_t
-{
-    return flowId.ports[srvPos];
-}
-
-auto Flow::getCltIp() const -> Tins::IPv4Address
-{
-    return flowId.ips[!srvPos];
-}
-
-auto Flow::getSrvIp() const -> Tins::IPv4Address
-{
-    return flowId.ips[srvPos];
-}
-
-auto Flow::getCltIpInt() const -> IPv4
-{
-    return flowId.ips[!srvPos];
-}
-
-auto Flow::getSrvIpInt() const -> IPv4
-{
-    return flowId.ips[srvPos];
-}
-
 void Flow::resetFlow(bool resetTotal)
 {
     packets[0] = 0;

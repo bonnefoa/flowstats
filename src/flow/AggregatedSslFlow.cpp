@@ -8,7 +8,7 @@ auto AggregatedSslFlow::fillValues(std::map<Field, std::string>& values,
     Flow::fillValues(values, direction, duration);
 
     if (direction == FROM_CLIENT) {
-        values[Field::FQDN] = fqdn;
+        values[Field::FQDN] = getFqdn();
         values[Field::IP] = getSrvIp().to_string();
         values[Field::PORT] = std::to_string(getSrvPort());
         values[Field::DOMAIN] = domain;

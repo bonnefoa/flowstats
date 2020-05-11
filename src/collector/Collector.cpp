@@ -57,7 +57,7 @@ auto Collector::fillOutputs(std::vector<AggregatedPairPointer> const& aggregated
     int i = 0;
     for (auto const& pair : aggregatedPairs) {
         auto* flow = pair.second;
-        if (flow->fqdn.find(displayConf.filter) == std::string::npos) {
+        if (flow->getFqdn().find(displayConf.filter) == std::string::npos) {
             continue;
         }
         totalFlow->addAggregatedFlow(pair.second);

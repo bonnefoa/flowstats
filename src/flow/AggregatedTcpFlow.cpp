@@ -8,22 +8,23 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
     Tins::IP const& ip,
     Tins::TCP const& tcp) -> void
 {
+    auto direction = flowId.getDirection();
     if (tcp.has_flags(Tins::TCP::RST)) {
-        rsts[flowId.direction]++;
+        rsts[direction]++;
     }
 
     if (tcp.window() == 0 && !tcp.has_flags(Tins::TCP::RST)) {
-        zeroWins[flowId.direction]++;
+        zeroWins[direction]++;
     }
 
     if (tcp.has_flags(Tins::TCP::SYN | Tins::TCP::ACK)) {
-        synacks[flowId.direction]++;
+        synacks[direction]++;
     } else if (tcp.has_flags(Tins::TCP::SYN)) {
-        syns[flowId.direction]++;
+        syns[direction]++;
     } else if (tcp.has_flags(Tins::TCP::FIN)) {
-        fins[flowId.direction]++;
+        fins[direction]++;
     }
-    mtu[flowId.direction] = std::max(mtu[flowId.direction],
+    mtu[direction] = std::max(mtu[direction],
         packet.pdu()->advertised_size());
 }
 
@@ -55,7 +56,7 @@ auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>& values,
         values[Field::DS_P99] = prettyFormatBytes(requestSizes.getPercentile(0.99));
         values[Field::DSMAX] = prettyFormatBytes(requestSizes.getPercentile(1));
 
-        values[Field::FQDN] = fqdn;
+        values[Field::FQDN] = getFqdn();
         values[Field::IP] = getSrvIp().to_string();
         values[Field::PORT] = std::to_string(getSrvPort());
         if (duration) {
@@ -129,7 +130,7 @@ auto AggregatedTcpFlow::closeConnection() -> void
 
 auto AggregatedTcpFlow::getMetrics(std::vector<std::string> lst) const -> void
 {
-    DogFood::Tags tags = DogFood::Tags({ { "fqdn", fqdn },
+    DogFood::Tags tags = DogFood::Tags({ { "fqdn", getFqdn() },
         { "ip", getSrvIp().to_string() },
         { "port", std::to_string(getSrvPort()) } });
     for (auto& i : srts.getPoints()) {

@@ -5,16 +5,6 @@
 
 namespace flowstats {
 
-SslFlow::SslFlow()
-    : Flow()
-{
-}
-
-SslFlow::SslFlow(Tins::IP const& ip, Tins::TCP const& tcp)
-    : Flow(ip, tcp)
-{
-}
-
 void SslFlow::processHandshake(Tins::Packet const& packet,
     Cursor* cursor)
 {

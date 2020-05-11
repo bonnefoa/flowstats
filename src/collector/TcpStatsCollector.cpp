@@ -38,9 +38,9 @@ auto TcpStatsCollector::lookupTcpFlow(
     std::hash<FlowId> hash_fn;
     size_t flowHash = hash_fn(flowId);
     TcpFlow& tcpFlow = hashToTcpFlow[flowHash];
-    if (tcpFlow.flowId.ports[0] == 0) {
+    if (tcpFlow.getPort(0) == 0) {
         tcpFlow = TcpFlow(ip, tcp);
-        tcpFlow.detectServer(tcp, flowId.direction, srvPortsCounter);
+        tcpFlow.detectServer(tcp, flowId.getDirection(), srvPortsCounter);
         std::optional<std::string> fqdn = ipToFqdn->getFlowFqdn(tcpFlow.getSrvIp());
         if (!fqdn.has_value()) {
             return tcpFlow;
@@ -65,7 +65,7 @@ auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow const& tcpFlow, FlowId con
     auto it = aggregatedMap.find(tcpKey);
     if (it == aggregatedMap.end()) {
         aggregatedFlow = new AggregatedTcpFlow(flowId, tcpFlow.fqdn);
-        aggregatedFlow->srvPos = tcpFlow.srvPos;
+        aggregatedFlow->setSrvPos(tcpFlow.getSrvPos());
         aggregatedMap[tcpKey] = aggregatedFlow;
         spdlog::debug("Create aggregated tcp flow for {}", tcpKey.toString());
     } else {
@@ -89,14 +89,15 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet) -> void
         return;
     }
 
-    tcpFlow.addPacket(packet, flowId.direction);
+    auto direction = flowId.getDirection();
+    tcpFlow.addPacket(packet, direction);
 
     for (auto& subflow : tcpFlow.getAggregatedFlows()) {
-        subflow->addPacket(packet, flowId.direction);
+        subflow->addPacket(packet, direction);
         subflow->updateFlow(packet, flowId, ip, tcp);
     }
 
-    tcpFlow.updateFlow(packet, flowId.direction, ip, tcp);
+    tcpFlow.updateFlow(packet, direction, ip, tcp);
 
     if (tcp.has_flags(Tins::TCP::SYN) && tcpFlow.opening == false) {
         tcpFlow.opening = true;
@@ -114,7 +115,7 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
     for (auto it : hashToTcpFlow) {
         TcpFlow& flow = it.second;
         spdlog::debug("Check flow {} for timeouts, now {}, lastPacketTime {} {}",
-            flow.flowId.toString(), now.tv_sec,
+            flow.getFlowId().toString(), now.tv_sec,
             flow.lastPacketTime[0].tv_sec, flow.lastPacketTime[1].tv_sec);
         if (flow.lastPacketTime[FROM_CLIENT].tv_sec == 0
             && flow.lastPacketTime[FROM_SERVER].tv_sec == 0) {
@@ -127,11 +128,11 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
             }
         }
         uint32_t maxDelta = std::max(deltas[0], deltas[1]);
-        spdlog::debug("flow.{}, maxDelta: {}", flow.flowId.toString(), maxDelta);
+        spdlog::debug("flow.{}, maxDelta: {}", flow.getFlowId().toString(), maxDelta);
         auto timeoutFlow = getFlowstatsConfiguration().getTimeoutFlow();
         if (maxDelta > timeoutFlow) {
             spdlog::debug("Timeout flow {}, now {}, maxDelta {} > {}",
-                flow.flowId.toString(), now.tv_sec, maxDelta, timeoutFlow);
+                flow.getFlowId().toString(), now.tv_sec, maxDelta, timeoutFlow);
             toTimeout.push_back(it.first);
             flow.timeoutFlow();
         }

@@ -25,7 +25,7 @@ auto DnsFlow::processDnsResponse(Tins::Packet const& packet,
     numberRecords = dns.answers_count();
     responseCode = dns.rcode();
     spdlog::debug("Dns tid {}, {}, {} finished, {}", dns.id(),
-        flowId.transport._to_string(), fqdn, numberRecords);
+        getTransport()._to_string(), fqdn, numberRecords);
 }
 
 auto dnsTypeToString(Tins::DNS::QueryType dnsType) -> std::string

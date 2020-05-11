@@ -10,7 +10,8 @@
 namespace flowstats {
 
 struct AggregatedTcpFlow : Flow {
-    AggregatedTcpFlow() { fqdn = "Total"; };
+    AggregatedTcpFlow()
+        : Flow("Total") {};
 
     AggregatedTcpFlow(FlowId const& flowId, std::string fqdn)
         : Flow(flowId, fqdn) {};

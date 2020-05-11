@@ -11,13 +11,17 @@ struct AggregatedSslFlow : Flow {
     int totalConnections = 0;
     Percentile connections;
 
-    AggregatedSslFlow() { fqdn = "Total"; };
+    AggregatedSslFlow()
+        : Flow("Total") {};
+
     AggregatedSslFlow(FlowId const& flowId, std::string const& fqdn)
         : Flow(flowId, fqdn) {};
 
     auto operator<(AggregatedSslFlow const& f) -> bool
     {
-        return bytes[0] + bytes[1] < f.bytes[0] + f.bytes[1];
+        auto leftBytes = getBytes();
+        auto rightBytes = f.getBytes();
+        return leftBytes[0] + leftBytes[1] < rightBytes[0] + rightBytes[1];
     }
 
     auto fillValues(std::map<Field, std::string>& map, Direction direction, int duration) const -> void override;

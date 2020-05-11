@@ -9,12 +9,12 @@ namespace flowstats {
 
 class SslFlow : public Flow {
 public:
-    SslFlow();
-    SslFlow(Tins::IP const& ip, Tins::TCP const& tcp);
-
-    std::string domain = "";
-    timeval startHandshake = {};
-    bool connectionEstablished = false;
+    SslFlow()
+        : Flow() {};
+    SslFlow(Tins::IP const& ip, Tins::TCP const& tcp)
+        : Flow(ip, tcp) {};
+    SslFlow(FlowId const& flowId)
+        : Flow(flowId) {};
 
     void updateFlow(Tins::Packet const& packet, Direction direction,
         Tins::IP const& ip,
@@ -23,5 +23,9 @@ public:
 
 private:
     void processHandshake(Tins::Packet const& packet, Cursor* cursor);
+
+    std::string domain = "";
+    timeval startHandshake = {};
+    bool connectionEstablished = false;
 };
 } // namespace flowstats

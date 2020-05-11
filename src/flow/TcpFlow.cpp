@@ -21,30 +21,34 @@ auto TcpFlow::detectServer(Tins::TCP const& tcp, Direction const direction,
     auto const flags = tcp.flags();
     if (flags & Tins::TCP::SYN) {
         if (flags & Tins::TCP::ACK) {
-            srvPos = direction;
-            srvPortsCounter[flowId.ports[srvPos]]++;
-            spdlog::debug("Incrementing port {} as server port to {}", flowId.ports[srvPos], srvPortsCounter[flowId.ports[srvPos]]);
+            setSrvPos(direction);
+            auto srvPort = getSrvPort();
+            srvPortsCounter[srvPort]++;
+            spdlog::debug("Incrementing port {} as server port to {}", srvPort, srvPortsCounter[srvPort]);
         } else {
-            srvPos = !direction;
-            srvPortsCounter[flowId.ports[srvPos]]++;
-            spdlog::debug("Incrementing port {} as server port to {}", flowId.ports[srvPos], srvPortsCounter[flowId.ports[srvPos]]);
+            setSrvPos(!direction);
+            auto srvPort = getSrvPort();
+            srvPortsCounter[srvPort]++;
+            spdlog::debug("Incrementing port {} as server port to {}", srvPort, srvPortsCounter[srvPort]);
         }
     } else {
         int firstPortCount = 0;
         int secondPortCount = 0;
-        if (srvPortsCounter.find(flowId.ports[direction]) != srvPortsCounter.end()) {
-            firstPortCount = srvPortsCounter[flowId.ports[direction]];
+        auto port = getPort(direction);
+        if (srvPortsCounter.find(port) != srvPortsCounter.end()) {
+            firstPortCount = srvPortsCounter[port];
         }
-        if (srvPortsCounter.find(flowId.ports[!direction]) != srvPortsCounter.end()) {
-            secondPortCount = srvPortsCounter[flowId.ports[!direction]];
+        port = getPort(!direction);
+        if (srvPortsCounter.find(port) != srvPortsCounter.end()) {
+            secondPortCount = srvPortsCounter[port];
         }
         if (firstPortCount > secondPortCount) {
-            srvPos = direction;
+            setSrvPos(direction);
         } else if (secondPortCount > firstPortCount) {
-            srvPos = !direction;
+            setSrvPos(!direction);
         }
     }
-    spdlog::debug("Server port detected: {}", flowId.ports[srvPos]);
+    spdlog::debug("Server port detected: {}", getSrvPort());
 }
 
 auto TcpFlow::timeoutFlow() -> void
@@ -62,7 +66,7 @@ auto TcpFlow::timeoutFlow() -> void
 auto TcpFlow::closeConnection() -> void
 {
     if (opened) {
-        spdlog::debug("Closing connection {}", flowId.toString());
+        spdlog::debug("Closing connection {}", getFlowId().toString());
         for (auto& aggregatedFlow : aggregatedFlows) {
             aggregatedFlow->closeConnection();
         }
@@ -96,17 +100,18 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     int tcpPayloadSize = getTcpPayloadSize(ip, tcp);
     lastPacketTime[direction] = tv;
     uint32_t nextSeq = std::max(seqNum[direction], nextSeqnum(tcp, tcpPayloadSize));
-    spdlog::debug("Update flow {}, nextSeq {}, ts {}ms, direction {}, tcp {}, payload {}", flowId.toString(), nextSeq,
-        timevalInMs(tv), direction, tcpToString(tcp), tcpPayloadSize);
+    spdlog::debug("Update flow {}, nextSeq {}, ts {}ms, direction {}, tcp {}, payload {}",
+        getFlowId().toString(), nextSeq, timevalInMs(tv), direction,
+        tcpToString(tcp), tcpPayloadSize);
 
+    auto currentDirection = static_cast<Direction>(direction == getSrvPort());
     if (flags & Tins::TCP::SYN) {
         synTime[direction] = tv;
         opening = true;
         closed = false;
         spdlog::debug("Got syn for direction {}, srvPort {}, ts {}ms",
-            directionToString(direction == srvPos), getSrvPort(), timevalInMs(tv));
+            directionToString(currentDirection), getSrvPort(), timevalInMs(tv));
     }
-    auto currentDirection = static_cast<Direction>(direction == srvPos);
 
     if (!opened && flags & Tins::TCP::ACK && tcp.ack_seq() == seqNum[!direction]
         && synAcked[direction] == false) {
@@ -138,7 +143,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         seqNum[direction] = std::max(seqNum[direction], nextSeq);
     }
     if (tcpPayloadSize > 0) {
-        if (lastDirection != direction && direction == srvPos && lastPayloadTime.tv_sec > 0) {
+        if (lastDirection != direction && direction == getSrvPos() && lastPayloadTime.tv_sec > 0) {
             uint32_t delta = getTimevalDeltaMs(lastPayloadTime, tv);
             spdlog::debug("Change of direction to {}, srt {}, requestSize {}",
                 directionToString(currentDirection),
@@ -149,7 +154,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         }
         lastPayloadTime = tv;
         lastDirection = direction;
-        if (direction == srvPos) {
+        if (direction == getSrvPos()) {
             requestSize = 0;
         } else {
             requestSize += tcpPayloadSize;

@@ -12,9 +12,7 @@ namespace flowstats {
 struct AggregatedDnsFlow : Flow {
 
     AggregatedDnsFlow()
-    {
-        fqdn = "Total";
-    };
+        : Flow("Total") {};
 
     AggregatedDnsFlow(FlowId const& flowId, std::string fqdn,
         enum Tins::DNS::QueryType dnsType)

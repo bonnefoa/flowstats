@@ -36,6 +36,7 @@ auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>& values,
     Direction direction, int duration) const -> void
 {
     Flow::fillValues(values, direction, duration);
+    auto fqdn = getFqdn();
     if (fqdn == "Total") {
         if (direction == FROM_SERVER) {
             return;
@@ -65,7 +66,7 @@ auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>& values,
 
     if (direction == FROM_CLIENT) {
         values[Field::FQDN] = fqdn;
-        values[Field::PROTO] = flowId.transport._to_string();
+        values[Field::PROTO] = getTransport()._to_string();
         values[Field::TYPE] = dnsTypeToString(dnsType);
         values[Field::IP] = getSrvIp().to_string();
         values[Field::TIMEOUTS_RATE] = std::to_string(timeouts);
@@ -143,8 +144,8 @@ auto AggregatedDnsFlow::getStatsdMetrics() const -> std::vector<std::string>
 {
     std::vector<std::string> lst;
     DogFood::Tags tags = DogFood::Tags({
-        { "fqdn", fqdn },
-        { "proto", flowId.transport._to_string() },
+        { "fqdn", getFqdn() },
+        { "proto", getTransport()._to_string() },
         { "type", dnsTypeToString(dnsType) },
     });
     if (queries) {

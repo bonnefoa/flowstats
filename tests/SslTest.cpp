@@ -19,12 +19,19 @@ TEST_CASE("Ssl connection time", "[ssl]")
     std::map<AggregatedTcpKey, AggregatedSslFlow*> ipFlows = tester.getSslStatsCollector().getAggregatedMap();
     REQUIRE(ipFlows.size() == 1);
     AggregatedTcpKey key("google.com", 0, 443);
-    AggregatedSslFlow* flow = ipFlows[key];
-    REQUIRE(flow->domain == "google.com");
-    REQUIRE(flow->packets[FROM_CLIENT] == 8);
-    REQUIRE(flow->packets[FROM_SERVER] == 7);
-    REQUIRE(flow->connections.getCount() == 1);
-    REQUIRE(flow->connections.getPercentile(0.95) == 38);
+    auto flow = ipFlows[key];
+
+    std::map<Field, std::string> cltValues;
+    flow->fillValues(cltValues, FROM_CLIENT, 0);
+
+    std::map<Field, std::string> srvValues;
+    flow->fillValues(srvValues, FROM_SERVER, 0);
+
+    CHECK(cltValues[Field::DOMAIN] == "google.com");
+    CHECK(cltValues[Field::PKTS] == "8");
+    CHECK(srvValues[Field::PKTS] == "7");
+    CHECK(cltValues[Field::CONN] == "1");
+    CHECK(cltValues[Field::CT_P95] == "38ms");
 }
 
 TEST_CASE("Ssl port detection", "[ssl]")

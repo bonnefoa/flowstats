@@ -28,7 +28,7 @@ TEST_CASE("Dns queries timeout", "[dns]")
     CHECK(cltValues[Field::TIMEOUTS] == "0");
 
     AggregatedDnsKey thirdKey("google.com", Tins::DNS::A, Transport::UDP);
-    auto thirdFlow = aggregatedFlows.at(firstKey);
+    auto thirdFlow = aggregatedFlows.at(thirdKey);
     thirdFlow->fillValues(cltValues, FROM_CLIENT, 0);
     CHECK(cltValues[Field::REQ] == "1");
     CHECK(cltValues[Field::TIMEOUTS] == "1");

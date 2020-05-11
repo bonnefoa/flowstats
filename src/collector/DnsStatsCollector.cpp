@@ -82,15 +82,15 @@ auto DnsStatsCollector::addFlowToAggregation(DnsFlow const* flow) -> void
 {
     auto dnsType = flow->getType();
     auto fqdn = flow->getFqdn();
-    AggregatedDnsKey key(fqdn, dnsType, flow->flowId.transport);
+    AggregatedDnsKey key(fqdn, dnsType, flow->getTransport());
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto it = aggregatedDnsFlows.find(key);
     AggregatedDnsFlow* aggregatedFlow;
     if (it == aggregatedDnsFlows.end()) {
         spdlog::debug("Create new dns aggregation for {} {} {}", fqdn,
-            dnsTypeToString(dnsType), flow->flowId.transport);
-        aggregatedFlow = new AggregatedDnsFlow(flow->flowId, fqdn, dnsType);
+            dnsTypeToString(dnsType), flow->getTransport());
+        aggregatedFlow = new AggregatedDnsFlow(flow->getFlowId(), fqdn, dnsType);
         aggregatedDnsFlows[key] = aggregatedFlow;
     } else {
         aggregatedFlow = it->second;
