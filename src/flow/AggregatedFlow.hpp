@@ -7,49 +7,45 @@
 
 namespace flowstats {
 
-template <class T>
-struct ptr_less {
-    bool operator()(T* lhs, T* rhs)
-    {
-        return *lhs < *rhs;
-    }
-};
-
 class AggregatedKey {
 public:
-    AggregatedKey(std::string _fqdn)
-        : fqdn(_fqdn) {};
-    virtual ~AggregatedKey() {};
-    bool operator<(AggregatedKey const& b) const
+    explicit AggregatedKey(std::string fqdn)
+        : fqdn(std::move(fqdn)) {};
+    virtual ~AggregatedKey() = default;
+    auto operator<(AggregatedKey const& b) const -> bool
     {
         return fqdn < b.fqdn;
     }
 
-protected:
+    [[nodiscard]] auto getFqdn() const { return fqdn; }
+
+private:
+    friend class AggregatedTcpKey;
     std::string fqdn;
 };
 
 using AggregatedPairPointer = std::pair<AggregatedKey, Flow*>;
 
-bool sortAggregatedPairByPacket(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right);
-bool sortAggregatedPairByFqdn(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right);
-bool sortAggregatedPairByByte(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right);
+auto sortAggregatedPairByPacket(AggregatedPairPointer const& left,
+    const AggregatedPairPointer& right) -> bool;
+auto sortAggregatedPairByFqdn(AggregatedPairPointer const& left,
+    const AggregatedPairPointer& right) -> bool;
+auto sortAggregatedPairByByte(AggregatedPairPointer const& left,
+    const AggregatedPairPointer& right) -> bool;
 
-struct AggregatedTcpKey : AggregatedKey {
-    AggregatedTcpKey(std::string fqdn, IPv4 ip, Port port)
+class AggregatedTcpKey : AggregatedKey {
+public:
+    AggregatedTcpKey(std::string const& fqdn, IPv4 ip, Port port)
         : AggregatedKey(fqdn)
         , ip(ip)
         , port(port) {};
 
-    bool operator<(AggregatedTcpKey const& b) const
+    auto operator<(AggregatedTcpKey const& b) const -> bool
     {
         return std::tie(fqdn, ip, port) < std::tie(b.fqdn, b.ip, b.port);
     }
 
-    std::string toString()
+    [[nodiscard]] auto toString() const -> std::string
     {
         return fmt::format("{} {}:{}", fqdn, ip, port);
     };
@@ -58,4 +54,4 @@ private:
     IPv4 ip;
     Port port;
 };
-}
+} // namespace flowstats

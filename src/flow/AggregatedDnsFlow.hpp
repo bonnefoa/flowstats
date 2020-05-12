@@ -14,7 +14,7 @@ struct AggregatedDnsFlow : Flow {
     AggregatedDnsFlow()
         : Flow("Total") {};
 
-    AggregatedDnsFlow(FlowId const& flowId, std::string fqdn,
+    AggregatedDnsFlow(FlowId const& flowId, std::string const& fqdn,
         enum Tins::DNS::QueryType dnsType)
         : Flow(flowId, fqdn)
         , dnsType(dnsType) {};
@@ -25,20 +25,20 @@ struct AggregatedDnsFlow : Flow {
         Direction direction, int duration) const -> void override;
     auto addFlow(Flow const* flow) -> void override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
-    auto getStatsdMetrics() const -> std::vector<std::string>;
     auto mergePercentiles() -> void { srts.merge(); }
 
-    auto sortBySrt(AggregatedDnsFlow const& b) const -> bool
+    [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string>;
+    [[nodiscard]] auto sortBySrt(AggregatedDnsFlow const& b) const -> bool
     {
         return srts.getPercentile(1.0) < b.srts.getPercentile(1.0);
     }
 
-    auto sortByRequest(AggregatedDnsFlow const& b) const -> bool
+    [[nodiscard]] auto sortByRequest(AggregatedDnsFlow const& b) const -> bool
     {
         return totalQueries < b.totalQueries;
     }
 
-    auto sortByRequestRate(AggregatedDnsFlow const& b) const -> bool
+    [[nodiscard]] auto sortByRequestRate(AggregatedDnsFlow const& b) const -> bool
     {
         return srts.getCount() < b.srts.getCount();
     }
@@ -47,7 +47,7 @@ private:
     [[nodiscard]] auto getTopClientIps() const -> std::vector<std::pair<int, int>>;
     [[nodiscard]] auto getTopClientIpsStr() const -> std::string;
 
-    enum Tins::DNS::QueryType dnsType;
+    enum Tins::DNS::QueryType dnsType = Tins::DNS::QueryType::A;
 
     int totalQueries = 0;
     int totalResponses = 0;
@@ -67,9 +67,9 @@ private:
 };
 
 struct AggregatedDnsKey : AggregatedKey {
-    AggregatedDnsKey(std::string _fqdn, Tins::DNS::QueryType _dnsType, Transport transport)
-        : AggregatedKey(_fqdn)
-        , dnsType(_dnsType)
+    AggregatedDnsKey(std::string const& fqdn, Tins::DNS::QueryType dnsType, Transport transport)
+        : AggregatedKey(fqdn)
+        , dnsType(dnsType)
         , transport(transport) {};
 
     auto operator<(AggregatedDnsKey const& b) const -> bool

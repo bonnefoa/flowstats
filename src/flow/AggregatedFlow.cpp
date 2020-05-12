@@ -19,16 +19,16 @@ auto sortAggregatedPairByFqdn(const AggregatedPairPointer& left,
 auto sortAggregatedPairByByte(const AggregatedPairPointer& left,
     const AggregatedPairPointer& right) -> bool
 {
-    auto rightBytes = right.second->getTotalBytes();
-    auto leftBytes = left.second->getTotalBytes();
+    auto const* rightBytes = right.second->getTotalBytes();
+    auto const* leftBytes = left.second->getTotalBytes();
     return (rightBytes[0] + rightBytes[1]) < (leftBytes[0] + leftBytes[1]);
 }
 
 auto sortAggregatedPairByPacket(const AggregatedPairPointer& left,
     const AggregatedPairPointer& right) -> bool
 {
-    auto rightPackets = right.second->getTotalPackets();
-    auto leftPackets = left.second->getTotalPackets();
+    auto const* rightPackets = right.second->getTotalPackets();
+    auto const* leftPackets = left.second->getTotalPackets();
     return (rightPackets[0] + rightPackets[1]) < (leftPackets[0] + leftPackets[1]);
 }
 } // namespace flowstats
