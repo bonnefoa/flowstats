@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AggregatedFlow.hpp"
+#include "AggregatedKeys.hpp"
 #include "Field.hpp"
 #include "Flow.hpp"
 #include "Stats.hpp"
@@ -22,7 +23,6 @@ struct AggregatedTcpFlow : Flow {
     }
 
     auto updateFlow(Tins::Packet const& packet, FlowId const& flowId,
-        Tins::IP const& ip,
         Tins::TCP const& tcpLayer) -> void;
 
     auto resetFlow(bool resetTotal) -> void;
@@ -77,4 +77,5 @@ private:
     Percentile srts;
     Percentile requestSizes;
 };
+
 } // namespace flowstats

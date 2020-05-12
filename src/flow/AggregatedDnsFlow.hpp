@@ -66,19 +66,4 @@ private:
     Percentile srts;
 };
 
-struct AggregatedDnsKey : AggregatedKey {
-    AggregatedDnsKey(std::string const& fqdn, Tins::DNS::QueryType dnsType, Transport transport)
-        : AggregatedKey(fqdn)
-        , dnsType(dnsType)
-        , transport(transport) {};
-
-    auto operator<(AggregatedDnsKey const& b) const -> bool
-    {
-        return std::tie(fqdn, dnsType, transport) < std::tie(b.fqdn, b.dnsType, b.transport);
-    }
-
-private:
-    Tins::DNS::QueryType dnsType;
-    Transport transport;
-};
 } // namespace flowstats

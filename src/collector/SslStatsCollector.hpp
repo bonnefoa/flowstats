@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AggregatedKeys.hpp"
 #include "AggregatedSslFlow.hpp"
 #include "Collector.hpp"
 #include "IpToFqdn.hpp"

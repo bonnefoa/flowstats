@@ -94,7 +94,7 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet) -> void
 
     for (auto& subflow : tcpFlow.getAggregatedFlows()) {
         subflow->addPacket(packet, direction);
-        subflow->updateFlow(packet, flowId, ip, tcp);
+        subflow->updateFlow(packet, flowId, tcp);
     }
 
     tcpFlow.updateFlow(packet, direction, ip, tcp);

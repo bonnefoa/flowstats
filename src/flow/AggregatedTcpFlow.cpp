@@ -5,7 +5,6 @@ namespace flowstats {
 
 auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
     FlowId const& flowId,
-    Tins::IP const& ip,
     Tins::TCP const& tcp) -> void
 {
     auto direction = flowId.getDirection();

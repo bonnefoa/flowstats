@@ -103,7 +103,7 @@ auto SslStatsCollector::resetMetrics() -> void
 auto SslStatsCollector::mergePercentiles() -> void
 {
     for (auto& i : aggregatedMap) {
-        i.second->connections.merge();
+        i.second->merge();
     }
 }
 
@@ -112,7 +112,7 @@ auto SslStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPair
     std::vector<AggregatedPairPointer> tempVector;
 
     for (auto const& pair : aggregatedMap) {
-        pair.second->connections.merge();
+        pair.second->merge();
         tempVector.emplace_back(pair.first, pair.second);
     }
 

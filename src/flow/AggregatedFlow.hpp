@@ -20,7 +20,6 @@ public:
     [[nodiscard]] auto getFqdn() const { return fqdn; }
 
 private:
-    friend class AggregatedTcpKey;
     std::string fqdn;
 };
 
@@ -32,26 +31,4 @@ auto sortAggregatedPairByFqdn(AggregatedPairPointer const& left,
     const AggregatedPairPointer& right) -> bool;
 auto sortAggregatedPairByByte(AggregatedPairPointer const& left,
     const AggregatedPairPointer& right) -> bool;
-
-class AggregatedTcpKey : AggregatedKey {
-public:
-    AggregatedTcpKey(std::string const& fqdn, IPv4 ip, Port port)
-        : AggregatedKey(fqdn)
-        , ip(ip)
-        , port(port) {};
-
-    auto operator<(AggregatedTcpKey const& b) const -> bool
-    {
-        return std::tie(fqdn, ip, port) < std::tie(b.fqdn, b.ip, b.port);
-    }
-
-    [[nodiscard]] auto toString() const -> std::string
-    {
-        return fmt::format("{} {}:{}", fqdn, ip, port);
-    };
-
-private:
-    IPv4 ip;
-    Port port;
-};
 } // namespace flowstats

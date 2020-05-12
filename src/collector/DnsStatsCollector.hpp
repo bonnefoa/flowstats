@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AggregatedDnsFlow.hpp"
+#include "AggregatedKeys.hpp"
 #include "Collector.hpp"
 #include "Configuration.hpp"
 #include "DnsFlow.hpp"

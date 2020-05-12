@@ -30,4 +30,12 @@ void AggregatedSslFlow::resetFlow(bool resetTotal)
         totalConnections = 0;
     }
 }
+
+auto AggregatedSslFlow::addConnection(int delta) -> void
+{
+    connections.addPoint(delta);
+    numConnections++;
+    totalConnections++;
+}
+
 } // namespace flowstats
