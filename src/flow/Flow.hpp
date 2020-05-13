@@ -15,8 +15,18 @@ public:
     {
     }
 
-    Flow(Tins::Packet const& packet)
+    explicit Flow(Tins::Packet const& packet)
         : flowId(packet)
+    {
+    }
+
+    explicit Flow(std::string fqdn)
+        : fqdn(std::move(fqdn))
+    {
+    }
+
+    explicit Flow(FlowId flowId)
+        : flowId(std::move(flowId))
     {
     }
 
@@ -30,25 +40,15 @@ public:
     {
     }
 
-    Flow(std::string const& fqdn)
-        : fqdn(fqdn)
+    Flow(FlowId flowId, std::string fqdn)
+        : flowId(std::move(flowId))
+        , fqdn(std::move(fqdn))
     {
     }
 
-    Flow(FlowId const& flowId, std::string const& fqdn)
-        : flowId(flowId)
-        , fqdn(fqdn)
-    {
-    }
+    virtual ~Flow() = default;
 
-    Flow(FlowId const& flowId)
-        : flowId(flowId)
-    {
-    }
-
-    virtual ~Flow() {}
-
-    bool operator<(Flow const& flow) const
+    auto operator<(Flow const& flow) const -> bool
     {
         return (totalBytes[0] + totalBytes[1]) < (flow.totalBytes[0] + flow.totalBytes[1]);
     }
@@ -63,10 +63,35 @@ public:
     virtual auto fillValues(std::map<Field, std::string>& map,
         Direction direction, int duration) const -> void;
 
+    auto operator<(Flow const& f) -> bool
+    {
+        return sortByBytes(f);
+    }
+
+    [[nodiscard]] auto sortByBytes(Flow const& b) const -> bool
+    {
+        return bytes[0] + bytes[1] < b.bytes[0] + b.bytes[1];
+    }
+
+    [[nodiscard]] auto sortByTotalBytes(Flow const& b) const -> bool
+    {
+        return totalBytes[0] + totalBytes[1] < b.totalBytes[0] + b.totalBytes[1];
+    }
+
+    [[nodiscard]] auto sortByPackets(Flow const& b) const -> bool
+    {
+        return packets[0] + packets[1] < b.packets[0] + b.packets[1];
+    }
+
+    [[nodiscard]] auto sortByFqdn(Flow const& b) const -> bool
+    {
+        return std::lexicographical_compare(
+            fqdn.begin(), fqdn.end(), b.fqdn.begin(), b.fqdn.end(), caseInsensitiveComp);
+    }
+
     [[nodiscard]] auto getFlowId() const { return flowId; };
     [[nodiscard]] auto getFqdn() const { return fqdn; };
     [[nodiscard]] auto getSrvPos() const { return srvPos; }
-    [[nodiscard]] auto getBytes() const { return bytes; };
     [[nodiscard]] auto getPackets() const { return packets; };
     [[nodiscard]] auto getTotalBytes() const { return totalBytes; };
     [[nodiscard]] auto getTotalPackets() const { return totalPackets; };
@@ -85,10 +110,10 @@ private:
     timeval start = {};
     timeval end = {};
 
-    int packets[2] = {};
-    int bytes[2] = {};
-    int totalPackets[2] = {};
-    int totalBytes[2] = {};
+    std::array<int, 2> packets = {};
+    std::array<int, 2> bytes = {};
+    std::array<int, 2> totalPackets = {};
+    std::array<int, 2> totalBytes = {};
     std::string fqdn;
 };
 } // namespace flowstats

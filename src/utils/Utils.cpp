@@ -9,6 +9,11 @@
 
 namespace flowstats {
 
+auto caseInsensitiveComp(char c1, char c2) -> bool
+{
+    return std::tolower(c1) < std::tolower(c2);
+}
+
 auto getTimevalDeltaMs(timeval start, timeval end) -> uint32_t
 {
     return (end.tv_sec * 1000 + end.tv_usec / 1000) - (start.tv_sec * 1000 + start.tv_usec / 1000);

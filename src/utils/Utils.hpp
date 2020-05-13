@@ -21,6 +21,7 @@
 
 namespace flowstats {
 
+auto caseInsensitiveComp(char c1, char c2) -> bool;
 auto getTimevalDeltaMs(timeval start, timeval end) -> uint32_t;
 auto getTimevalDeltaS(timeval start, timeval end) -> uint32_t;
 auto timevalInMs(timeval tv) -> uint32_t;

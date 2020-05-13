@@ -33,8 +33,8 @@ private:
     auto newDnsQuery(Tins::Packet const& packet, Tins::DNS const& dns) -> void;
     auto newDnsResponse(Tins::Packet const& packet, Tins::DNS const& dns, DnsFlow* flow) -> void;
     auto updateIpToFqdn(Tins::DNS const& dns, std::string const& fqdn) -> void;
-
     auto addFlowToAggregation(DnsFlow const* flow) -> void;
+
     IpToFqdn* ipToFqdn;
     std::map<uint16_t, DnsFlow> transactionIdToDnsFlow;
     std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedDnsFlows;

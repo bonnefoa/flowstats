@@ -14,7 +14,7 @@ struct AggregatedTcpFlow : Flow {
     AggregatedTcpFlow()
         : Flow("Total") {};
 
-    AggregatedTcpFlow(FlowId const& flowId, std::string fqdn)
+    AggregatedTcpFlow(FlowId const& flowId, std::string const& fqdn)
         : Flow(flowId, fqdn) {};
 
     auto operator<(AggregatedTcpFlow const& b) const -> bool
@@ -25,9 +25,9 @@ struct AggregatedTcpFlow : Flow {
     auto updateFlow(Tins::Packet const& packet, FlowId const& flowId,
         Tins::TCP const& tcpLayer) -> void;
 
-    auto resetFlow(bool resetTotal) -> void;
+    auto resetFlow(bool resetTotal) -> void override;
     auto fillValues(std::map<Field, std::string>& map,
-        Direction direction, int duration) const -> void;
+        Direction direction, int duration) const -> void override;
 
     auto mergePercentiles() -> void;
     auto failConnection() -> void;
@@ -37,28 +37,28 @@ struct AggregatedTcpFlow : Flow {
     auto addSrt(int srt, int dataSize) -> void;
     auto getMetrics(std::vector<std::string> lst) const -> void;
 
-    auto sortBySrt(AggregatedTcpFlow const& b) const -> bool
+    [[nodiscard]] auto sortBySrt(AggregatedTcpFlow const& b) const -> bool
     {
         return srts.getPercentile(1.0) < b.srts.getPercentile(1.0);
     }
 
-    auto sortByRequest(AggregatedTcpFlow const& b) const -> bool
+    [[nodiscard]] auto sortByRequest(AggregatedTcpFlow const& b) const -> bool
     {
         return totalSrts < b.totalSrts;
     }
 
-    auto sortByRequestRate(AggregatedTcpFlow const& b) const -> bool
+    [[nodiscard]] auto sortByRequestRate(AggregatedTcpFlow const& b) const -> bool
     {
         return srts.getCount() < b.srts.getCount();
     }
 
 private:
-    int syns[2] = {};
-    int synacks[2] = {};
-    int fins[2] = {};
-    int rsts[2] = {};
-    int zeroWins[2] = {};
-    uint32_t mtu[2] = {};
+    std::array<int, 2> syns = {};
+    std::array<int, 2> synacks = {};
+    std::array<int, 2> fins = {};
+    std::array<int, 2> rsts = {};
+    std::array<int, 2> zeroWins = {};
+    std::array<uint32_t, 2> mtu = {};
 
     int closes = 0;
     int totalCloses = 0;
