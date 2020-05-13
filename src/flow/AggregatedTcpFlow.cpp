@@ -70,21 +70,60 @@ auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>& values,
     }
 }
 
+auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
+{
+    auto const* tcpFlow = dynamic_cast<const AggregatedTcpFlow*>(flow);
+    for (int i = 0; i <= FROM_SERVER; ++i) {
+        syns[i] += tcpFlow->syns[i];
+        fins[i] += tcpFlow->fins[i];
+        rsts[i] += tcpFlow->rsts[i];
+        zeroWins[i] += tcpFlow->zeroWins[i];
+        mtu[i] = std::max(mtu[i], tcpFlow->mtu[i]);
+    }
+
+    closes += tcpFlow->closes;
+    totalCloses += tcpFlow->totalCloses;
+
+    activeConnections += tcpFlow->activeConnections;
+    failedConnections += tcpFlow->failedConnections;
+
+    numConnections += tcpFlow->numConnections;
+    totalConnections += tcpFlow->totalConnections;
+
+    numSrts += tcpFlow->numSrts;
+    totalSrts += tcpFlow->totalSrts;
+
+    connections.addPoints(tcpFlow->connections);
+    srts.addPoints(tcpFlow->srts);
+    requestSizes.addPoints(tcpFlow->requestSizes);
+}
+
 auto AggregatedTcpFlow::resetFlow(bool resetTotal) -> void
 {
     Flow::resetFlow(resetTotal);
-    srts.reset();
-    requestSizes.reset();
-    connections.reset();
+
+    closes = 0;
     numConnections = 0;
     numSrts = 0;
-    closes = 0;
 
     if (resetTotal) {
+        syns = {};
+        fins = {};
+        rsts = {};
+        zeroWins = {};
+        mtu = {};
+
+        activeConnections = 0;
+        failedConnections = 0;
+
         totalCloses = 0;
         totalConnections = 0;
         totalSrts = 0;
     }
+
+    connections.reset();
+    srts.reset();
+    requestSizes.reset();
 }
 
 auto AggregatedTcpFlow::failConnection() -> void

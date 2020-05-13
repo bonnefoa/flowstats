@@ -25,9 +25,8 @@ public:
         Tins::TCP const& tcp) -> void;
     auto closeConnection() -> void;
     auto timeoutFlow() -> void;
-    auto getAggregatedFlows() const { return aggregatedFlows; }
-    auto setAggregatedFlows(std::vector<AggregatedTcpFlow*> _aggregatedFlows) { aggregatedFlows = _aggregatedFlows; }
 
+    [[nodiscard]] auto getAggregatedFlows() const { return aggregatedFlows; }
     [[nodiscard]] auto getLastPacketTime() const { return lastPacketTime; }
     [[nodiscard]] auto getGap() const { return gap; }
 

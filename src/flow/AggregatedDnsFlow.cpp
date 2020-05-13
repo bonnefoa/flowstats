@@ -116,7 +116,7 @@ auto AggregatedDnsFlow::addFlow(Flow const* flow) -> void
     }
 }
 
-auto AggregatedDnsFlow::addAggregatedFlow(const Flow* flow) -> void
+auto AggregatedDnsFlow::addAggregatedFlow(Flow const* flow) -> void
 {
     Flow::addFlow(flow);
 

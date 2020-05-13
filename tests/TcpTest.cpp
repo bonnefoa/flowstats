@@ -43,6 +43,11 @@ TEST_CASE("Tcp simple", "[tcp]")
         auto flows = tcpStatsCollector.getTcpFlow();
         CHECK(flows.size() == 1);
         CHECK(flows[0].getGap() == 0);
+
+        AggregatedTcpKey totalKey = AggregatedTcpKey("Total", 0, 0);
+        std::map<Field, std::string> totalValues;
+        aggregatedFlow->fillValues(totalValues, FROM_CLIENT, 0);
+        CHECK(totalValues[Field::SYN] == "1");
     }
 }
 
