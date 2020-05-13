@@ -41,6 +41,14 @@ void SslFlow::processHandshake(Tins::Packet const& packet,
     }
 }
 
+auto SslFlow::addPacket(Tins::Packet const& packet, Direction const direction) -> void
+{
+    Flow::addPacket(packet, direction);
+    for (auto& subflow : aggregatedFlows) {
+        subflow->addPacket(packet, direction);
+    }
+}
+
 void SslFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     Tins::IP const& ip,
     Tins::TCP const& tcp)

@@ -17,12 +17,12 @@ FlowId::FlowId(Tins::IP const& ip, Tins::UDP const& udp)
     *this = FlowId(pktPorts, pktIps, Transport::UDP);
 }
 
-FlowId::FlowId(FlowId const&& flowId)
+FlowId::FlowId(FlowId const&& flowId) noexcept
 {
-    transport = std::move(flowId.transport);
-    direction = std::move(flowId.direction);
-    ips = std::move(flowId.ips);
-    ports = std::move(flowId.ports);
+    transport = flowId.transport;
+    direction = flowId.direction;
+    ips = flowId.ips;
+    ports = flowId.ports;
 }
 
 FlowId::FlowId(FlowId const& flowId)
@@ -30,7 +30,7 @@ FlowId::FlowId(FlowId const& flowId)
     *this = flowId;
 }
 
-FlowId& FlowId::operator=(FlowId const& flowId)
+auto FlowId::operator=(FlowId const& flowId) -> FlowId&
 {
     if (this == &flowId) {
         return *this;

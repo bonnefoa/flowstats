@@ -5,7 +5,7 @@
 
 namespace flowstats {
 
-auto getTcpPayloadSize(Tins::IP const& ip, Tins::TCP const& tcp) -> int;
+auto getTcpPayloadSize(Tins::IP const& ip, Tins::TCP const& tcp) -> uint32_t;
 
 class payload_too_small : public std::runtime_error {
 public:
@@ -17,7 +17,7 @@ public:
 
 class Cursor {
 public:
-    Cursor(std::vector<uint8_t> const& payload)
+    explicit Cursor(std::vector<uint8_t> const& payload)
         : payload(payload) {};
     virtual ~Cursor() = default;
 

@@ -8,7 +8,9 @@
 
 namespace flowstats {
 
-IpToFqdn::IpToFqdn(FlowstatsConfiguration const& flowstatsConfiguration, std::vector<std::string> const& initialDomains, std::string localhostIp)
+IpToFqdn::IpToFqdn(FlowstatsConfiguration const& flowstatsConfiguration,
+    std::vector<std::string> const& initialDomains,
+    std::string const& localhostIp)
     : conf(flowstatsConfiguration)
 {
     std::map<uint32_t, std::string> ipToFqdn;

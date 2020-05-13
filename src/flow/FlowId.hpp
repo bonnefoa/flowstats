@@ -16,8 +16,8 @@ BETTER_ENUM(Transport, char, TCP, UDP);
 struct FlowId {
     FlowId() = default;
     FlowId(FlowId const& flowId);
-    FlowId(FlowId const&& flowId);
-    FlowId& operator=(FlowId const& other);
+    FlowId(FlowId const&& flowId) noexcept;
+    auto operator=(FlowId const& other) -> FlowId&;
 
     FlowId(std::array<uint16_t, 2> ports, std::array<IPv4, 2> pktIps,
         Transport transport);

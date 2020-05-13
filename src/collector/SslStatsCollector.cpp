@@ -37,16 +37,15 @@ auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow&
         if (!fqdn.has_value()) {
             return sslFlow;
         }
-        sslFlow.aggregatedFlows = lookupAggregatedFlows(sslFlow, flowId, fqdn->data());
+        sslFlow.setAggregatedFlows(lookupAggregatedFlows(sslFlow));
     }
 
     return sslFlow;
 }
 
-auto SslStatsCollector::lookupAggregatedFlows(SslFlow const& sslFlow,
-    FlowId const& flowId,
-    std::string const& fqdn) -> std::vector<AggregatedSslFlow*>
+auto SslStatsCollector::lookupAggregatedFlows(SslFlow const& sslFlow) -> std::vector<AggregatedSslFlow*>
 {
+    auto fqdn = sslFlow.getFqdn();
     std::vector<AggregatedSslFlow*> subflows;
     IPv4 ipSrvInt = 0;
     if (getFlowstatsConfiguration().getPerIpAggr()) {
@@ -57,7 +56,7 @@ auto SslStatsCollector::lookupAggregatedFlows(SslFlow const& sslFlow,
 
     auto it = aggregatedMap.find(tcpKey);
     if (it == aggregatedMap.end()) {
-        aggregatedFlow = new AggregatedSslFlow(flowId, fqdn);
+        aggregatedFlow = new AggregatedSslFlow(sslFlow.getFlowId(), fqdn);
         aggregatedMap[tcpKey] = aggregatedFlow;
     } else {
         aggregatedFlow = it->second;
@@ -84,9 +83,6 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet) -> void
     SslFlow& sslFlow = lookupSslFlow(flowId);
     auto direction = flowId.getDirection();
     sslFlow.addPacket(packet, direction);
-    for (auto& subflow : sslFlow.aggregatedFlows) {
-        subflow->addPacket(packet, direction);
-    }
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     sslFlow.updateFlow(packet, direction, ip, tcp);

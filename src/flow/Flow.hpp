@@ -56,7 +56,8 @@ public:
     auto setSrvPos(uint8_t pos) { srvPos = pos; };
     auto setFlowId(FlowId const& _flowId) { flowId = _flowId; };
 
-    auto addPacket(Tins::Packet const& packet, Direction const direction) -> void;
+    virtual auto addPacket(Tins::Packet const& packet,
+        Direction const direction) -> void;
     virtual auto addFlow(Flow const* flow) -> void;
     virtual auto addAggregatedFlow(Flow const* flow) -> void;
     virtual auto resetFlow(bool resetTotal) -> void;

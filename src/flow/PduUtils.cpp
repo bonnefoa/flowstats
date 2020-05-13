@@ -2,7 +2,7 @@
 
 namespace flowstats {
 
-auto getTcpPayloadSize(const Tins::IP& ip, const Tins::TCP& tcp) -> int
+auto getTcpPayloadSize(const Tins::IP& ip, const Tins::TCP& tcp) -> uint32_t
 {
     return ip.advertised_size() - ip.header_size() - tcp.header_size();
 }
@@ -82,4 +82,4 @@ auto Cursor::skipUint32() -> void
     skip(4);
 }
 
-} // flowstats
+} // namespace flowstats

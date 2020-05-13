@@ -12,11 +12,11 @@ namespace flowstats {
 
 class IpToFqdn {
 public:
-    IpToFqdn(FlowstatsConfiguration const& flowstatsConfiguration)
+    explicit IpToFqdn(FlowstatsConfiguration const& flowstatsConfiguration)
         : conf(flowstatsConfiguration) {};
     IpToFqdn(FlowstatsConfiguration const& flowstatsConfiguration,
         std::vector<std::string> const& initialDomains,
-        std::string localhostIp);
+        std::string const& localhostIp);
     virtual ~IpToFqdn() = default;
 
     [[nodiscard]] auto getIpToFqdn() const -> std::map<uint32_t, std::string> const& { return ipToFqdn; };
