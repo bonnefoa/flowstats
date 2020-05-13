@@ -24,41 +24,44 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, Display
     updateDisplayType(0);
 };
 
-auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow&
+auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow*
 {
     std::hash<FlowId> hash_fn;
-    size_t flowHash = hash_fn(flowId);
+    auto flowHash = hash_fn(flowId);
 
-    SslFlow& sslFlow = hashToSslFlow[flowHash];
-    if (sslFlow.getPort(0) == 0) {
-        spdlog::debug("Create ssl flow {}", flowId.toString());
-        sslFlow.setFlowId(flowId);
-        std::optional<std::string> fqdn = ipToFqdn->getFlowFqdn(sslFlow.getSrvIpInt());
-        if (!fqdn.has_value()) {
-            return sslFlow;
-        }
-        sslFlow.setFqdn(fqdn->data());
-        sslFlow.setAggregatedFlows(lookupAggregatedFlows(sslFlow));
+    auto it = hashToSslFlow.find(flowHash);
+    if (it != hashToSslFlow.end()) {
+        return &it->second;
     }
 
-    return sslFlow;
+    auto fqdnOpt = ipToFqdn->getFlowFqdn(flowId.getIp(!flowId.getDirection()));
+    if (!fqdnOpt.has_value()) {
+        return nullptr;
+    }
+
+    auto fqdn = fqdnOpt->data();
+    // TODO dectect server port
+    auto aggregatedFlows = lookupAggregatedFlows(flowId, fqdn, FROM_SERVER);
+    spdlog::debug("Create ssl flow {}", flowId.toString());
+    auto sslFlow = SslFlow(flowId, fqdn, aggregatedFlows);
+    auto res = hashToSslFlow.insert({ flowHash, sslFlow });
+    return &res.first->second;
 }
 
-auto SslStatsCollector::lookupAggregatedFlows(SslFlow const& sslFlow) -> std::vector<AggregatedSslFlow*>
+auto SslStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedSslFlow*>
 {
-    auto fqdn = sslFlow.getFqdn();
     std::vector<AggregatedSslFlow*> subflows;
     IPv4 ipSrvInt = 0;
     if (getFlowstatsConfiguration().getPerIpAggr()) {
-        ipSrvInt = sslFlow.getSrvIpInt();
+        ipSrvInt = flowId.getIp(srvDir);
     }
-    AggregatedTcpKey tcpKey = AggregatedTcpKey(fqdn, ipSrvInt, sslFlow.getSrvPort());
+    AggregatedTcpKey tcpKey = AggregatedTcpKey(fqdn, ipSrvInt, flowId.getPort(srvDir));
     AggregatedSslFlow* aggregatedFlow;
 
     auto it = aggregatedMap.find(tcpKey);
     if (it == aggregatedMap.end()) {
-        aggregatedFlow = new AggregatedSslFlow(sslFlow.getFlowId(), fqdn);
-        aggregatedMap[tcpKey] = aggregatedFlow;
+        aggregatedFlow = new AggregatedSslFlow(flowId, fqdn);
+        aggregatedMap.insert({ tcpKey, aggregatedFlow });
     } else {
         aggregatedFlow = it->second;
     }
@@ -81,12 +84,15 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet) -> void
     checkValidSsl(&cursor);
 
     FlowId flowId(ip, tcp);
-    SslFlow& sslFlow = lookupSslFlow(flowId);
+    auto sslFlow = lookupSslFlow(flowId);
+    if (sslFlow == nullptr) {
+        return;
+    }
     auto direction = flowId.getDirection();
-    sslFlow.addPacket(packet, direction);
+    sslFlow->addPacket(packet, direction);
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
-    sslFlow.updateFlow(packet, direction, ip, tcp);
+    sslFlow->updateFlow(packet, direction, ip, tcp);
 }
 
 auto SslStatsCollector::resetMetrics() -> void

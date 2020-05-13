@@ -11,17 +11,17 @@ class SslFlow : public Flow {
 public:
     SslFlow()
         : Flow() {};
-    SslFlow(Tins::IP const& ip, Tins::TCP const& tcp, Direction srvPos)
-        : Flow(ip, tcp, srvPos) {};
-    SslFlow(FlowId const& flowId)
-        : Flow(flowId) {};
+    SslFlow(FlowId const& flowId,
+        std::string const& fqdn,
+        std::vector<AggregatedSslFlow*> _aggregatedFlows)
+        : Flow(flowId, fqdn)
+        , aggregatedFlows(_aggregatedFlows) {};
 
     void updateFlow(Tins::Packet const& packet, Direction direction,
         Tins::IP const& ip,
         Tins::TCP const& sslLayer);
 
     auto addPacket(Tins::Packet const& packet, Direction const direction) -> void override;
-    auto setAggregatedFlows(std::vector<AggregatedSslFlow*> flows) { aggregatedFlows = flows; }
 
 private:
     void processHandshake(Tins::Packet const& packet, Cursor* cursor);

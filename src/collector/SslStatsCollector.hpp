@@ -35,8 +35,8 @@ public:
 private:
     std::map<uint32_t, SslFlow> hashToSslFlow;
     std::map<AggregatedTcpKey, AggregatedSslFlow*> aggregatedMap;
-    auto lookupSslFlow(FlowId const& flowId) -> SslFlow&;
-    auto lookupAggregatedFlows(SslFlow const& sslFlow) -> std::vector<AggregatedSslFlow*>;
+    auto lookupSslFlow(FlowId const& flowId) -> SslFlow*;
+    auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedSslFlow*>;
     IpToFqdn* ipToFqdn;
 };
 } // namespace flowstats
