@@ -79,18 +79,15 @@ auto Collector::outputStatus(int duration) -> CollectorOutput
     std::vector<std::string> valueLines;
     std::vector<std::string> keyLines;
 
-    std::string keyHeaders;
-    std::string valueHeaders;
-
     FlowFormatter flowFormatter = getFlowFormatter();
-    flowFormatter.outputHeaders(keyHeaders, valueHeaders);
+    auto pairHeaders = flowFormatter.outputHeaders();
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     mergePercentiles();
     std::vector<AggregatedPairPointer> tempVector = getAggregatedPairs();
     fillOutputs(tempVector, &keyLines, &valueLines, duration);
     return CollectorOutput(toString(), keyLines, valueLines,
-        keyHeaders, valueHeaders, duration);
+        pairHeaders.first, pairHeaders.second, duration);
 }
 
 auto collectorProtocolToString(CollectorProtocol proto) -> std::string

@@ -8,9 +8,11 @@ namespace flowstats {
 struct CollectorOutput {
 
     CollectorOutput() = default;
-    CollectorOutput(std::string name, std::vector<std::string> keys,
+    CollectorOutput(std::string name,
+        std::vector<std::string> keys,
         std::vector<std::string> values,
-        std::string keyHeaders, std::string valueHeaders,
+        std::string keyHeaders,
+        std::string valueHeaders,
         int delta)
         : name(std::move(name))
         , keys(std::move(keys))

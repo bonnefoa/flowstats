@@ -11,12 +11,12 @@ namespace flowstats {
 
 struct FlowFormatter {
 
-    FlowFormatter();
-    virtual ~FlowFormatter() {};
+    FlowFormatter() = default;
+    virtual ~FlowFormatter() = default;
 
-    auto outputKey(std::map<Field, std::string> const& values) const -> std::string;
-    auto outputValue(std::map<Field, std::string> const& values) const -> std::string;
-    auto outputHeaders(std::string& keyHeaders, std::string& valueHeaders) const -> void;
+    [[nodiscard]] auto outputKey(std::map<Field, std::string> const& values) const -> std::string;
+    [[nodiscard]] auto outputValue(std::map<Field, std::string> const& values) const -> std::string;
+    [[nodiscard]] auto outputHeaders() const -> std::pair<std::string, std::string>;
 
     void setDisplayKeys(std::vector<Field> const& keys);
     void setDisplayValues(std::vector<Field> const& values);
