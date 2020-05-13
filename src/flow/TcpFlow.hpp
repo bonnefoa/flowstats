@@ -16,6 +16,21 @@ public:
         Tins::IP const& ip,
         Tins::TCP const& tcp) -> void;
 
+    auto detectServer(Tins::TCP const& tcp, Direction direction,
+        std::map<uint16_t, int>& srvPortsCounter) -> void;
+    auto closeConnection() -> void;
+    auto timeoutFlow() -> void;
+    auto getAggregatedFlows() const { return aggregatedFlows; }
+    auto setAggregatedFlows(std::vector<AggregatedTcpFlow*> _aggregatedFlows) { aggregatedFlows = _aggregatedFlows; }
+
+    [[nodiscard]] auto getLastPacketTime() const { return lastPacketTime; }
+    [[nodiscard]] auto getGap() const { return gap; }
+
+private:
+    std::vector<AggregatedTcpFlow*> aggregatedFlows;
+    auto tcpToString(Tins::TCP const& hdr) -> std::string;
+    auto nextSeqnum(Tins::TCP const& tcp, int payloadSize) -> uint32_t;
+
     std::array<uint32_t, 2> seqNum = {};
     std::array<uint32_t, 2> finSeqnum = {};
     std::array<bool, 2> finAcked = {};
@@ -25,7 +40,6 @@ public:
 
     int requestSize = 0;
     int gap = 0;
-    std::string fqdn = "";
 
     bool closed = false;
     bool opened = false;
@@ -37,17 +51,5 @@ public:
     std::array<timeval, 2> closeTime = {};
     std::array<timeval, 2> lastPacketTime = {};
     timeval lastPayloadTime = {};
-
-    auto detectServer(Tins::TCP const& tcp, Direction direction,
-        std::map<uint16_t, int>& srvPortsCounter) -> void;
-    auto closeConnection() -> void;
-    auto timeoutFlow() -> void;
-    auto getAggregatedFlows() const { return aggregatedFlows; }
-    auto setAggregatedFlows(std::vector<AggregatedTcpFlow*> _aggregatedFlows) { aggregatedFlows = _aggregatedFlows; }
-
-private:
-    std::vector<AggregatedTcpFlow*> aggregatedFlows;
-    auto tcpToString(Tins::TCP const& hdr) -> std::string;
-    auto nextSeqnum(Tins::TCP const& tcp, int payloadSize) -> uint32_t;
 };
-}
+} // namespace flowstats

@@ -91,6 +91,7 @@ public:
     }
 
     [[nodiscard]] auto getFlowId() const { return flowId; };
+    auto setFqdn(std::string _fqdn) { fqdn = _fqdn; };
     [[nodiscard]] auto getFqdn() const { return fqdn; };
     [[nodiscard]] auto getSrvPos() const { return srvPos; }
     [[nodiscard]] auto getPackets() const { return packets; };

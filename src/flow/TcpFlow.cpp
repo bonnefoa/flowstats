@@ -188,6 +188,10 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     if (tcp.has_flags(Tins::TCP::RST) && closed == false) {
         closeConnection();
     }
+
+    if (tcp.has_flags(Tins::TCP::SYN) && opening == false) {
+        opening = true;
+    }
 }
 
 auto TcpFlow::tcpToString(Tins::TCP const& tcp) -> std::string

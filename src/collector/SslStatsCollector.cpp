@@ -37,6 +37,7 @@ auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow&
         if (!fqdn.has_value()) {
             return sslFlow;
         }
+        sslFlow.setFqdn(fqdn->data());
         sslFlow.setAggregatedFlows(lookupAggregatedFlows(sslFlow));
     }
 

@@ -20,6 +20,7 @@ TEST_CASE("Ssl connection time", "[ssl]")
     REQUIRE(ipFlows.size() == 1);
     AggregatedTcpKey key("google.com", 0, 443);
     auto flow = ipFlows[key];
+    REQUIRE(flow != nullptr);
 
     std::map<Field, std::string> cltValues;
     flow->fillValues(cltValues, FROM_CLIENT, 0);
