@@ -30,27 +30,65 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
     updateDisplayType(0);
 };
 
+auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId, std::map<uint16_t, int>& srvPortsCounter) -> Direction
+{
+    auto const flags = tcp.flags();
+    auto direction = flowId.getDirection();
+    if (flags & Tins::TCP::SYN) {
+        if (flags & Tins::TCP::ACK) {
+            auto srvPort = flowId.getPort(direction);
+            srvPortsCounter[srvPort]++;
+            spdlog::debug("Incrementing port {} as server port to {}", srvPort, srvPortsCounter[srvPort]);
+            return direction;
+        } else {
+            auto srvPort = flowId.getPort(!direction);
+            srvPortsCounter[srvPort]++;
+            spdlog::debug("Incrementing port {} as server port to {}", srvPort, srvPortsCounter[srvPort]);
+            return static_cast<Direction>(!direction);
+        }
+    }
+
+    int firstPortCount = 0;
+    int secondPortCount = 0;
+    auto port = flowId.getPort(direction);
+    if (srvPortsCounter.find(port) != srvPortsCounter.end()) {
+        firstPortCount = srvPortsCounter[port];
+    }
+    port = flowId.getPort(!direction);
+    if (srvPortsCounter.find(port) != srvPortsCounter.end()) {
+        secondPortCount = srvPortsCounter[port];
+    }
+    if (firstPortCount > secondPortCount) {
+        return direction;
+    }
+    return static_cast<Direction>(!direction);
+}
+
 auto TcpStatsCollector::lookupTcpFlow(
     Tins::IP const& ip,
     Tins::TCP const& tcp,
-    FlowId const& flowId) -> TcpFlow&
+    FlowId const& flowId) -> TcpFlow*
 {
     std::hash<FlowId> hash_fn;
     size_t flowHash = hash_fn(flowId);
-    TcpFlow& tcpFlow = hashToTcpFlow[flowHash];
-    if (tcpFlow.getPort(0) == 0) {
-        tcpFlow = TcpFlow(ip, tcp);
-        tcpFlow.detectServer(tcp, flowId.getDirection(), srvPortsCounter);
-        std::optional<std::string> fqdnOpt = ipToFqdn->getFlowFqdn(tcpFlow.getSrvIp());
-        if (!fqdnOpt.has_value()) {
-            return tcpFlow;
-        }
-        auto fqdn = fqdnOpt->data();
-        spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), flowHash, fqdn);
-        tcpFlow.setFqdn(fqdn);
-        tcpFlow.setAggregatedFlows(lookupAggregatedFlows(tcpFlow, flowId));
+    auto it = hashToTcpFlow.find(flowHash);
+    if (it != hashToTcpFlow.end()) {
+        return &it->second;
     }
-    return tcpFlow;
+
+    auto direction = detectServer(tcp, flowId, srvPortsCounter);
+    std::optional<std::string> fqdnOpt = ipToFqdn->getFlowFqdn(flowId.getIp(direction));
+    if (!fqdnOpt.has_value()) {
+        return nullptr;
+    }
+
+    auto tcpFlow = TcpFlow(ip, tcp, direction);
+    auto fqdn = fqdnOpt->data();
+    spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), flowHash, fqdn);
+    tcpFlow.setFqdn(fqdn);
+    tcpFlow.setAggregatedFlows(lookupAggregatedFlows(tcpFlow, flowId));
+    auto res = hashToTcpFlow.insert({ flowHash, tcpFlow });
+    return &res.first->second;
 }
 
 auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow const& tcpFlow, FlowId const& flowId) -> std::vector<AggregatedTcpFlow*>
@@ -86,20 +124,20 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet) -> void
     auto tcp = ip.rfind_pdu<Tins::TCP>();
     FlowId flowId(ip, tcp);
 
-    TcpFlow& tcpFlow = lookupTcpFlow(ip, tcp, flowId);
-    if (tcpFlow.getFqdn() == "") {
+    auto tcpFlow = lookupTcpFlow(ip, tcp, flowId);
+    if (tcpFlow == nullptr) {
         return;
     }
 
     auto direction = flowId.getDirection();
-    tcpFlow.addPacket(packet, direction);
+    tcpFlow->addPacket(packet, direction);
 
-    for (auto& subflow : tcpFlow.getAggregatedFlows()) {
+    for (auto& subflow : tcpFlow->getAggregatedFlows()) {
         subflow->addPacket(packet, direction);
         subflow->updateFlow(packet, flowId, tcp);
     }
 
-    tcpFlow.updateFlow(packet, direction, ip, tcp);
+    tcpFlow->updateFlow(packet, direction, ip, tcp);
 }
 
 auto TcpStatsCollector::advanceTick(timeval now) -> void

@@ -11,8 +11,8 @@ class SslFlow : public Flow {
 public:
     SslFlow()
         : Flow() {};
-    SslFlow(Tins::IP const& ip, Tins::TCP const& tcp)
-        : Flow(ip, tcp) {};
+    SslFlow(Tins::IP const& ip, Tins::TCP const& tcp, Direction srvPos)
+        : Flow(ip, tcp, srvPos) {};
     SslFlow(FlowId const& flowId)
         : Flow(flowId) {};
 

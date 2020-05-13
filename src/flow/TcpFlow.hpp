@@ -10,14 +10,11 @@ class TcpFlow : public Flow {
 
 public:
     TcpFlow();
-    TcpFlow(Tins::IP const& ip, Tins::TCP const& tcp);
+    TcpFlow(Tins::IP const& ip, Tins::TCP const& tcp, uint8_t srvPos);
 
     auto updateFlow(Tins::Packet const& packet, Direction direction,
         Tins::IP const& ip,
         Tins::TCP const& tcp) -> void;
-
-    auto detectServer(Tins::TCP const& tcp, Direction direction,
-        std::map<uint16_t, int>& srvPortsCounter) -> void;
     auto closeConnection() -> void;
     auto timeoutFlow() -> void;
     auto getAggregatedFlows() const { return aggregatedFlows; }

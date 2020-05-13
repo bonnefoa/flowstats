@@ -10,45 +10,9 @@ TcpFlow::TcpFlow()
 {
 }
 
-TcpFlow::TcpFlow(Tins::IP const& ip, Tins::TCP const& tcp)
-    : Flow(ip, tcp)
+TcpFlow::TcpFlow(Tins::IP const& ip, Tins::TCP const& tcp, uint8_t srvPos)
+    : Flow(ip, tcp, srvPos)
 {
-}
-
-auto TcpFlow::detectServer(Tins::TCP const& tcp, Direction const direction,
-    std::map<uint16_t, int>& srvPortsCounter) -> void
-{
-    auto const flags = tcp.flags();
-    if (flags & Tins::TCP::SYN) {
-        if (flags & Tins::TCP::ACK) {
-            setSrvPos(direction);
-            auto srvPort = getSrvPort();
-            srvPortsCounter[srvPort]++;
-            spdlog::debug("Incrementing port {} as server port to {}", srvPort, srvPortsCounter[srvPort]);
-        } else {
-            setSrvPos(!direction);
-            auto srvPort = getSrvPort();
-            srvPortsCounter[srvPort]++;
-            spdlog::debug("Incrementing port {} as server port to {}", srvPort, srvPortsCounter[srvPort]);
-        }
-    } else {
-        int firstPortCount = 0;
-        int secondPortCount = 0;
-        auto port = getPort(direction);
-        if (srvPortsCounter.find(port) != srvPortsCounter.end()) {
-            firstPortCount = srvPortsCounter[port];
-        }
-        port = getPort(!direction);
-        if (srvPortsCounter.find(port) != srvPortsCounter.end()) {
-            secondPortCount = srvPortsCounter[port];
-        }
-        if (firstPortCount > secondPortCount) {
-            setSrvPos(direction);
-        } else if (secondPortCount > firstPortCount) {
-            setSrvPos(!direction);
-        }
-    }
-    spdlog::debug("Server port detected: {}", getSrvPort());
 }
 
 auto TcpFlow::timeoutFlow() -> void

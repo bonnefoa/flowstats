@@ -36,8 +36,9 @@ private:
     std::vector<std::pair<TcpFlow*, std::vector<AggregatedTcpFlow*>>> openingTcpFlow;
     auto lookupTcpFlow(Tins::IP const& ipv4Layer,
         Tins::TCP const& tcpLayer,
-        FlowId const& flowId) -> TcpFlow&;
+        FlowId const& flowId) -> TcpFlow*;
     auto lookupAggregatedFlows(TcpFlow const& tcp, FlowId const& flowId) -> std::vector<AggregatedTcpFlow*>;
+    auto detectServer(Tins::TCP const& tcp, FlowId const& flowId, std::map<uint16_t, int>& srvPortsCounter) -> Direction;
 
     void timeoutOpeningConnections(timeval now);
     void timeoutFlows(timeval now);

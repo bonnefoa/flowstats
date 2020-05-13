@@ -30,8 +30,9 @@ public:
     {
     }
 
-    Flow(Tins::IP const& ipv4, Tins::TCP const& tcp)
+    Flow(Tins::IP const& ipv4, Tins::TCP const& tcp, uint8_t srvPos)
         : flowId(ipv4, tcp)
+        , srvPos(srvPos)
     {
     }
 
