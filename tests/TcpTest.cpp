@@ -195,6 +195,7 @@ TEST_CASE("Tcp 0 win", "[tcp]")
 
         std::map<Field, std::string> srvValues;
         flow->fillValues(srvValues, FROM_SERVER, 0);
+        REQUIRE(flow != nullptr);
 
         CHECK(srvValues[Field::ZWIN] == "3");
         CHECK(srvValues[Field::RST] == "1");

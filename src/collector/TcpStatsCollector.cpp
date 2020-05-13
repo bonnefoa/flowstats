@@ -50,15 +50,18 @@ auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId,
 
     int firstPortCount = 0;
     int secondPortCount = 0;
-    auto port = flowId.getPort(direction);
-    if (srvPortsCounter.find(port) != srvPortsCounter.end()) {
-        firstPortCount = srvPortsCounter[port];
+    auto firstPort = flowId.getPort(direction);
+    if (srvPortsCounter.find(firstPort) != srvPortsCounter.end()) {
+        firstPortCount = srvPortsCounter[firstPort];
     }
-    port = flowId.getPort(!direction);
-    if (srvPortsCounter.find(port) != srvPortsCounter.end()) {
-        secondPortCount = srvPortsCounter[port];
+    auto secondPort = flowId.getPort(!direction);
+    if (srvPortsCounter.find(secondPort) != srvPortsCounter.end()) {
+        secondPortCount = srvPortsCounter[secondPort];
     }
     if (firstPortCount > secondPortCount) {
+        return direction;
+    }
+    if (firstPort < secondPort) {
         return direction;
     }
     return static_cast<Direction>(!direction);
@@ -77,7 +80,9 @@ auto TcpStatsCollector::lookupTcpFlow(
     }
 
     auto direction = detectServer(tcp, flowId, srvPortsCounter);
-    std::optional<std::string> fqdnOpt = ipToFqdn->getFlowFqdn(flowId.getIp(direction));
+    auto ipSrv = flowId.getIp(direction);
+    spdlog::debug("Detected direction {}, looking for fqdn of ip {}", direction, ipSrv);
+    std::optional<std::string> fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
     if (!fqdnOpt.has_value()) {
         return nullptr;
     }
