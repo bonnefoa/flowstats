@@ -7,7 +7,7 @@ auto getTcpPayloadSize(const Tins::IP& ip, const Tins::TCP& tcp) -> uint32_t
     return ip.advertised_size() - ip.header_size() - tcp.header_size();
 }
 
-auto Cursor::checkSize(int size) -> void
+auto Cursor::checkSize(uint32_t size) -> void
 {
     if (payload.size() - index < size) {
         throw payload_too_small();

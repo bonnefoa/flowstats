@@ -79,38 +79,37 @@ auto TcpStatsCollector::lookupTcpFlow(
         return &it->second;
     }
 
-    auto direction = detectServer(tcp, flowId, srvPortsCounter);
-    auto ipSrv = flowId.getIp(direction);
-    spdlog::debug("Detected direction {}, looking for fqdn of ip {}", direction, ipSrv);
+    auto srvDir = detectServer(tcp, flowId, srvPortsCounter);
+    auto ipSrv = flowId.getIp(srvDir);
+    spdlog::debug("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv);
     std::optional<std::string> fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
     if (!fqdnOpt.has_value()) {
         return nullptr;
     }
 
-    auto tcpFlow = TcpFlow(ip, tcp, direction);
     auto fqdn = fqdnOpt->data();
+    auto aggregatedTcpFlows = lookupAggregatedFlows(flowId, fqdn, srvDir);
+    auto tcpFlow = TcpFlow(ip, tcp, srvDir, aggregatedTcpFlows);
     spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), flowHash, fqdn);
-    tcpFlow.setFqdn(fqdn);
-    tcpFlow.setAggregatedFlows(lookupAggregatedFlows(tcpFlow, flowId));
     auto res = hashToTcpFlow.insert({ flowHash, tcpFlow });
     return &res.first->second;
 }
 
-auto TcpStatsCollector::lookupAggregatedFlows(TcpFlow const& tcpFlow, FlowId const& flowId) -> std::vector<AggregatedTcpFlow*>
+auto TcpStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedTcpFlow*>
 {
-    IPv4 ipSrvInt = 0;
+    auto ipSrvInt = 0;
     if (getFlowstatsConfiguration().getPerIpAggr()) {
-        ipSrvInt = tcpFlow.getSrvIpInt();
+        ipSrvInt = flowId.getIp(srvDir);
     }
+    auto srvPort = flowId.getPort(srvDir);
     AggregatedTcpFlow* aggregatedFlow;
-    auto fqdn = tcpFlow.getFqdn();
     AggregatedTcpKey tcpKey = AggregatedTcpKey(fqdn, ipSrvInt,
-        tcpFlow.getSrvPort());
+        srvPort);
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto it = aggregatedMap.find(tcpKey);
     if (it == aggregatedMap.end()) {
         aggregatedFlow = new AggregatedTcpFlow(flowId, fqdn);
-        aggregatedFlow->setSrvPos(tcpFlow.getSrvPos());
+        aggregatedFlow->setSrvPos(srvDir);
         aggregatedMap[tcpKey] = aggregatedFlow;
         spdlog::debug("Create aggregated tcp flow for {}", tcpKey.toString());
     } else {

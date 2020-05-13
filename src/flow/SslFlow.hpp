@@ -15,10 +15,9 @@ public:
         std::string const& fqdn,
         std::vector<AggregatedSslFlow*> _aggregatedFlows)
         : Flow(flowId, fqdn)
-        , aggregatedFlows(_aggregatedFlows) {};
+        , aggregatedFlows(std::move(_aggregatedFlows)) {};
 
     void updateFlow(Tins::Packet const& packet, Direction direction,
-        Tins::IP const& ip,
         Tins::TCP const& sslLayer);
 
     auto addPacket(Tins::Packet const& packet, Direction const direction) -> void override;

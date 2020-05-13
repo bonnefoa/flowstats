@@ -35,7 +35,7 @@ void SslFlow::processHandshake(Tins::Packet const& packet,
     auto extractedDomain = getSslDomainFromExtension(cursor);
     if (extractedDomain != "") {
         domain = extractedDomain;
-        for (auto aggregatedSslFlow : aggregatedFlows) {
+        for (auto* aggregatedSslFlow : aggregatedFlows) {
             aggregatedSslFlow->setDomain(domain);
         }
     }
@@ -50,7 +50,6 @@ auto SslFlow::addPacket(Tins::Packet const& packet, Direction const direction) -
 }
 
 void SslFlow::updateFlow(Tins::Packet const& packet, Direction direction,
-    Tins::IP const& ip,
     Tins::TCP const& tcp)
 {
     if (connectionEstablished) {
@@ -69,7 +68,7 @@ void SslFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         checkSslChangeCipherSpec(&cursor);
         connectionEstablished = true;
         uint32_t delta = getTimevalDeltaMs(startHandshake, packetToTimeval(packet));
-        for (auto aggregatedSslFlow : aggregatedFlows) {
+        for (auto* aggregatedSslFlow : aggregatedFlows) {
             aggregatedSslFlow->addConnection(delta);
         }
     }

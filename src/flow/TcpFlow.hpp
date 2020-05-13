@@ -9,8 +9,16 @@ namespace flowstats {
 class TcpFlow : public Flow {
 
 public:
-    TcpFlow();
-    TcpFlow(Tins::IP const& ip, Tins::TCP const& tcp, uint8_t srvPos);
+    TcpFlow()
+        : Flow() {};
+    TcpFlow(Tins::IP const& ip,
+        Tins::TCP const& tcp,
+        uint8_t srvPos,
+        std::vector<AggregatedTcpFlow*> _aggregatedFlows)
+        : Flow(ip, tcp, srvPos)
+        , aggregatedFlows(_aggregatedFlows)
+    {
+    }
 
     auto updateFlow(Tins::Packet const& packet, Direction direction,
         Tins::IP const& ip,

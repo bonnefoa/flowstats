@@ -5,16 +5,6 @@
 
 namespace flowstats {
 
-TcpFlow::TcpFlow()
-    : Flow()
-{
-}
-
-TcpFlow::TcpFlow(Tins::IP const& ip, Tins::TCP const& tcp, uint8_t srvPos)
-    : Flow(ip, tcp, srvPos)
-{
-}
-
 auto TcpFlow::timeoutFlow() -> void
 {
     if (opening) {

@@ -21,7 +21,7 @@ public:
         : payload(payload) {};
     virtual ~Cursor() = default;
 
-    auto remainingBytes() -> int { return payload.size() - index; };
+    auto remainingBytes() -> uint32_t { return payload.size() - index; };
     auto readUint8() -> uint8_t;
     auto readUint16() -> uint16_t;
     auto readUint24() -> uint32_t;
@@ -33,7 +33,7 @@ public:
     auto skipUint16() -> void;
     auto skipUint24() -> void;
     auto skipUint32() -> void;
-    auto checkSize(int size) -> void;
+    auto checkSize(uint32_t size) -> void;
 
 private:
     std::vector<uint8_t> const& payload;

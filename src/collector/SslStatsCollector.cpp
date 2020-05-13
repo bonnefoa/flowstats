@@ -92,7 +92,7 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet) -> void
     sslFlow->addPacket(packet, direction);
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
-    sslFlow->updateFlow(packet, direction, ip, tcp);
+    sslFlow->updateFlow(packet, direction, tcp);
 }
 
 auto SslStatsCollector::resetMetrics() -> void
