@@ -48,15 +48,18 @@ int lastKey = 0;
 std::array<CollectorProtocol, 3> protocols = { DNS, TCP, SSL };
 std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 
-auto Screen::updateDisplay(int duration, bool updateOutput) -> void
+auto Screen::updateDisplay(int ts, bool updateOutput) -> void
 {
     if (displayConf.noCurses) {
         return;
     }
-    lastDuration = duration;
+    if (firstTs == 0) {
+        firstTs = ts;
+    }
+    lastTs = ts;
 
     const std::lock_guard<std::mutex> lock(screenMutex);
-    updateStatus(duration);
+    updateStatus();
     updateMenu();
 
     if (shouldFreeze == true) {
@@ -65,7 +68,7 @@ auto Screen::updateDisplay(int duration, bool updateOutput) -> void
     }
 
     if (updateOutput) {
-        collectorOutput = activeCollector->outputStatus(duration);
+        collectorOutput = activeCollector->outputStatus(ts);
     }
 
     updateHeaders();
@@ -101,12 +104,12 @@ auto Screen::updateValues() -> void
     }
 }
 
-auto Screen::updateStatus(int duration) -> void
+auto Screen::updateStatus() -> void
 {
     werase(statusWin);
     mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, last key {}, Filter {}, line {}\n", shouldFreeze, lastKey, displayConf.filter, selectedLine).c_str());
 
-    waddstr(statusWin, fmt::format("Running time: {}s\n", duration).c_str());
+    waddstr(statusWin, fmt::format("Running time: {}s\n", lastTs - firstTs).c_str());
 
     waddstr(statusWin, fmt::format("{:<10} ", "Protocol:").c_str());
     for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
@@ -230,6 +233,7 @@ Screen::Screen(std::atomic_bool* shouldStop,
     noecho();
     curs_set(0);
     set_escdelay(25);
+    timeout(100);
 
     keyWin = newpad(KEY_LINES, KEY_COLUMNS);
     valueWin = newpad(VALUE_LINES, VALUE_COLUMNS);
@@ -328,6 +332,13 @@ auto Screen::displayLoop() -> void
     while (shouldStop->load() == false) {
 
         c = getch();
+        if (c == ERR) {
+            auto currentTs = time(nullptr);
+            if (currentTs > lastTs) {
+                updateDisplay(currentTs, true);
+            }
+            continue;
+        }
         lastKey = c;
         if (c == KEY_Q || c == CTRL('c')) {
             shouldStop->store(true);
@@ -335,7 +346,7 @@ auto Screen::displayLoop() -> void
         }
 
         if (refreshableAction(c)) {
-            updateDisplay(lastDuration, true);
+            updateDisplay(lastTs, true);
             continue;
         }
 
@@ -366,7 +377,7 @@ auto Screen::displayLoop() -> void
         } else if (selectedLine * 2 > (maxElements * 2 + verticalScroll)) {
             verticalScroll += selectedLine * 2 - (maxElements * 2 + verticalScroll);
         }
-        updateDisplay(lastDuration, false);
+        updateDisplay(lastTs, false);
     }
 }
 

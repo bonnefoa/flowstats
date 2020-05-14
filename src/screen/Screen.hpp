@@ -35,7 +35,7 @@ public:
     auto StartDisplay() -> int;
     auto StopDisplay() -> void;
     auto getCurrentChoice() -> std::string;
-    auto updateDisplay(int duration, bool updateOutput) -> void;
+    auto updateDisplay(int ts, bool updateOutput) -> void;
 
 private:
     auto displayLoop() -> void;
@@ -45,7 +45,7 @@ private:
     auto refreshableAction(int c) -> bool;
     auto updateHeaders() -> void;
     auto updateValues() -> void;
-    auto updateStatus(int duration) -> void;
+    auto updateStatus() -> void;
     auto updateMenu() -> void;
 
     WINDOW* keyWin;
@@ -65,7 +65,8 @@ private:
     std::thread screenThread;
     std::atomic_bool* shouldStop;
     bool shouldFreeze = false;
-    int lastDuration {};
+    int lastTs = 0;
+    int firstTs = 0;
     DisplayConfiguration& displayConf;
     std::vector<Collector*> collectors;
     Collector* activeCollector;
