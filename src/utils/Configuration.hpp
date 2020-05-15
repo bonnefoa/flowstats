@@ -10,15 +10,6 @@
 
 namespace flowstats {
 
-enum SortType {
-    SortFqdn,
-    SortPacket,
-    SortByte,
-    SortRequest,
-    SortRequestRate,
-    SortSrt,
-};
-
 enum DisplayType {
     DisplayRequests,
     DisplayResponses,
@@ -28,12 +19,13 @@ enum DisplayType {
     DisplayTraffic,
 };
 
-auto sortToString(enum SortType sortType) -> std::string;
 auto displayTypeToString(enum DisplayType displayType) -> std::string;
 
 struct DisplayConfiguration {
     int protocolIndex = 0;
-    enum SortType sortType = SortFqdn;
+    Field dnsSelectedField = Field::FQDN;
+    Field tcpSelectedField = Field::FQDN;
+    Field sslSelectedField = Field::FQDN;
     int maxResults = 15;
     std::string filter;
     bool noCurses = false;

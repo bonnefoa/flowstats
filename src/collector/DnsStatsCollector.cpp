@@ -17,6 +17,7 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
         DisplayPair(DisplayClients, { Field::TOP_CLIENT_IPS }),
         DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
+    setSortFields({ Field::FQDN, Field::PKTS, Field::BYTES, Field::REQ, Field::SRT });
     setTotalFlow(new AggregatedDnsFlow());
     updateDisplayType(0);
 };
@@ -190,24 +191,26 @@ auto DnsStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPair
     bool (*sortFunc)(AggregatedPairPointer const& left,
         AggregatedPairPointer const& right)
         = sortAggregatedDnsByRequest;
-    switch (getDisplayConf().sortType) {
-    case SortFqdn:
+    switch (getDisplayConf().dnsSelectedField) {
+    case Field::FQDN:
         sortFunc = sortAggregatedPairByFqdn;
         break;
-    case SortByte:
+    case Field::BYTES:
         sortFunc = sortAggregatedPairByByte;
         break;
-    case SortPacket:
+    case Field::PKTS:
         sortFunc = sortAggregatedPairByPacket;
         break;
-    case SortRequest:
+    case Field::REQ:
         sortFunc = sortAggregatedDnsByRequest;
         break;
-    case SortRequestRate:
+    case Field::REQ_RATE:
         sortFunc = sortAggregatedDnsByRequestRate;
         break;
-    case SortSrt:
+    case Field::SRT:
         sortFunc = sortAggregatedDnsBySrt;
+        break;
+    default:
         break;
     }
     std::sort(tempVector.begin(), tempVector.end(), sortFunc);

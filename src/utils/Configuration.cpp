@@ -2,26 +2,6 @@
 
 namespace flowstats {
 
-auto sortToString(enum SortType sortType) -> std::string
-{
-    switch (sortType) {
-    case SortFqdn:
-        return "Fqdn";
-    case SortByte:
-        return "Byte";
-    case SortPacket:
-        return "Packet";
-    case SortRequest:
-        return "Request";
-    case SortRequestRate:
-        return "RequestRate";
-    case SortSrt:
-        return "Srt";
-    default:
-        return "Unknown";
-    }
-}
-
 auto displayTypeToString(enum DisplayType displayType) -> std::string
 {
     switch (displayType) {

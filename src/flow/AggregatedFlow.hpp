@@ -26,9 +26,9 @@ private:
 using AggregatedPairPointer = std::pair<AggregatedKey, Flow*>;
 
 auto sortAggregatedPairByPacket(AggregatedPairPointer const& left,
-    const AggregatedPairPointer& right) -> bool;
+    AggregatedPairPointer const& right) -> bool;
 auto sortAggregatedPairByFqdn(AggregatedPairPointer const& left,
-    const AggregatedPairPointer& right) -> bool;
+    AggregatedPairPointer const& right) -> bool;
 auto sortAggregatedPairByByte(AggregatedPairPointer const& left,
-    const AggregatedPairPointer& right) -> bool;
+    AggregatedPairPointer const& right) -> bool;
 } // namespace flowstats

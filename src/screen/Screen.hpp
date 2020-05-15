@@ -47,6 +47,7 @@ private:
     auto updateValues() -> void;
     auto updateStatus() -> void;
     auto updateMenu() -> void;
+    auto updateSortSelection() -> void;
 
     WINDOW* keyWin;
     WINDOW* valueWin;
@@ -56,6 +57,8 @@ private:
 
     WINDOW* statusWin;
     WINDOW* menuWin;
+
+    WINDOW* sortSelectionWin;
 
     int maxElements = 0;
     int numberElements = 0;
@@ -73,6 +76,8 @@ private:
     CollectorOutput collectorOutput;
 
     bool editFilter = false;
+    bool editSort = false;
+    bool sortSup = false;
 
     std::mutex screenMutex;
 };

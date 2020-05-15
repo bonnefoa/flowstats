@@ -44,6 +44,7 @@ public:
     virtual auto getProtocol() -> CollectorProtocol = 0;
 
     auto getDisplayPairs() { return displayPairs; };
+    auto getSortFields() { return sortFields; };
     auto outputStatus(int duration) -> CollectorOutput;
     auto updateDisplayType(int displayIndex) -> void;
 
@@ -66,6 +67,7 @@ protected:
 
     auto setDisplayKeys(std::vector<Field> const& keys) -> void { getFlowFormatter().setDisplayKeys(keys); };
     auto setDisplayPairs(std::vector<DisplayPair> pairs) -> void { displayPairs = std::move(pairs); };
+    auto setSortFields(std::vector<Field> fields) -> void { sortFields = std::move(fields); };
     auto setTotalFlow(Flow* flow) -> void { totalFlow = flow; };
 
 private:
@@ -75,5 +77,6 @@ private:
     DisplayConfiguration const& displayConf;
     Flow* totalFlow = nullptr;
     std::vector<DisplayPair> displayPairs;
+    std::vector<Field> sortFields;
 };
 } // namespace flowstats

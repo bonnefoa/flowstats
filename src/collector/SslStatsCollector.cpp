@@ -110,6 +110,19 @@ auto SslStatsCollector::mergePercentiles() -> void
     }
 }
 
+typedef bool (AggregatedSslFlow::*sortFlowFun)(AggregatedSslFlow const&) const;
+auto sortAggregatedSsl(sortFlowFun sortFlow,
+    AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
+{
+    auto* rightSsl = dynamic_cast<AggregatedSslFlow*>(right.second);
+    auto* leftSsl = dynamic_cast<AggregatedSslFlow*>(left.second);
+    if (rightSsl == nullptr || leftSsl == nullptr) {
+        return false;
+    }
+    return (rightSsl->*sortFlow)(*leftSsl);
+}
+
 auto SslStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPairPointer>
 {
     std::vector<AggregatedPairPointer> tempVector;
@@ -120,6 +133,21 @@ auto SslStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPair
     }
 
     spdlog::info("Got {} ssl flows", tempVector.size());
+
+    auto sortFunc = sortAggregatedPairByFqdn;
+    switch (getDisplayConf().sslSelectedField) {
+    case Field::FQDN:
+        sortFunc = sortAggregatedPairByFqdn;
+        break;
+    case Field::BYTES:
+        sortFunc = sortAggregatedPairByByte;
+        break;
+    case Field::PKTS:
+        sortFunc = sortAggregatedPairByPacket;
+        break;
+    default:
+        break;
+    }
 
     std::sort(tempVector.begin(), tempVector.end(),
         [](AggregatedPairPointer const& left, AggregatedPairPointer const& right) {

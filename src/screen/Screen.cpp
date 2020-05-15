@@ -9,12 +9,16 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define CTRL(x) ((x)&0x1f)
 
+#define KEY_ESC 27
+#define KEY_INF 60
+#define KEY_SUP 62
 #define KEY_B 98
 #define KEY_LETTER_F 102
 #define KEY_P 112
 #define KEY_Q 113
 #define KEY_R 114
 #define KEY_S 115
+#define KEY_VALID '\n'
 
 #define KEY_0 48
 #define KEY_NUM(n) (KEY_0 + (n))
@@ -23,7 +27,7 @@
 #define STATUS_LINES 5
 #define STATUS_COLUMNS 120
 
-#define HEADER_LINES 2
+#define HEADER_LINES 1
 
 #define KEY_LINES 300
 #define KEY_COLUMNS 89
@@ -33,6 +37,10 @@
 
 #define MENU_LINES 1
 #define MENU_COLUMNS 120
+
+#define SORT_LINES 30
+#define SORT_TEXT_COLUMNS 19
+#define SORT_COLUMNS 20
 
 // Colors
 #define SELECTED_STATUS_COLOR 1
@@ -47,6 +55,7 @@ namespace flowstats {
 int lastKey = 0;
 std::array<CollectorProtocol, 3> protocols = { DNS, TCP, SSL };
 std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
+std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
 
 auto Screen::updateDisplay(int ts, bool updateOutput) -> void
 {
@@ -60,6 +69,7 @@ auto Screen::updateDisplay(int ts, bool updateOutput) -> void
 
     const std::lock_guard<std::mutex> lock(screenMutex);
     updateStatus();
+    updateSortSelection();
     updateMenu();
 
     if (shouldFreeze == true) {
@@ -104,10 +114,36 @@ auto Screen::updateValues() -> void
     }
 }
 
+auto Screen::updateSortSelection() -> void
+{
+    if (editSort == false) {
+        return;
+    }
+    werase(sortSelectionWin);
+    wattron(sortSelectionWin, COLOR_PAIR(KEY_HEADER_COLOR));
+    waddstr(sortSelectionWin, fmt::format("{:<" STR(SORT_TEXT_COLUMNS) "}", "Sort by").c_str());
+    wattroff(sortSelectionWin, COLOR_PAIR(KEY_HEADER_COLOR));
+    waddstr(sortSelectionWin, " ");
+
+    int i = 0;
+    int displayIndex = protocolToSortIndex[displayConf.protocolIndex];
+    for (const auto& sortField : activeCollector->getSortFields()) {
+        if (i == displayIndex) {
+            wattron(sortSelectionWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+        }
+        waddstr(sortSelectionWin, fmt::format("{:<15}", fieldToHeader(sortField)).c_str());
+        if (i == displayIndex) {
+            wattroff(sortSelectionWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+        }
+        i++;
+        waddstr(sortSelectionWin, "\n");
+    }
+}
+
 auto Screen::updateStatus() -> void
 {
     werase(statusWin);
-    mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, last key {}, Filter {}, line {}\n", shouldFreeze, lastKey, displayConf.filter, selectedLine).c_str());
+    mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, sort edit {}, last key {}, Filter {}, line {}, sortIndex {}\n", shouldFreeze, editSort, lastKey, displayConf.filter, selectedLine, protocolToSortIndex[displayConf.protocolIndex]).c_str());
 
     waddstr(statusWin, fmt::format("Running time: {}s\n", lastTs - firstTs).c_str());
 
@@ -124,18 +160,18 @@ auto Screen::updateStatus() -> void
     }
     waddstr(statusWin, "\n");
 
-    waddstr(statusWin, fmt::format("{:<10} ", "Sort:").c_str());
-    for (int sortType = 0; sortType <= SortSrt; ++sortType) {
-        if (displayConf.sortType == sortType) {
-            wattron(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
+    waddstr(statusWin, fmt::format("{:<10} ", "Display:").c_str());
+    int i = 0;
+    int displayIndex = protocolToDisplayIndex[displayConf.protocolIndex];
+    for (const auto& displayPair : activeCollector->getDisplayPairs()) {
+        if (i == displayIndex) {
+            wattron(statusWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
-        waddstr(statusWin,
-            fmt::format("{}: {:<10} ", sortType + 4,
-                sortToString((enum SortType)sortType))
-                .c_str());
-        if (displayConf.sortType == sortType) {
-            wattroff(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
+        waddstr(statusWin, fmt::format("{:<14}", displayTypeToString(displayPair.first)).c_str());
+        if (i == displayIndex) {
+            wattroff(statusWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
+        i++;
     }
     waddstr(statusWin, "\n");
 }
@@ -148,20 +184,6 @@ auto Screen::updateHeaders() -> void
     wattron(keyHeaderWin, COLOR_PAIR(KEY_HEADER_COLOR));
     waddstr(keyHeaderWin, fmt::format("{:<" STR(KEY_COLUMNS) "}", collectorOutput.getKeyHeaders()).c_str());
     wattroff(keyHeaderWin, COLOR_PAIR(KEY_HEADER_COLOR));
-
-    int i = 0;
-    int displayIndex = protocolToDisplayIndex[displayConf.protocolIndex];
-    for (const auto& displayPair : activeCollector->getDisplayPairs()) {
-        if (i == displayIndex) {
-            wattron(valueHeaderWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
-        }
-        waddstr(valueHeaderWin, fmt::format("{:<14}", displayTypeToString(displayPair.first)).c_str());
-        if (i == displayIndex) {
-            wattroff(valueHeaderWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
-        }
-        i++;
-    }
-    waddstr(valueHeaderWin, "\n");
 
     wattron(valueHeaderWin, COLOR_PAIR(VALUE_HEADER_COLOR));
     waddstr(valueHeaderWin, fmt::format("{:<" STR(VALUE_COLUMNS) "}", collectorOutput.getValueHeaders()).c_str());
@@ -241,6 +263,8 @@ Screen::Screen(std::atomic_bool* shouldStop,
     valueHeaderWin = newpad(HEADER_LINES + STATUS_LINES, VALUE_COLUMNS);
 
     statusWin = newwin(STATUS_LINES, STATUS_COLUMNS, 0, 0);
+    sortSelectionWin = newwin(SORT_LINES, SORT_COLUMNS,
+        STATUS_LINES, 0);
     menuWin = newwin(MENU_LINES, MENU_COLUMNS, LINES - 1, 0);
 
     activeCollector = getActiveCollector();
@@ -250,25 +274,31 @@ auto Screen::refreshPads() -> void
 {
     wnoutrefresh(statusWin);
 
+    int deltaValues = 0;
+    if (editSort) {
+        deltaValues = SORT_COLUMNS + 1;
+        wnoutrefresh(sortSelectionWin);
+    }
+
     pnoutrefresh(keyHeaderWin,
         0, 0,
-        STATUS_LINES + 1, 0,
-        STATUS_LINES + HEADER_LINES, KEY_COLUMNS);
-
-    pnoutrefresh(valueHeaderWin,
-        0, 0,
-        STATUS_LINES, KEY_COLUMNS,
-        STATUS_LINES + HEADER_LINES, COLS - 1);
+        STATUS_LINES, deltaValues,
+        STATUS_LINES + HEADER_LINES, KEY_COLUMNS + deltaValues);
 
     pnoutrefresh(keyWin,
         verticalScroll, 0,
-        STATUS_LINES + HEADER_LINES, 0,
-        LINES - (HEADER_LINES + MENU_LINES), KEY_COLUMNS);
+        STATUS_LINES + HEADER_LINES, deltaValues,
+        LINES - (HEADER_LINES + MENU_LINES), KEY_COLUMNS + deltaValues);
+
+    pnoutrefresh(valueHeaderWin,
+        0, 0,
+        STATUS_LINES, KEY_COLUMNS + deltaValues,
+        STATUS_LINES + HEADER_LINES, COLS - deltaValues - 1);
 
     pnoutrefresh(valueWin,
         verticalScroll, 0,
-        STATUS_LINES + HEADER_LINES, KEY_COLUMNS,
-        LINES - (HEADER_LINES + MENU_LINES), COLS - 1);
+        STATUS_LINES + HEADER_LINES, KEY_COLUMNS + deltaValues,
+        LINES - (HEADER_LINES + MENU_LINES), COLS - deltaValues - 1);
 
     wnoutrefresh(menuWin);
     doupdate();
@@ -277,7 +307,7 @@ auto Screen::refreshPads() -> void
 auto Screen::refreshableAction(int c) -> bool
 {
     if (editFilter) {
-        if (c == 27) {
+        if (c == KEY_ESC) {
             nodelay(stdscr, true);
             c = getch();
             nodelay(stdscr, false);
@@ -287,7 +317,7 @@ auto Screen::refreshableAction(int c) -> bool
             }
         } else if (c == CTRL('u')) {
             displayConf.filter = "";
-        } else if (c == '\n') {
+        } else if (c == KEY_VALID) {
             editFilter = false;
         } else if (c == KEY_BACKSPACE && displayConf.filter.size() > 0) {
             displayConf.filter.pop_back();
@@ -299,13 +329,24 @@ auto Screen::refreshableAction(int c) -> bool
         return true;
     }
 
-    if (c >= KEY_NUM(1) && c <= KEY_NUM(9)) {
-        if (c <= KEY_NUM(3)) {
-            displayConf.protocolIndex = c - KEY_NUM(1);
-            activeCollector = getActiveCollector();
-        } else {
-            displayConf.sortType = static_cast<enum SortType>(c - KEY_NUM(4));
+    if (editSort) {
+        if (c == KEY_UP) {
+            protocolToSortIndex[displayConf.protocolIndex] = std::max(
+                protocolToSortIndex[displayConf.protocolIndex] - 1, 0);
+            return true;
+        } else if (c == KEY_DOWN) {
+            protocolToSortIndex[displayConf.protocolIndex] = std::min(
+                protocolToSortIndex[displayConf.protocolIndex] + 1,
+                static_cast<int>(activeCollector->getSortFields().size()) - 1);
+            return true;
+        } else if (c == KEY_VALID) {
+            editSort = false;
         }
+    }
+
+    if (c >= KEY_NUM(1) && c <= KEY_NUM(3)) {
+        displayConf.protocolIndex = c - KEY_NUM(1);
+        activeCollector = getActiveCollector();
         return true;
     } else if (c == KEY_F(4)) {
         editFilter = true;
@@ -320,6 +361,14 @@ auto Screen::refreshableAction(int c) -> bool
             protocolToDisplayIndex[displayConf.protocolIndex] + 1,
             static_cast<int>(activeCollector->getDisplayPairs().size()) - 1);
         activeCollector->updateDisplayType(protocolToDisplayIndex[displayConf.protocolIndex]);
+        return true;
+    } else if (c == KEY_SUP) {
+        editSort = true;
+        sortSup = true;
+        return true;
+    } else if (c == KEY_INF) {
+        editSort = true;
+        sortSup = false;
         return true;
     }
 
@@ -404,6 +453,7 @@ Screen::~Screen()
     delwin(keyWin);
     delwin(valueWin);
     delwin(keyHeaderWin);
+    delwin(sortSelectionWin);
     delwin(valueHeaderWin);
     delwin(statusWin);
     delwin(menuWin);

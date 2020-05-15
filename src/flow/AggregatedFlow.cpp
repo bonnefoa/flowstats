@@ -2,22 +2,34 @@
 
 namespace flowstats {
 
-auto sortAggregatedPairByFqdn(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right) -> bool
+typedef bool (Flow::*sortFlowFun)(Flow const&) const;
+auto sortAggregated(sortFlowFun sortFlow, AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
 {
-    return left.second->sortByFqdn(*right.second);
+    auto* rightFlow = right.second;
+    auto* leftFlow = left.second;
+    if (rightFlow == nullptr || leftFlow == nullptr) {
+        return false;
+    }
+    return (leftFlow->*sortFlow)(*rightFlow);
 }
 
-auto sortAggregatedPairByByte(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right) -> bool
+auto sortAggregatedPairByFqdn(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
 {
-    return left.second->sortByTotalBytes(*right.second);
+    return sortAggregated(&Flow::sortByFqdn, left, right);
 }
 
-auto sortAggregatedPairByPacket(const AggregatedPairPointer& left,
-    const AggregatedPairPointer& right) -> bool
+auto sortAggregatedPairByByte(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
 {
-    return left.second->sortByPackets(*right.second);
+    return sortAggregated(&Flow::sortByTotalBytes, left, right);
+}
+
+auto sortAggregatedPairByPacket(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
+{
+    return sortAggregated(&Flow::sortByPackets, left, right);
 }
 
 } // namespace flowstats

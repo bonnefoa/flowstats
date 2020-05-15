@@ -26,6 +26,7 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
         DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::SRTMAX, Field::DS_P95, Field::DS_P99, Field::DSMAX }),
         DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
+    setSortFields({ Field::FQDN, Field::PKTS, Field::BYTES, Field::REQ, Field::SRT, Field::SYN });
     setTotalFlow(new AggregatedTcpFlow());
     updateDisplayType(0);
 };
@@ -208,7 +209,9 @@ auto TcpStatsCollector::mergePercentiles() -> void
     }
 }
 
-auto sortAggregatedTcpBySrt(AggregatedPairPointer const& left,
+typedef bool (AggregatedTcpFlow::*sortFlowFun)(AggregatedTcpFlow const&) const;
+auto sortAggregatedTcp(sortFlowFun sortFlow,
+    AggregatedPairPointer const& left,
     AggregatedPairPointer const& right) -> bool
 {
     auto* rightTcp = dynamic_cast<AggregatedTcpFlow*>(right.second);
@@ -216,29 +219,25 @@ auto sortAggregatedTcpBySrt(AggregatedPairPointer const& left,
     if (rightTcp == nullptr || leftTcp == nullptr) {
         return false;
     }
-    return rightTcp->sortBySrt(*leftTcp);
+    return (rightTcp->*sortFlow)(*leftTcp);
+}
+
+auto sortAggregatedTcpBySrt(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
+{
+    return sortAggregatedTcp(&AggregatedTcpFlow::sortBySrt, left, right);
 }
 
 auto sortAggregatedTcpByRequest(AggregatedPairPointer const& left,
     AggregatedPairPointer const& right) -> bool
 {
-    auto* rightTcp = dynamic_cast<AggregatedTcpFlow*>(right.second);
-    auto* leftTcp = dynamic_cast<AggregatedTcpFlow*>(left.second);
-    if (rightTcp == nullptr || leftTcp == nullptr) {
-        return false;
-    }
-    return rightTcp->sortByRequest(*leftTcp);
+    return sortAggregatedTcp(&AggregatedTcpFlow::sortByRequest, left, right);
 }
 
 auto sortAggregatedTcpByRequestRate(AggregatedPairPointer const& left,
     AggregatedPairPointer const& right) -> bool
 {
-    auto* rightTcp = dynamic_cast<AggregatedTcpFlow*>(right.second);
-    auto* leftTcp = dynamic_cast<AggregatedTcpFlow*>(left.second);
-    if (rightTcp == nullptr || leftTcp == nullptr) {
-        return false;
-    }
-    return rightTcp->sortByRequestRate(*leftTcp);
+    return sortAggregatedTcp(&AggregatedTcpFlow::sortByRequestRate, left, right);
 }
 
 auto TcpStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPairPointer>
@@ -246,25 +245,27 @@ auto TcpStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPair
     std::vector<AggregatedPairPointer> tempVector = std::vector<AggregatedPairPointer>(aggregatedMap.begin(), aggregatedMap.end());
     spdlog::info("Got {} tcp flows", tempVector.size());
 
-    auto sortFunc = sortAggregatedPairByByte;
-    switch (getDisplayConf().sortType) {
-    case SortFqdn:
+    auto sortFunc = sortAggregatedPairByFqdn;
+    switch (getDisplayConf().dnsSelectedField) {
+    case Field::FQDN:
         sortFunc = sortAggregatedPairByFqdn;
         break;
-    case SortByte:
+    case Field::BYTES:
         sortFunc = sortAggregatedPairByByte;
         break;
-    case SortPacket:
+    case Field::PKTS:
         sortFunc = sortAggregatedPairByPacket;
         break;
-    case SortRequestRate:
-        sortFunc = sortAggregatedTcpByRequestRate;
-        break;
-    case SortRequest:
+    case Field::REQ:
         sortFunc = sortAggregatedTcpByRequest;
         break;
-    case SortSrt:
+    case Field::REQ_RATE:
+        sortFunc = sortAggregatedTcpByRequest;
+        break;
+    case Field::SRT:
         sortFunc = sortAggregatedTcpBySrt;
+        break;
+    default:
         break;
     }
     std::sort(tempVector.begin(), tempVector.end(), sortFunc);
