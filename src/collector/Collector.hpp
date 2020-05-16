@@ -67,7 +67,7 @@ protected:
 
     auto setDisplayKeys(std::vector<Field> const& keys) -> void { getFlowFormatter().setDisplayKeys(keys); };
     auto setDisplayPairs(std::vector<DisplayPair> pairs) -> void { displayPairs = std::move(pairs); };
-    auto setSortFields(std::vector<Field> fields) -> void { sortFields = std::move(fields); };
+    auto fillSortFields() -> void;
     auto setTotalFlow(Flow* flow) -> void { totalFlow = flow; };
 
 private:

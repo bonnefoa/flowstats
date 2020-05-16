@@ -17,8 +17,8 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
         DisplayPair(DisplayClients, { Field::TOP_CLIENT_IPS }),
         DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
-    setSortFields({ Field::FQDN, Field::PKTS, Field::BYTES, Field::REQ, Field::SRT });
     setTotalFlow(new AggregatedDnsFlow());
+    fillSortFields();
     updateDisplayType(0);
 };
 

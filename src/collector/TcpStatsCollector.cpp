@@ -26,8 +26,8 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
         DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::SRTMAX, Field::DS_P95, Field::DS_P99, Field::DSMAX }),
         DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
-    setSortFields({ Field::FQDN, Field::PKTS, Field::BYTES, Field::REQ, Field::SRT, Field::SYN });
     setTotalFlow(new AggregatedTcpFlow());
+    fillSortFields();
     updateDisplayType(0);
 };
 

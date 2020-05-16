@@ -54,13 +54,4 @@ auto FlowFormatter::outputHeaders() const -> std::pair<std::string, std::string>
     return std::pair(keyHeaders, valueHeaders);
 }
 
-void FlowFormatter::setDisplayKeys(std::vector<Field> const& keys)
-{
-    displayKeys = keys;
-}
-
-void FlowFormatter::setDisplayValues(std::vector<Field> const& values)
-{
-    displayValues = values;
-}
 } // namespace flowstats

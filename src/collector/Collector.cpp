@@ -68,10 +68,22 @@ auto Collector::fillOutputs(std::vector<AggregatedPairPointer> const& aggregated
     outputFlow(totalFlow, keyLines, valueLines, duration, 0);
 }
 
-void Collector::updateDisplayType(int displayIndex)
+auto Collector::updateDisplayType(int displayIndex) -> void
 {
     flowFormatter.setDisplayValues(displayPairs[displayIndex].second);
     return;
+}
+
+auto Collector::fillSortFields() -> void
+{
+    auto displayKeys = flowFormatter.getDisplayKeys();
+    sortFields.insert(sortFields.begin(),
+        displayKeys.begin(), displayKeys.end());
+    for (auto i : displayPairs) {
+        auto displayVector = i.second;
+        sortFields.insert(sortFields.end(),
+            displayVector.begin(), displayVector.end());
+    }
 }
 
 auto Collector::outputStatus(int duration) -> CollectorOutput
