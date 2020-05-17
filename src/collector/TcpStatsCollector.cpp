@@ -92,7 +92,7 @@ auto TcpStatsCollector::lookupTcpFlow(
     auto aggregatedTcpFlows = lookupAggregatedFlows(flowId, fqdn, srvDir);
     auto tcpFlow = TcpFlow(ip, tcp, srvDir, aggregatedTcpFlows);
     spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), flowHash, fqdn);
-    auto res = hashToTcpFlow.insert({ flowHash, tcpFlow });
+    auto res = hashToTcpFlow.emplace(flowHash, tcpFlow);
     return &res.first->second;
 }
 
@@ -107,14 +107,15 @@ auto TcpStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string 
     AggregatedTcpKey tcpKey = AggregatedTcpKey(fqdn, ipSrvInt,
         srvPort);
     const std::lock_guard<std::mutex> lock(*getDataMutex());
-    auto it = aggregatedMap.find(tcpKey);
-    if (it == aggregatedMap.end()) {
-        aggregatedFlow = new AggregatedTcpFlow(flowId, fqdn);
-        aggregatedFlow->setSrvPos(srvDir);
-        aggregatedMap[tcpKey] = aggregatedFlow;
+    auto* aggregatedMap = getAggregatedMap();
+    auto it = aggregatedMap->find(tcpKey);
+    if (it == aggregatedMap->end()) {
+        auto aggregatedObj = new AggregatedTcpFlow(flowId, fqdn, srvDir);
+        auto it = aggregatedMap->emplace(tcpKey, aggregatedObj);
+        aggregatedFlow = static_cast<AggregatedTcpFlow*>(it.first->second);
         spdlog::debug("Create aggregated tcp flow for {}", tcpKey.toString());
     } else {
-        aggregatedFlow = it->second;
+        aggregatedFlow = static_cast<AggregatedTcpFlow*>(it->second);
     }
     std::vector<AggregatedTcpFlow*> aggregatedFlows;
     aggregatedFlows.push_back(aggregatedFlow);
@@ -184,31 +185,6 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
     }
 }
 
-auto TcpStatsCollector::resetMetrics() -> void
-{
-    const std::lock_guard<std::mutex> lock(*getDataMutex());
-    for (auto& pair : aggregatedMap) {
-        pair.second->resetFlow(false);
-    }
-}
-
-auto TcpStatsCollector::getMetrics() -> std::vector<std::string>
-{
-    std::vector<std::string> lst;
-    for (auto& pair : aggregatedMap) {
-        struct AggregatedTcpFlow* val = pair.second;
-        val->getMetrics(lst);
-    }
-    return lst;
-}
-
-auto TcpStatsCollector::mergePercentiles() -> void
-{
-    for (auto& i : aggregatedMap) {
-        i.second->mergePercentiles();
-    }
-}
-
 typedef bool (AggregatedTcpFlow::*sortFlowFun)(AggregatedTcpFlow const&) const;
 auto sortAggregatedTcp(sortFlowFun sortFlow,
     AggregatedPairPointer const& left,
@@ -240,42 +216,21 @@ auto sortAggregatedTcpByRequestRate(AggregatedPairPointer const& left,
     return sortAggregatedTcp(&AggregatedTcpFlow::sortByRequestRate, left, right);
 }
 
-auto TcpStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPairPointer>
+auto TcpStatsCollector::getSortFun(Field field) const -> Flow::sortFlowFun
 {
-    std::vector<AggregatedPairPointer> tempVector = std::vector<AggregatedPairPointer>(aggregatedMap.begin(), aggregatedMap.end());
-    spdlog::info("Got {} tcp flows", tempVector.size());
-
-    auto sortFunc = sortAggregatedPairByFqdn;
-    switch (getDisplayConf().dnsSelectedField) {
-    case Field::FQDN:
-        sortFunc = sortAggregatedPairByFqdn;
-        break;
-    case Field::BYTES:
-        sortFunc = sortAggregatedPairByByte;
-        break;
-    case Field::PKTS:
-        sortFunc = sortAggregatedPairByPacket;
-        break;
-    case Field::REQ:
-        sortFunc = sortAggregatedTcpByRequest;
-        break;
-    case Field::REQ_RATE:
-        sortFunc = sortAggregatedTcpByRequest;
-        break;
-    case Field::SRT:
-        sortFunc = sortAggregatedTcpBySrt;
-        break;
-    default:
-        break;
+    auto sortFun = Collector::getSortFun(field);
+    if (sortFun != nullptr) {
+        return sortFun;
     }
-    std::sort(tempVector.begin(), tempVector.end(), sortFunc);
-    return tempVector;
+    return sortFun;
 }
 
 TcpStatsCollector::~TcpStatsCollector()
 {
-    for (auto& pair : aggregatedMap) {
-        delete pair.second;
+    for (auto& pair : hashToTcpFlow) {
+        for (auto* e : pair.second.getAggregatedFlows()) {
+            delete e;
+        }
     }
 }
 } // namespace flowstats

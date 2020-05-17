@@ -19,15 +19,11 @@ public:
     ~DnsStatsCollector() override;
 
     auto processPacket(Tins::Packet const& packet) -> void override;
-    auto getMetrics() -> std::vector<std::string> override;
     auto advanceTick(timeval now) -> void override;
-    auto resetMetrics() -> void override;
-    auto mergePercentiles() -> void override;
 
-    auto toString() -> std::string override { return "DnsStatsCollector"; }
-    [[nodiscard]] auto getAggregatedPairs() const -> std::vector<AggregatedPairPointer> override;
+    auto toString() const -> std::string override { return "DnsStatsCollector"; }
     [[nodiscard]] auto getAggregatedFlow() const { return aggregatedDnsFlows; }
-    auto getProtocol() -> CollectorProtocol override { return DNS; };
+    auto getProtocol() const -> CollectorProtocol override { return DNS; };
 
 private:
     auto newDnsQuery(Tins::Packet const& packet, Tins::DNS const& dns) -> void;

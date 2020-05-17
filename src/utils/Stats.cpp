@@ -48,4 +48,10 @@ auto Percentile::reset() -> void
 {
     points.clear();
 }
+
+auto Percentile::resetAndShrink() -> void
+{
+    points.clear();
+    points.shrink_to_fit();
+}
 } // namespace flowstats

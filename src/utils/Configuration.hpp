@@ -23,9 +23,6 @@ auto displayTypeToString(enum DisplayType displayType) -> std::string;
 
 struct DisplayConfiguration {
     int protocolIndex = 0;
-    Field dnsSelectedField = Field::FQDN;
-    Field tcpSelectedField = Field::FQDN;
-    Field sslSelectedField = Field::FQDN;
     int maxResults = 15;
     std::string filter;
     bool noCurses = false;

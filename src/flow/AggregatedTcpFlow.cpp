@@ -3,6 +3,13 @@
 
 namespace flowstats {
 
+AggregatedTcpFlow::~AggregatedTcpFlow()
+{
+    connections.resetAndShrink();
+    srts.resetAndShrink();
+    requestSizes.resetAndShrink();
+}
+
 auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
     FlowId const& flowId,
     Tins::TCP const& tcp) -> void
@@ -166,8 +173,9 @@ auto AggregatedTcpFlow::closeConnection() -> void
     activeConnections--;
 };
 
-auto AggregatedTcpFlow::getMetrics(std::vector<std::string> lst) const -> void
+auto AggregatedTcpFlow::getStatsdMetrics() const -> std::vector<std::string>
 {
+    std::vector<std::string> lst;
     DogFood::Tags tags = DogFood::Tags({ { "fqdn", getFqdn() },
         { "ip", getSrvIp().to_string() },
         { "port", std::to_string(getSrvPort()) } });
@@ -186,6 +194,7 @@ auto AggregatedTcpFlow::getMetrics(std::vector<std::string> lst) const -> void
         lst.push_back(DogFood::Metric("flowstats.tcp.failedConnections", failedConnections,
             DogFood::Counter, 1, tags));
     }
+    return lst;
 }
 
 } // namespace flowstats

@@ -30,27 +30,29 @@ public:
 
     virtual auto processPacket(Tins::Packet const& pdu) -> void = 0;
     virtual auto advanceTick(timeval now) -> void {};
-    virtual auto resetMetrics() -> void {};
-    virtual auto getMetrics() -> std::vector<std::string>
-    {
-        std::vector<std::string> empty;
-        return empty;
-    };
+    auto resetMetrics() -> void;
 
+    auto getStatsdMetrics() const -> std::vector<std::string>;
     auto sendMetrics() -> void;
-    virtual auto mergePercentiles() -> void {};
+    auto mergePercentiles() -> void;
 
-    virtual auto toString() -> std::string = 0;
-    virtual auto getProtocol() -> CollectorProtocol = 0;
+    virtual auto toString() const -> std::string = 0;
+    virtual auto getProtocol() const -> CollectorProtocol = 0;
 
-    auto getDisplayPairs() { return displayPairs; };
-    auto getSortFields() { return sortFields; };
+    auto getDisplayPairs() const { return displayPairs; };
+    auto getSortFields() const { return sortFields; };
+    auto getSelectedSortField() const { return selectedSortField; };
+    virtual auto getSortFun(Field field) const -> Flow::sortFlowFun;
     auto outputStatus(int duration) -> CollectorOutput;
-    auto updateDisplayType(int displayIndex) -> void;
+
+    auto updateDisplayType(int displayIndex) -> void { flowFormatter.setDisplayValues(displayPairs[displayIndex].second); };
+    auto updateSort(int sortIndex) -> void { selectedSortField = sortFields.at(sortIndex); };
+    [[nodiscard]] auto const& getAggregatedMap() const { return aggregatedMap; }
+    [[nodiscard]] auto getAggregatedMap() { return &aggregatedMap; }
 
 protected:
-    [[nodiscard]] virtual auto getAggregatedPairs() const -> std::vector<AggregatedPairPointer> { return {}; };
-    auto fillOutputs(std::vector<AggregatedPairPointer> const& aggregatedPairs,
+    [[nodiscard]] auto getAggregatedFlows() const -> std::vector<Flow const*>;
+    auto fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
         std::vector<std::string>* keyLines,
         std::vector<std::string>* valueLines, int duration);
 
@@ -78,5 +80,7 @@ private:
     Flow* totalFlow = nullptr;
     std::vector<DisplayPair> displayPairs;
     std::vector<Field> sortFields;
+    Field selectedSortField = Field::FQDN;
+    std::map<AggregatedKey, Flow*> aggregatedMap;
 };
 } // namespace flowstats

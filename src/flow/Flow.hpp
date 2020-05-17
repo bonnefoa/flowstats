@@ -47,6 +47,13 @@ public:
     {
     }
 
+    Flow(FlowId flowId, std::string fqdn, uint8_t srvPos)
+        : flowId(std::move(flowId))
+        , fqdn(std::move(fqdn))
+        , srvPos(srvPos)
+    {
+    }
+
     virtual ~Flow() = default;
 
     auto operator<(Flow const& flow) const -> bool
@@ -64,10 +71,44 @@ public:
     virtual auto resetFlow(bool resetTotal) -> void;
     virtual auto fillValues(std::map<Field, std::string>& map,
         Direction direction, int duration) const -> void;
+    virtual auto mergePercentiles() -> void {};
+    [[nodiscard]] virtual auto getStatsdMetrics() const -> std::vector<std::string> { return {}; };
 
     auto operator<(Flow const& f) -> bool
     {
         return sortByBytes(f);
+    }
+
+    [[nodiscard]] auto getFlowId() const { return flowId; };
+    auto setFqdn(std::string _fqdn) { fqdn = _fqdn; };
+    [[nodiscard]] auto getFqdn() const { return fqdn; };
+    [[nodiscard]] auto getSrvPos() const { return srvPos; }
+    [[nodiscard]] auto getPackets() const { return packets; };
+    [[nodiscard]] auto getTotalBytes() const { return totalBytes; };
+    [[nodiscard]] auto getTotalPackets() const { return totalPackets; };
+
+    [[nodiscard]] auto getTransport() const { return flowId.getTransport(); };
+    [[nodiscard]] auto getPort(uint8_t pos) const { return flowId.getPort(pos); }
+    [[nodiscard]] auto getSrvPort() const { return flowId.getPort(srvPos); }
+    [[nodiscard]] auto getSrvIp() const -> Tins::IPv4Address { return flowId.getIp(srvPos); }
+    [[nodiscard]] auto getCltIp() const -> Tins::IPv4Address { return flowId.getIp(!srvPos); }
+    [[nodiscard]] auto getCltIpInt() const { return flowId.getIp(!srvPos); }
+    [[nodiscard]] auto getSrvIpInt() const { return flowId.getIp(srvPos); }
+
+    [[nodiscard]] auto sortByFqdn(Flow const& b) const -> bool
+    {
+        return std::lexicographical_compare(
+            fqdn.begin(), fqdn.end(), b.fqdn.begin(), b.fqdn.end(), caseInsensitiveComp);
+    }
+
+    [[nodiscard]] auto sortByIp(Flow const& b) const -> bool
+    {
+        return getSrvIp() < b.getSrvIp();
+    }
+
+    [[nodiscard]] auto sortByPort(Flow const& b) const -> bool
+    {
+        return getSrvPort() < b.getSrvPos();
     }
 
     [[nodiscard]] auto sortByBytes(Flow const& b) const -> bool
@@ -85,30 +126,16 @@ public:
         return packets[0] + packets[1] < b.packets[0] + b.packets[1];
     }
 
-    [[nodiscard]] auto sortByFqdn(Flow const& b) const -> bool
+    [[nodiscard]] auto sortByTotalPackets(Flow const& b) const -> bool
     {
-        return std::lexicographical_compare(
-            fqdn.begin(), fqdn.end(), b.fqdn.begin(), b.fqdn.end(), caseInsensitiveComp);
+        return totalPackets[0] + totalPackets[1] < b.totalPackets[0] + b.totalPackets[1];
     }
 
-    [[nodiscard]] auto getFlowId() const { return flowId; };
-    auto setFqdn(std::string _fqdn) { fqdn = _fqdn; };
-    [[nodiscard]] auto getFqdn() const { return fqdn; };
-    [[nodiscard]] auto getSrvPos() const { return srvPos; }
-    [[nodiscard]] auto getPackets() const { return packets; };
-    [[nodiscard]] auto getTotalBytes() const { return totalBytes; };
-    [[nodiscard]] auto getTotalPackets() const { return totalPackets; };
-
-    [[nodiscard]] auto getTransport() const { return flowId.getTransport(); };
-    [[nodiscard]] auto getPort(uint8_t pos) const { return flowId.getPort(pos); }
-    [[nodiscard]] auto getSrvPort() const { return flowId.getPort(srvPos); }
-    [[nodiscard]] auto getSrvIp() const { return flowId.getIp(srvPos); }
-    [[nodiscard]] auto getCltIp() const { return flowId.getIp(!srvPos); }
-    [[nodiscard]] auto getCltIpInt() const { return flowId.getIp(!srvPos); }
-    [[nodiscard]] auto getSrvIpInt() const { return flowId.getIp(srvPos); }
+    typedef bool (Flow::*sortFlowFun)(Flow const&) const;
 
 private:
     FlowId flowId;
+    std::string fqdn;
     uint8_t srvPos = 1;
     timeval start = {};
     timeval end = {};
@@ -117,6 +144,5 @@ private:
     std::array<int, 2> bytes = {};
     std::array<int, 2> totalPackets = {};
     std::array<int, 2> totalBytes = {};
-    std::string fqdn;
 };
 } // namespace flowstats

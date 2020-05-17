@@ -124,32 +124,6 @@ auto DnsStatsCollector::advanceTick(timeval now) -> void
     }
 }
 
-auto DnsStatsCollector::getMetrics() -> std::vector<std::string>
-{
-    std::vector<std::string> res;
-    for (auto& pair : aggregatedDnsFlows) {
-        struct AggregatedDnsFlow* val = pair.second;
-        auto dnsMetrics = val->getStatsdMetrics();
-        res.insert(res.end(), dnsMetrics.begin(), dnsMetrics.end());
-    }
-    return res;
-}
-
-auto DnsStatsCollector::mergePercentiles() -> void
-{
-    for (auto& pair : aggregatedDnsFlows) {
-        pair.second->mergePercentiles();
-    }
-}
-
-auto DnsStatsCollector::resetMetrics() -> void
-{
-    const std::lock_guard<std::mutex> lock(*getDataMutex());
-    for (auto& pair : aggregatedDnsFlows) {
-        pair.second->resetFlow(false);
-    }
-}
-
 auto sortAggregatedDnsBySrt(AggregatedPairPointer const& left,
     AggregatedPairPointer const& right) -> bool
 {
@@ -181,41 +155,6 @@ auto sortAggregatedDnsByRequestRate(AggregatedPairPointer const& left,
         return false;
     }
     return rightDns->sortByRequestRate(*leftDns);
-}
-
-auto DnsStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPairPointer>
-{
-    std::vector<AggregatedPairPointer> tempVector(aggregatedDnsFlows.begin(),
-        aggregatedDnsFlows.end());
-
-    bool (*sortFunc)(AggregatedPairPointer const& left,
-        AggregatedPairPointer const& right)
-        = sortAggregatedDnsByRequest;
-    switch (getDisplayConf().dnsSelectedField) {
-    case Field::FQDN:
-        sortFunc = sortAggregatedPairByFqdn;
-        break;
-    case Field::BYTES:
-        sortFunc = sortAggregatedPairByByte;
-        break;
-    case Field::PKTS:
-        sortFunc = sortAggregatedPairByPacket;
-        break;
-    case Field::REQ:
-        sortFunc = sortAggregatedDnsByRequest;
-        break;
-    case Field::REQ_RATE:
-        sortFunc = sortAggregatedDnsByRequestRate;
-        break;
-    case Field::SRT:
-        sortFunc = sortAggregatedDnsBySrt;
-        break;
-    default:
-        break;
-    }
-    std::sort(tempVector.begin(), tempVector.end(), sortFunc);
-
-    return tempVector;
 }
 
 DnsStatsCollector::~DnsStatsCollector()

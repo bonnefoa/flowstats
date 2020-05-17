@@ -96,21 +96,6 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet) -> void
     sslFlow->updateFlow(packet, direction, tcp);
 }
 
-auto SslStatsCollector::resetMetrics() -> void
-{
-    const std::lock_guard<std::mutex> lock(*getDataMutex());
-    for (auto& pair : aggregatedMap) {
-        pair.second->resetFlow(false);
-    }
-}
-
-auto SslStatsCollector::mergePercentiles() -> void
-{
-    for (auto& i : aggregatedMap) {
-        i.second->merge();
-    }
-}
-
 typedef bool (AggregatedSslFlow::*sortFlowFun)(AggregatedSslFlow const&) const;
 auto sortAggregatedSsl(sortFlowFun sortFlow,
     AggregatedPairPointer const& left,
@@ -122,39 +107,6 @@ auto sortAggregatedSsl(sortFlowFun sortFlow,
         return false;
     }
     return (rightSsl->*sortFlow)(*leftSsl);
-}
-
-auto SslStatsCollector::getAggregatedPairs() const -> std::vector<AggregatedPairPointer>
-{
-    std::vector<AggregatedPairPointer> tempVector;
-
-    for (auto const& pair : aggregatedMap) {
-        pair.second->merge();
-        tempVector.emplace_back(pair.first, pair.second);
-    }
-
-    spdlog::info("Got {} ssl flows", tempVector.size());
-
-    auto sortFunc = sortAggregatedPairByFqdn;
-    switch (getDisplayConf().sslSelectedField) {
-    case Field::FQDN:
-        sortFunc = sortAggregatedPairByFqdn;
-        break;
-    case Field::BYTES:
-        sortFunc = sortAggregatedPairByByte;
-        break;
-    case Field::PKTS:
-        sortFunc = sortAggregatedPairByPacket;
-        break;
-    default:
-        break;
-    }
-
-    std::sort(tempVector.begin(), tempVector.end(),
-        [](AggregatedPairPointer const& left, AggregatedPairPointer const& right) {
-            return right.second < left.second;
-        });
-    return tempVector;
 }
 
 SslStatsCollector::~SslStatsCollector()

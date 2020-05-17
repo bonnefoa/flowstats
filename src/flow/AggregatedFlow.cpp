@@ -2,8 +2,8 @@
 
 namespace flowstats {
 
-typedef bool (Flow::*sortFlowFun)(Flow const&) const;
-auto sortAggregated(sortFlowFun sortFlow, AggregatedPairPointer const& left,
+auto sortAggregated(Flow::sortFlowFun sortFlow,
+    AggregatedPairPointer const& left,
     AggregatedPairPointer const& right) -> bool
 {
     auto* rightFlow = right.second;
@@ -20,16 +20,40 @@ auto sortAggregatedPairByFqdn(AggregatedPairPointer const& left,
     return sortAggregated(&Flow::sortByFqdn, left, right);
 }
 
-auto sortAggregatedPairByByte(AggregatedPairPointer const& left,
+auto sortAggregatedPairByIp(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
+{
+    return sortAggregated(&Flow::sortByIp, left, right);
+}
+
+auto sortAggregatedPairByPort(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
+{
+    return sortAggregated(&Flow::sortByPort, left, right);
+}
+
+auto sortAggregatedPairByBytes(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
+{
+    return sortAggregated(&Flow::sortByBytes, left, right);
+}
+
+auto sortAggregatedPairByTotalBytes(AggregatedPairPointer const& left,
     AggregatedPairPointer const& right) -> bool
 {
     return sortAggregated(&Flow::sortByTotalBytes, left, right);
 }
 
-auto sortAggregatedPairByPacket(AggregatedPairPointer const& left,
+auto sortAggregatedPairByPackets(AggregatedPairPointer const& left,
     AggregatedPairPointer const& right) -> bool
 {
     return sortAggregated(&Flow::sortByPackets, left, right);
+}
+
+auto sortAggregatedPairByTotalPackets(AggregatedPairPointer const& left,
+    AggregatedPairPointer const& right) -> bool
+{
+    return sortAggregated(&Flow::sortByTotalPackets, left, right);
 }
 
 } // namespace flowstats

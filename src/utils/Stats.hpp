@@ -15,6 +15,7 @@ public:
     auto getPercentileStr(float p) const -> std::string;
     auto getCount() const -> int;
     auto reset() -> void;
+    auto resetAndShrink() -> void;
     auto getPoints() const -> std::vector<uint32_t> { return points; };
 
 private:

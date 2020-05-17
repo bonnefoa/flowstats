@@ -194,7 +194,7 @@ auto Screen::updateMenu() -> void
 {
     werase(menuWin);
 
-    if (editFilter) {
+    if (editFilter || editSort) {
         waddstr(menuWin, "Enter: ");
         wattron(menuWin, COLOR_PAIR(MENU_COLOR));
         waddstr(menuWin, fmt::format("{:<6}", "Done").c_str());
@@ -206,14 +206,16 @@ auto Screen::updateMenu() -> void
         wattroff(menuWin, COLOR_PAIR(MENU_COLOR));
 
         waddstr(menuWin, " ");
-
-        wattron(menuWin, COLOR_PAIR(MENU_COLOR));
-        waddstr(menuWin, fmt::format("Filter: {}", displayConf.filter).c_str());
-        wattroff(menuWin, COLOR_PAIR(MENU_COLOR));
     } else {
         waddstr(menuWin, "F4 ");
         wattron(menuWin, COLOR_PAIR(MENU_COLOR));
         waddstr(menuWin, fmt::format("{:<6}", "Filter").c_str());
+        wattroff(menuWin, COLOR_PAIR(MENU_COLOR));
+    }
+
+    if (editFilter) {
+        wattron(menuWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(menuWin, fmt::format("Filter: {}", displayConf.filter).c_str());
         wattroff(menuWin, COLOR_PAIR(MENU_COLOR));
     }
 }
@@ -333,11 +335,13 @@ auto Screen::refreshableAction(int c) -> bool
         if (c == KEY_UP) {
             protocolToSortIndex[displayConf.protocolIndex] = std::max(
                 protocolToSortIndex[displayConf.protocolIndex] - 1, 0);
+            activeCollector->updateDisplayType(protocolToDisplayIndex[displayConf.protocolIndex]);
             return true;
         } else if (c == KEY_DOWN) {
             protocolToSortIndex[displayConf.protocolIndex] = std::min(
                 protocolToSortIndex[displayConf.protocolIndex] + 1,
                 static_cast<int>(activeCollector->getSortFields().size()) - 1);
+            activeCollector->updateDisplayType(protocolToDisplayIndex[displayConf.protocolIndex]);
             return true;
         } else if (c == KEY_VALID) {
             editSort = false;

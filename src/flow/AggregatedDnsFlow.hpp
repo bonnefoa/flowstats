@@ -25,9 +25,9 @@ struct AggregatedDnsFlow : Flow {
         Direction direction, int duration) const -> void override;
     auto addFlow(Flow const* flow) -> void override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
-    auto mergePercentiles() -> void { srts.merge(); }
+    auto mergePercentiles() -> void override { srts.merge(); }
 
-    [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string>;
+    [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string> override;
     [[nodiscard]] auto sortBySrt(AggregatedDnsFlow const& b) const -> bool
     {
         return srts.getPercentile(1.0) < b.srts.getPercentile(1.0);

@@ -17,7 +17,7 @@ void Collector::sendMetrics()
     if (!agentConf.has_value()) {
         return;
     }
-    std::vector<std::string> metrics = getMetrics();
+    std::vector<std::string> metrics = getStatsdMetrics();
     for (auto& metric : metrics) {
         spdlog::debug("Sending {}", metric);
         DogFood::Send(metric, agentConf.value());
@@ -43,7 +43,7 @@ auto Collector::outputFlow(Flow const* flow,
     }
 }
 
-auto Collector::fillOutputs(std::vector<AggregatedPairPointer> const& aggregatedPairs,
+auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
     std::vector<std::string>* keyLines,
     std::vector<std::string>* valueLines, int duration)
 {
@@ -55,23 +55,16 @@ auto Collector::fillOutputs(std::vector<AggregatedPairPointer> const& aggregated
     valueLines->resize(2);
 
     int i = 0;
-    for (auto const& pair : aggregatedPairs) {
-        auto* flow = pair.second;
+    for (auto const* flow : aggregatedFlows) {
         if (flow->getFqdn().find(displayConf.filter) == std::string::npos) {
             continue;
         }
-        totalFlow->addAggregatedFlow(pair.second);
+        totalFlow->addAggregatedFlow(flow);
         if (i++ <= displayConf.maxResults) {
             outputFlow(flow, keyLines, valueLines, duration, -1);
         }
     }
     outputFlow(totalFlow, keyLines, valueLines, duration, 0);
-}
-
-auto Collector::updateDisplayType(int displayIndex) -> void
-{
-    flowFormatter.setDisplayValues(displayPairs[displayIndex].second);
-    return;
 }
 
 auto Collector::fillSortFields() -> void
@@ -86,6 +79,54 @@ auto Collector::fillSortFields() -> void
     }
 }
 
+auto Collector::getSortFun(Field field) const -> Flow::sortFlowFun
+{
+    switch (field) {
+    case Field::FQDN:
+        return &Flow::sortByFqdn;
+    case Field::IP:
+        return &Flow::sortByIp;
+    case Field::PORT:
+        return &Flow::sortByPort;
+    case Field::BYTES_RATE:
+        return &Flow::sortByBytes;
+    case Field::BYTES:
+        return &Flow::sortByTotalBytes;
+    case Field::PKTS_RATE:
+        return &Flow::sortByPackets;
+    case Field::PKTS:
+        return &Flow::sortByTotalPackets;
+    default:
+        return nullptr;
+    }
+}
+
+auto Collector::mergePercentiles() -> void
+{
+    for (auto& i : aggregatedMap) {
+        i.second->mergePercentiles();
+    }
+}
+
+auto Collector::resetMetrics() -> void
+{
+    const std::lock_guard<std::mutex> lock(dataMutex);
+    for (auto& pair : aggregatedMap) {
+        pair.second->resetFlow(false);
+    }
+}
+
+auto Collector::getStatsdMetrics() const -> std::vector<std::string>
+{
+    std::vector<std::string> res;
+    for (auto& pair : aggregatedMap) {
+        auto val = pair.second;
+        auto statsdMetrics = val->getStatsdMetrics();
+        res.insert(res.end(), statsdMetrics.begin(), statsdMetrics.end());
+    }
+    return res;
+}
+
 auto Collector::outputStatus(int duration) -> CollectorOutput
 {
     std::vector<std::string> valueLines;
@@ -96,10 +137,25 @@ auto Collector::outputStatus(int duration) -> CollectorOutput
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     mergePercentiles();
-    std::vector<AggregatedPairPointer> tempVector = getAggregatedPairs();
+    std::vector<Flow const*> tempVector = getAggregatedFlows();
     fillOutputs(tempVector, &keyLines, &valueLines, duration);
     return CollectorOutput(toString(), keyLines, valueLines,
         pairHeaders.first, pairHeaders.second, duration);
+}
+
+auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
+{
+    auto aggregatedMap = getAggregatedMap();
+    std::vector<Flow const*> tempVector;
+    for (auto pair : aggregatedMap) {
+        tempVector.push_back(pair.second);
+    }
+    spdlog::info("Got {} tcp flows", tempVector.size());
+    // TODO Merge percentiles?
+    //auto field = getSelectedSortField();
+    //auto sortFun = getSortFun(field);
+    //std::sort(tempVector.begin(), tempVector.end(), sortFun);
+    return tempVector;
 }
 
 auto collectorProtocolToString(CollectorProtocol proto) -> std::string
@@ -117,6 +173,9 @@ auto collectorProtocolToString(CollectorProtocol proto) -> std::string
 Collector::~Collector()
 {
     delete totalFlow;
+    for (auto pair : aggregatedMap) {
+        delete pair.second;
+    }
 }
 
 } // namespace flowstats

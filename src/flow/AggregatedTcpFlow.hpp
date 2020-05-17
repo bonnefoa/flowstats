@@ -17,6 +17,11 @@ struct AggregatedTcpFlow : Flow {
     AggregatedTcpFlow(FlowId const& flowId, std::string const& fqdn)
         : Flow(flowId, fqdn) {};
 
+    AggregatedTcpFlow(FlowId const& flowId, std::string const& fqdn, uint8_t srvDir)
+        : Flow(flowId, fqdn, srvDir) {};
+
+    ~AggregatedTcpFlow() override;
+
     auto operator<(AggregatedTcpFlow const& b) const -> bool
     {
         return syns[0] < b.syns[0];
@@ -30,13 +35,13 @@ struct AggregatedTcpFlow : Flow {
         Direction direction, int duration) const -> void override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
 
-    auto mergePercentiles() -> void;
+    auto mergePercentiles() -> void override;
     auto failConnection() -> void;
     auto closeConnection() -> void;
     auto openConnection(int connectionTime) -> void;
     auto ongoingConnection() -> void;
     auto addSrt(int srt, int dataSize) -> void;
-    auto getMetrics(std::vector<std::string> lst) const -> void;
+    auto getStatsdMetrics() const -> std::vector<std::string> override;
 
     [[nodiscard]] auto sortBySrt(AggregatedTcpFlow const& b) const -> bool
     {

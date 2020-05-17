@@ -20,12 +20,13 @@ TEST_CASE("Tcp simple", "[tcp]")
         tester.readPcap("tcp_simple.pcap", "port 80", false);
 
         AggregatedTcpKey tcpKey = AggregatedTcpKey("google.com", 0, 80);
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
-        REQUIRE(aggregatedFlow != NULL);
+        auto it = aggregatedMap.find(tcpKey);
+        REQUIRE(it != aggregatedMap.end());
 
+        auto aggregatedFlow = it->second;
         std::map<Field, std::string> cltValues;
         aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
         std::map<Field, std::string> srvValues;
@@ -62,9 +63,9 @@ TEST_CASE("https pcap", "[tcp]")
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 443);
         tester.readPcap("https.pcap", "port 443", false);
 
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
+        auto aggregatedFlow = aggregatedMap[tcpKey];
 
         std::map<Field, std::string> cltValues;
         aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
@@ -92,9 +93,9 @@ TEST_CASE("Tcp reused port", "[tcp]")
         tester.readPcap("reuse_port.pcap");
 
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 1234);
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
+        auto aggregatedFlow = aggregatedMap[tcpKey];
 
         std::map<Field, std::string> cltValues;
         aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
@@ -122,10 +123,10 @@ TEST_CASE("Ssl stream ack + srt", "[tcp]")
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 443);
         tester.readPcap("ssl_ack_srt.pcap");
 
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
+        auto aggregatedFlow = aggregatedMap[tcpKey];
 
         std::map<Field, std::string> cltValues;
         aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
@@ -146,9 +147,9 @@ TEST_CASE("Ssl stream multiple srts", "[tcp]")
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 443);
         tester.readPcap("tls_stream_extract.pcap");
 
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
+        auto aggregatedFlow = aggregatedMap[tcpKey];
 
         std::map<Field, std::string> cltValues;
         aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
@@ -169,9 +170,9 @@ TEST_CASE("Tcp double", "[tcp]")
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 3834);
         tester.readPcap("tcp_double.pcap");
 
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
+        auto aggregatedFlow = aggregatedMap[tcpKey];
 
         std::map<Field, std::string> cltValues;
         aggregatedFlow->fillValues(cltValues, FROM_CLIENT, 0);
@@ -192,10 +193,10 @@ TEST_CASE("Tcp 0 win", "[tcp]")
     {
         tester.readPcap("0_win.pcap", "");
 
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> ipFlows = tcpStatsCollector.getAggregatedMap();
+        auto ipFlows = tcpStatsCollector.getAggregatedMap();
         REQUIRE(ipFlows.size() == 1);
 
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", Tins::IPv4Address("127.0.0.1"), 443);
+        auto tcpKey = AggregatedTcpKey("Unknown", Tins::IPv4Address("127.0.0.1"), 443);
         auto flow = ipFlows[tcpKey];
 
         std::map<Field, std::string> srvValues;
@@ -221,10 +222,10 @@ TEST_CASE("Tcp rst", "[tcp]")
     {
         tester.readPcap("rst_close.pcap", "");
 
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> ipFlows = tcpStatsCollector.getAggregatedMap();
+        auto ipFlows = tcpStatsCollector.getAggregatedMap();
         REQUIRE(ipFlows.size() == 1);
 
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("whatever", ip, 3834);
+        auto tcpKey = AggregatedTcpKey("whatever", ip, 3834);
         auto flow = ipFlows[tcpKey];
 
         std::map<Field, std::string> cltValues;
@@ -246,10 +247,10 @@ TEST_CASE("Inversed srt", "[tcp]")
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 9000);
         tester.readPcap("inversed_srv.pcap", "");
 
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        AggregatedTcpFlow* aggregatedFlow = aggregatedMap[tcpKey];
+        auto aggregatedFlow = aggregatedMap[tcpKey];
         REQUIRE(aggregatedFlow != NULL);
         REQUIRE(aggregatedFlow->getSrvIp() == "10.8.109.46");
     }
@@ -266,7 +267,7 @@ TEST_CASE("Request size", "[tcp]")
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 9000);
         tester.readPcap("6_sec_srt_extract.pcap", "");
 
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
         auto flow = aggregatedMap[tcpKey];
@@ -290,7 +291,7 @@ TEST_CASE("Srv port detection", "[tcp]")
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 9000);
         tester.readPcap("port_detection.pcap", "", false);
 
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
         auto flow = aggregatedMap[tcpKey];
@@ -314,7 +315,7 @@ TEST_CASE("Gap in capture", "[tcp]")
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 80);
         tester.readPcap("tcp_gap.pcap", "", false);
 
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
         auto flow = aggregatedMap[tcpKey];
@@ -341,7 +342,7 @@ TEST_CASE("Mtu is correctly computed", "[tcp]")
 
     SECTION("We correctly compute mtu")
     {
-        std::map<AggregatedTcpKey, AggregatedTcpFlow*> aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
         auto tcpKey = AggregatedTcpKey("Unknown", 0, 80);
