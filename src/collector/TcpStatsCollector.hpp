@@ -12,7 +12,6 @@ public:
     TcpStatsCollector(FlowstatsConfiguration const& conf,
         DisplayConfiguration const& displayConf,
         IpToFqdn* ipToFqdn);
-    ~TcpStatsCollector() override;
 
     auto processPacket(Tins::Packet const& packet) -> void override;
 

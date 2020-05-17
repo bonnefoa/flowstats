@@ -225,12 +225,4 @@ auto TcpStatsCollector::getSortFun(Field field) const -> Flow::sortFlowFun
     return sortFun;
 }
 
-TcpStatsCollector::~TcpStatsCollector()
-{
-    for (auto& pair : hashToTcpFlow) {
-        for (auto* e : pair.second.getAggregatedFlows()) {
-            delete e;
-        }
-    }
-}
 } // namespace flowstats
