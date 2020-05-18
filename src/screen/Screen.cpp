@@ -143,7 +143,7 @@ auto Screen::updateSortSelection() -> void
 auto Screen::updateStatus() -> void
 {
     werase(statusWin);
-    mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, sort edit {}, last key {}, Filter {}, line {}, sortIndex {}\n", shouldFreeze, editSort, lastKey, displayConf.filter, selectedLine, protocolToSortIndex[displayConf.protocolIndex]).c_str());
+    mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, sort edit {}, last key {}, Filter {}, line {}, sortIndex {}, reversedSort {}\n", shouldFreeze, editSort, lastKey, displayConf.filter, selectedLine, protocolToSortIndex[displayConf.protocolIndex], reversedSort).c_str());
 
     waddstr(statusWin, fmt::format("Running time: {}s\n", lastTs - firstTs).c_str());
 
@@ -335,16 +335,17 @@ auto Screen::refreshableAction(int c) -> bool
         if (c == KEY_UP) {
             protocolToSortIndex[displayConf.protocolIndex] = std::max(
                 protocolToSortIndex[displayConf.protocolIndex] - 1, 0);
-            activeCollector->updateDisplayType(protocolToDisplayIndex[displayConf.protocolIndex]);
+            activeCollector->updateSort(protocolToSortIndex[displayConf.protocolIndex], reversedSort);
             return true;
         } else if (c == KEY_DOWN) {
             protocolToSortIndex[displayConf.protocolIndex] = std::min(
                 protocolToSortIndex[displayConf.protocolIndex] + 1,
                 static_cast<int>(activeCollector->getSortFields().size()) - 1);
-            activeCollector->updateDisplayType(protocolToDisplayIndex[displayConf.protocolIndex]);
+            activeCollector->updateSort(protocolToSortIndex[displayConf.protocolIndex], reversedSort);
             return true;
         } else if (c == KEY_VALID) {
             editSort = false;
+            return true;
         }
     }
 
@@ -368,11 +369,13 @@ auto Screen::refreshableAction(int c) -> bool
         return true;
     } else if (c == KEY_SUP) {
         editSort = true;
-        sortSup = true;
+        reversedSort = false;
+        activeCollector->updateSort(protocolToSortIndex[displayConf.protocolIndex], reversedSort);
         return true;
     } else if (c == KEY_INF) {
         editSort = true;
-        sortSup = false;
+        reversedSort = true;
+        activeCollector->updateSort(protocolToSortIndex[displayConf.protocolIndex], reversedSort);
         return true;
     }
 

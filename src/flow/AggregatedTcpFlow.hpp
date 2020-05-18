@@ -43,19 +43,25 @@ struct AggregatedTcpFlow : Flow {
     auto addSrt(int srt, int dataSize) -> void;
     auto getStatsdMetrics() const -> std::vector<std::string> override;
 
-    [[nodiscard]] auto sortBySrt(AggregatedTcpFlow const& b) const -> bool
+    [[nodiscard]] static auto sortBySrt(Flow const* a, Flow const* b) -> bool
     {
-        return srts.getPercentile(1.0) < b.srts.getPercentile(1.0);
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->srts.getPercentile(1.0) < bCast->srts.getPercentile(1.0);
     }
 
-    [[nodiscard]] auto sortByRequest(AggregatedTcpFlow const& b) const -> bool
+    [[nodiscard]] static auto sortByRequest(Flow const* a, Flow const* b) -> bool
     {
-        return totalSrts < b.totalSrts;
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalSrts < bCast->totalSrts;
     }
 
-    [[nodiscard]] auto sortByRequestRate(AggregatedTcpFlow const& b) const -> bool
+    [[nodiscard]] static auto sortByRequestRate(Flow const* a, Flow const* b) -> bool
     {
-        return srts.getCount() < b.srts.getCount();
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->srts.getCount() < bCast->srts.getCount();
     }
 
 private:

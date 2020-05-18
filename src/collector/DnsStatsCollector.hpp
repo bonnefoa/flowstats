@@ -24,6 +24,7 @@ public:
     auto toString() const -> std::string override { return "DnsStatsCollector"; }
     [[nodiscard]] auto getAggregatedFlow() const { return aggregatedDnsFlows; }
     auto getProtocol() const -> CollectorProtocol override { return DNS; };
+    auto getSortFun(Field field) const -> Flow::sortFlowFun override;
 
 private:
     auto newDnsQuery(Tins::Packet const& packet, Tins::DNS const& dns) -> void;

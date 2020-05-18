@@ -135,7 +135,7 @@ auto Collector::outputStatus(int duration) -> CollectorOutput
     FlowFormatter flowFormatter = getFlowFormatter();
     auto pairHeaders = flowFormatter.outputHeaders();
 
-    const std::lock_guard<std::mutex> lock(*getDataMutex());
+    const std::lock_guard<std::mutex> lock(dataMutex);
     mergePercentiles();
     std::vector<Flow const*> tempVector = getAggregatedFlows();
     fillOutputs(tempVector, &keyLines, &valueLines, duration);
@@ -152,9 +152,18 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
     }
     spdlog::info("Got {} tcp flows", tempVector.size());
     // TODO Merge percentiles?
-    //auto field = getSelectedSortField();
-    //auto sortFun = getSortFun(field);
-    //std::sort(tempVector.begin(), tempVector.end(), sortFun);
+    auto sortFun = getSortFun(selectedSortField);
+    std::sort(tempVector.begin(), tempVector.end(),
+        [&](Flow const* left, Flow const* right) {
+            if (left == nullptr || right == nullptr) {
+                return false;
+            }
+            auto res = sortFun(left, right);
+            if (reversedSort) {
+                return !res;
+            }
+            return res;
+        });
     return tempVector;
 }
 

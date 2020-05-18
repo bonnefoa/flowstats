@@ -28,19 +28,25 @@ struct AggregatedDnsFlow : Flow {
     auto mergePercentiles() -> void override { srts.merge(); }
 
     [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string> override;
-    [[nodiscard]] auto sortBySrt(AggregatedDnsFlow const& b) const -> bool
+    [[nodiscard]] static auto sortBySrt(Flow const* a, Flow const* b) -> bool
     {
-        return srts.getPercentile(1.0) < b.srts.getPercentile(1.0);
+        auto aCast = static_cast<AggregatedDnsFlow const*>(a);
+        auto bCast = static_cast<AggregatedDnsFlow const*>(b);
+        return aCast->srts.getPercentile(1.0) < bCast->srts.getPercentile(1.0);
     }
 
-    [[nodiscard]] auto sortByRequest(AggregatedDnsFlow const& b) const -> bool
+    [[nodiscard]] static auto sortByRequest(Flow const* a, Flow const* b) -> bool
     {
-        return totalQueries < b.totalQueries;
+        auto aCast = static_cast<AggregatedDnsFlow const*>(a);
+        auto bCast = static_cast<AggregatedDnsFlow const*>(b);
+        return aCast->totalQueries < bCast->totalQueries;
     }
 
-    [[nodiscard]] auto sortByRequestRate(AggregatedDnsFlow const& b) const -> bool
+    [[nodiscard]] static auto sortByRequestRate(Flow const* a, Flow const* b) -> bool
     {
-        return srts.getCount() < b.srts.getCount();
+        auto aCast = static_cast<AggregatedDnsFlow const*>(a);
+        auto bCast = static_cast<AggregatedDnsFlow const*>(b);
+        return aCast->srts.getCount() < bCast->srts.getCount();
     }
 
 private:

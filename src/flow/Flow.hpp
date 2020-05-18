@@ -3,6 +3,7 @@
 #include "Field.hpp"
 #include "FlowId.hpp"
 #include <map>
+#include <string>
 #include <tins/packet.h>
 
 namespace flowstats {
@@ -74,11 +75,6 @@ public:
     virtual auto mergePercentiles() -> void {};
     [[nodiscard]] virtual auto getStatsdMetrics() const -> std::vector<std::string> { return {}; };
 
-    auto operator<(Flow const& f) -> bool
-    {
-        return sortByBytes(f);
-    }
-
     [[nodiscard]] auto getFlowId() const { return flowId; };
     auto setFqdn(std::string _fqdn) { fqdn = _fqdn; };
     [[nodiscard]] auto getFqdn() const { return fqdn; };
@@ -95,43 +91,45 @@ public:
     [[nodiscard]] auto getCltIpInt() const { return flowId.getIp(!srvPos); }
     [[nodiscard]] auto getSrvIpInt() const { return flowId.getIp(srvPos); }
 
-    [[nodiscard]] auto sortByFqdn(Flow const& b) const -> bool
+    [[nodiscard]] static auto sortByFqdn(Flow const* a, Flow const* b) -> bool
     {
         return std::lexicographical_compare(
-            fqdn.begin(), fqdn.end(), b.fqdn.begin(), b.fqdn.end(), caseInsensitiveComp);
+            a->fqdn.begin(), a->fqdn.end(),
+            b->fqdn.begin(), b->fqdn.end(),
+            caseInsensitiveComp);
     }
 
-    [[nodiscard]] auto sortByIp(Flow const& b) const -> bool
+    [[nodiscard]] static auto sortByIp(Flow const* a, Flow const* b) -> bool
     {
-        return getSrvIp() < b.getSrvIp();
+        return a->getSrvIp() < b->getSrvIp();
     }
 
-    [[nodiscard]] auto sortByPort(Flow const& b) const -> bool
+    [[nodiscard]] static auto sortByPort(Flow const* a, Flow const* b) -> bool
     {
-        return getSrvPort() < b.getSrvPos();
+        return a->getSrvPort() < b->getSrvPort();
     }
 
-    [[nodiscard]] auto sortByBytes(Flow const& b) const -> bool
+    [[nodiscard]] static auto sortByBytes(Flow const* a, Flow const* b) -> bool
     {
-        return bytes[0] + bytes[1] < b.bytes[0] + b.bytes[1];
+        return a->bytes[0] + a->bytes[1] < b->bytes[0] + b->bytes[1];
     }
 
-    [[nodiscard]] auto sortByTotalBytes(Flow const& b) const -> bool
+    [[nodiscard]] static auto sortByTotalBytes(Flow const* a, Flow const* b) -> bool
     {
-        return totalBytes[0] + totalBytes[1] < b.totalBytes[0] + b.totalBytes[1];
+        return a->totalBytes[0] + a->totalBytes[1] < b->totalBytes[0] + b->totalBytes[1];
     }
 
-    [[nodiscard]] auto sortByPackets(Flow const& b) const -> bool
+    [[nodiscard]] static auto sortByPackets(Flow const* a, Flow const* b) -> bool
     {
-        return packets[0] + packets[1] < b.packets[0] + b.packets[1];
+        return a->packets[0] + a->packets[1] < b->packets[0] + b->packets[1];
     }
 
-    [[nodiscard]] auto sortByTotalPackets(Flow const& b) const -> bool
+    [[nodiscard]] static auto sortByTotalPackets(Flow const* a, Flow const* b) -> bool
     {
-        return totalPackets[0] + totalPackets[1] < b.totalPackets[0] + b.totalPackets[1];
+        return a->totalPackets[0] + a->totalPackets[1] < b->totalPackets[0] + b->totalPackets[1];
     }
 
-    typedef bool (Flow::*sortFlowFun)(Flow const&) const;
+    typedef bool (*sortFlowFun)(Flow const*, Flow const*);
 
 private:
     FlowId flowId;

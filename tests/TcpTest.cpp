@@ -12,7 +12,7 @@ TEST_CASE("Tcp simple", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("Tcp aggregated stats are computed")
     {
@@ -52,15 +52,46 @@ TEST_CASE("Tcp simple", "[tcp]")
     }
 }
 
-TEST_CASE("https pcap", "[tcp]")
+TEST_CASE("Tcp sort", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto& tcpStatsCollector = tester.getTcpStatsCollector();
 
+    SECTION("Fqdn sort works")
+    {
+        tester.readPcap("testcom.pcap");
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        REQUIRE(aggregatedMap->size() == 3);
+
+        auto flows = tcpStatsCollector.getAggregatedFlows();
+        CHECK(flows[0]->getFqdn() == "news.ycombinator.com");
+        CHECK(flows[1]->getFqdn() == "Unknown");
+        CHECK(flows[2]->getFqdn() == "www.test.com");
+
+        tcpStatsCollector.setSortField(Field::FQDN, true);
+        flows = tcpStatsCollector.getAggregatedFlows();
+        CHECK(flows[0]->getFqdn() == "www.test.com");
+        CHECK(flows[1]->getFqdn() == "Unknown");
+        CHECK(flows[2]->getFqdn() == "news.ycombinator.com");
+
+        tcpStatsCollector.setSortField(Field::PORT, false);
+        flows = tcpStatsCollector.getAggregatedFlows();
+        CHECK(flows[0]->getSrvPort() == 80);
+        CHECK(flows[1]->getSrvPort() == 443);
+        CHECK(flows[2]->getSrvPort() == 443);
+    }
+}
+
+TEST_CASE("https pcap", "[tcp]")
+{
+    spdlog::set_level(spdlog::level::debug);
+    auto tester = Tester();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
+
     SECTION("Active connections are correctly counted")
     {
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 443);
+        auto tcpKey = AggregatedTcpKey("Unknown", 0, 443);
         tester.readPcap("https.pcap", "port 443", false);
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
@@ -87,7 +118,7 @@ TEST_CASE("Tcp reused port", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
     SECTION("Reused connections")
     {
         tester.readPcap("reuse_port.pcap");
@@ -117,7 +148,7 @@ TEST_CASE("Ssl stream ack + srt", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
     SECTION("Only payload from client starts SRT")
     {
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 443);
@@ -141,7 +172,7 @@ TEST_CASE("Ssl stream multiple srts", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
     SECTION("Srts are correctly computed from single flow")
     {
         AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 443);
@@ -163,7 +194,7 @@ TEST_CASE("Ssl stream multiple srts", "[tcp]")
 TEST_CASE("Tcp double", "[tcp]")
 {
     auto tester = Tester();
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("Srts are correctly computed from multiple flows")
     {
@@ -187,7 +218,7 @@ TEST_CASE("Tcp 0 win", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester(true);
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("0 wins are correctly counted")
     {
@@ -212,7 +243,7 @@ TEST_CASE("Tcp rst", "[tcp]")
 {
 
     auto tester = Tester(true);
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     auto& ipToFqdn = tester.getIpToFqdn();
     Tins::IPv4Address ip("10.142.226.42");
@@ -240,7 +271,7 @@ TEST_CASE("Inversed srt", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("We correctly detect the server")
     {
@@ -260,7 +291,7 @@ TEST_CASE("Request size", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("We correctly detect the server")
     {
@@ -284,7 +315,7 @@ TEST_CASE("Srv port detection", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("We correctly detect srv port")
     {
@@ -308,7 +339,7 @@ TEST_CASE("Gap in capture", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("We don't compute SRT on gap")
     {
@@ -337,7 +368,7 @@ TEST_CASE("Mtu is correctly computed", "[tcp]")
 {
     spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
-    auto& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
     tester.readPcap("tcp_mtu.pcap", "");
 
     SECTION("We correctly compute mtu")

@@ -124,37 +124,22 @@ auto DnsStatsCollector::advanceTick(timeval now) -> void
     }
 }
 
-auto sortAggregatedDnsBySrt(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool
+auto DnsStatsCollector::getSortFun(Field field) const -> Flow::sortFlowFun
 {
-    auto* rightDns = dynamic_cast<AggregatedDnsFlow*>(right.second);
-    auto* leftDns = dynamic_cast<AggregatedDnsFlow*>(left.second);
-    if (rightDns == nullptr || leftDns == nullptr) {
-        return false;
+    auto sortFun = Collector::getSortFun(field);
+    if (sortFun != nullptr) {
+        return sortFun;
     }
-    return rightDns->sortBySrt(*leftDns);
-}
-
-auto sortAggregatedDnsByRequest(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool
-{
-    auto* rightDns = dynamic_cast<AggregatedDnsFlow*>(right.second);
-    auto* leftDns = dynamic_cast<AggregatedDnsFlow*>(left.second);
-    if (rightDns == nullptr || leftDns == nullptr) {
-        return false;
+    switch (field) {
+    case Field::SRT:
+        return &AggregatedDnsFlow::sortBySrt;
+    case Field::REQ:
+        return &AggregatedDnsFlow::sortByRequest;
+    case Field::REQ_RATE:
+        return &AggregatedDnsFlow::sortByRequestRate;
+    default:
+        return nullptr;
     }
-    return rightDns->sortByRequest(*leftDns);
-}
-
-auto sortAggregatedDnsByRequestRate(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool
-{
-    auto* rightDns = dynamic_cast<AggregatedDnsFlow*>(right.second);
-    auto* leftDns = dynamic_cast<AggregatedDnsFlow*>(left.second);
-    if (rightDns == nullptr || leftDns == nullptr) {
-        return false;
-    }
-    return rightDns->sortByRequestRate(*leftDns);
 }
 
 DnsStatsCollector::~DnsStatsCollector()

@@ -185,44 +185,22 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
     }
 }
 
-typedef bool (AggregatedTcpFlow::*sortFlowFun)(AggregatedTcpFlow const&) const;
-auto sortAggregatedTcp(sortFlowFun sortFlow,
-    AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool
-{
-    auto* rightTcp = dynamic_cast<AggregatedTcpFlow*>(right.second);
-    auto* leftTcp = dynamic_cast<AggregatedTcpFlow*>(left.second);
-    if (rightTcp == nullptr || leftTcp == nullptr) {
-        return false;
-    }
-    return (rightTcp->*sortFlow)(*leftTcp);
-}
-
-auto sortAggregatedTcpBySrt(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool
-{
-    return sortAggregatedTcp(&AggregatedTcpFlow::sortBySrt, left, right);
-}
-
-auto sortAggregatedTcpByRequest(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool
-{
-    return sortAggregatedTcp(&AggregatedTcpFlow::sortByRequest, left, right);
-}
-
-auto sortAggregatedTcpByRequestRate(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool
-{
-    return sortAggregatedTcp(&AggregatedTcpFlow::sortByRequestRate, left, right);
-}
-
 auto TcpStatsCollector::getSortFun(Field field) const -> Flow::sortFlowFun
 {
     auto sortFun = Collector::getSortFun(field);
     if (sortFun != nullptr) {
         return sortFun;
     }
-    return sortFun;
+    switch (field) {
+    case Field::SRT:
+        return &AggregatedTcpFlow::sortBySrt;
+    case Field::REQ:
+        return &AggregatedTcpFlow::sortByRequest;
+    case Field::REQ_RATE:
+        return &AggregatedTcpFlow::sortByRequestRate;
+    default:
+        return nullptr;
+    }
 }
 
 } // namespace flowstats

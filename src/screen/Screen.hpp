@@ -77,7 +77,7 @@ private:
 
     bool editFilter = false;
     bool editSort = false;
-    bool sortSup = false;
+    bool reversedSort = false;
 
     std::mutex screenMutex;
 };

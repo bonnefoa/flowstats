@@ -41,17 +41,28 @@ public:
 
     auto getDisplayPairs() const { return displayPairs; };
     auto getSortFields() const { return sortFields; };
-    auto getSelectedSortField() const { return selectedSortField; };
     virtual auto getSortFun(Field field) const -> Flow::sortFlowFun;
     auto outputStatus(int duration) -> CollectorOutput;
 
     auto updateDisplayType(int displayIndex) -> void { flowFormatter.setDisplayValues(displayPairs[displayIndex].second); };
-    auto updateSort(int sortIndex) -> void { selectedSortField = sortFields.at(sortIndex); };
+
+    auto updateSort(int sortIndex, bool reversed) -> void
+    {
+        selectedSortField = sortFields.at(sortIndex);
+        reversedSort = reversed;
+    };
+
+    auto setSortField(Field field, bool reversed) -> void
+    {
+        selectedSortField = field;
+        reversedSort = reversed;
+    };
+
     [[nodiscard]] auto const& getAggregatedMap() const { return aggregatedMap; }
     [[nodiscard]] auto getAggregatedMap() { return &aggregatedMap; }
+    [[nodiscard]] auto getAggregatedFlows() const -> std::vector<Flow const*>;
 
 protected:
-    [[nodiscard]] auto getAggregatedFlows() const -> std::vector<Flow const*>;
     auto fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
         std::vector<std::string>* keyLines,
         std::vector<std::string>* valueLines, int duration);
@@ -81,6 +92,7 @@ private:
     std::vector<DisplayPair> displayPairs;
     std::vector<Field> sortFields;
     Field selectedSortField = Field::FQDN;
+    bool reversedSort = false;
     std::map<AggregatedKey, Flow*> aggregatedMap;
 };
 } // namespace flowstats
