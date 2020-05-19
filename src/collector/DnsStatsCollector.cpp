@@ -86,15 +86,16 @@ auto DnsStatsCollector::addFlowToAggregation(DnsFlow const* flow) -> void
     AggregatedDnsKey key(fqdn, dnsType, flow->getTransport());
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
-    auto it = aggregatedDnsFlows.find(key);
+    auto* aggregatedMap = getAggregatedMap();
+    auto it = aggregatedMap->find(key);
     AggregatedDnsFlow* aggregatedFlow;
-    if (it == aggregatedDnsFlows.end()) {
+    if (it == aggregatedMap->end()) {
         spdlog::debug("Create new dns aggregation for {} {} {}", fqdn,
             dnsTypeToString(dnsType), flow->getTransport());
         aggregatedFlow = new AggregatedDnsFlow(flow->getFlowId(), fqdn, dnsType);
-        aggregatedDnsFlows[key] = aggregatedFlow;
+        aggregatedMap->emplace(key, aggregatedFlow);
     } else {
-        aggregatedFlow = it->second;
+        aggregatedFlow = static_cast<AggregatedDnsFlow*>(it->second);
     }
     aggregatedFlow->addFlow(flow);
 }
@@ -139,13 +140,6 @@ auto DnsStatsCollector::getSortFun(Field field) const -> Flow::sortFlowFun
         return &AggregatedDnsFlow::sortByRequestRate;
     default:
         return nullptr;
-    }
-}
-
-DnsStatsCollector::~DnsStatsCollector()
-{
-    for (auto& pair : aggregatedDnsFlows) {
-        delete pair.second;
     }
 }
 } // namespace flowstats

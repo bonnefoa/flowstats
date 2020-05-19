@@ -59,12 +59,13 @@ auto SslStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string 
     AggregatedTcpKey tcpKey = AggregatedTcpKey(fqdn, ipSrvInt, flowId.getPort(srvDir));
     AggregatedSslFlow* aggregatedFlow;
 
-    auto it = aggregatedMap.find(tcpKey);
-    if (it == aggregatedMap.end()) {
+    auto aggregatedMap = getAggregatedMap();
+    auto it = aggregatedMap->find(tcpKey);
+    if (it == aggregatedMap->end()) {
         aggregatedFlow = new AggregatedSslFlow(flowId, fqdn);
-        aggregatedMap.insert({ tcpKey, aggregatedFlow });
+        aggregatedMap->insert({ tcpKey, aggregatedFlow });
     } else {
-        aggregatedFlow = it->second;
+        aggregatedFlow = static_cast<AggregatedSslFlow*>(it->second);
     }
     subflows.push_back(aggregatedFlow);
 
@@ -107,12 +108,5 @@ auto sortAggregatedSsl(sortFlowFun sortFlow,
         return false;
     }
     return (rightSsl->*sortFlow)(*leftSsl);
-}
-
-SslStatsCollector::~SslStatsCollector()
-{
-    for (auto& pair : aggregatedMap) {
-        delete pair.second;
-    }
 }
 } // namespace flowstats

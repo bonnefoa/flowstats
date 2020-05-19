@@ -150,7 +150,7 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
     for (auto pair : aggregatedMap) {
         tempVector.push_back(pair.second);
     }
-    spdlog::info("Got {} tcp flows", tempVector.size());
+    spdlog::info("Got {} {} flows", tempVector.size(), toString());
     // TODO Merge percentiles?
     auto sortFun = getSortFun(selectedSortField);
     std::sort(tempVector.begin(), tempVector.end(),

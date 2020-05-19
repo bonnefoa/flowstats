@@ -16,13 +16,11 @@ public:
     DnsStatsCollector(FlowstatsConfiguration const& conf,
         DisplayConfiguration const& displayConf,
         IpToFqdn* ipToFqdn);
-    ~DnsStatsCollector() override;
 
     auto processPacket(Tins::Packet const& packet) -> void override;
     auto advanceTick(timeval now) -> void override;
 
     auto toString() const -> std::string override { return "DnsStatsCollector"; }
-    [[nodiscard]] auto getAggregatedFlow() const { return aggregatedDnsFlows; }
     auto getProtocol() const -> CollectorProtocol override { return DNS; };
     auto getSortFun(Field field) const -> Flow::sortFlowFun override;
 
@@ -34,7 +32,6 @@ private:
 
     IpToFqdn* ipToFqdn;
     std::map<uint16_t, DnsFlow> transactionIdToDnsFlow;
-    std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedDnsFlows;
     time_t lastTick = 0;
 };
 } // namespace flowstats

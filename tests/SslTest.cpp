@@ -16,7 +16,7 @@ TEST_CASE("Ssl connection time", "[ssl]")
     tester.readPcap("ssl_simple.pcap", "port 53");
     tester.readPcap("ssl_simple.pcap", "port 443");
 
-    std::map<AggregatedTcpKey, AggregatedSslFlow*> ipFlows = tester.getSslStatsCollector().getAggregatedMap();
+    auto ipFlows = tester.getSslStatsCollector().getAggregatedMap();
     REQUIRE(ipFlows.size() == 1);
     AggregatedTcpKey key("google.com", 0, 443);
     auto flow = ipFlows[key];
@@ -43,7 +43,7 @@ TEST_CASE("Ssl port detection", "[ssl]")
     //conf.displayUnknownFqdn = true;
     tester.readPcap("ssl_alt_port.pcap", "port 443");
 
-    std::map<AggregatedTcpKey, AggregatedSslFlow*> ipFlows = tester.getSslStatsCollector().getAggregatedMap();
+    auto ipFlows = tester.getSslStatsCollector().getAggregatedMap();
     // Not working for now
 
     //REQUIRE(ipFlows.size() == 1);

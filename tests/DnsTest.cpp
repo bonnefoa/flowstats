@@ -17,18 +17,18 @@ TEST_CASE("Dns queries timeout", "[dns]")
     auto keys = collectorOutput.getKeyHeaders();
     CHECK(keys.find("Fqdn") == 0);
 
-    auto aggregatedFlows = dnsStatsCollector.getAggregatedFlow();
-    REQUIRE(aggregatedFlows.size() == 3);
+    auto aggregatedFlows = dnsStatsCollector.getAggregatedMap();
+    REQUIRE(aggregatedFlows->size() == 3);
 
     AggregatedDnsKey firstKey("test.com", Tins::DNS::A, Transport::UDP);
-    auto firstFlow = aggregatedFlows.at(firstKey);
+    auto firstFlow = aggregatedFlows->at(firstKey);
     std::map<Field, std::string> cltValues;
     firstFlow->fillValues(cltValues, FROM_CLIENT, 0);
     CHECK(cltValues[Field::REQ] == "1");
     CHECK(cltValues[Field::TIMEOUTS] == "0");
 
     AggregatedDnsKey thirdKey("google.com", Tins::DNS::A, Transport::UDP);
-    auto thirdFlow = aggregatedFlows.at(thirdKey);
+    auto thirdFlow = aggregatedFlows->at(thirdKey);
     thirdFlow->fillValues(cltValues, FROM_CLIENT, 0);
     CHECK(cltValues[Field::REQ] == "1");
     CHECK(cltValues[Field::TIMEOUTS] == "1");
@@ -41,11 +41,11 @@ TEST_CASE("Dns rcrd/rsps", "[dns]")
     auto& dnsStatsCollector = tester.getDnsStatsCollector();
     tester.readPcap("dns_rcrds.pcap");
 
-    std::map<AggregatedDnsKey, AggregatedDnsFlow*> aggregatedFlows = dnsStatsCollector.getAggregatedFlow();
-    REQUIRE(aggregatedFlows.size() == 1);
+    auto aggregatedFlows = dnsStatsCollector.getAggregatedMap();
+    REQUIRE(aggregatedFlows->size() == 1);
 
     AggregatedDnsKey udpKey("all.alb-metrics-agent-shard1-770518637.us-east-1.elb.amazonaws.com", Tins::DNS::A, Transport::UDP);
-    auto firstFlow = aggregatedFlows.at(udpKey);
+    auto firstFlow = aggregatedFlows->at(udpKey);
     std::map<Field, std::string> cltValues;
     firstFlow->fillValues(cltValues, FROM_CLIENT, 0);
     CHECK(cltValues[Field::REQ] == "1");
