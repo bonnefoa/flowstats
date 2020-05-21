@@ -43,6 +43,13 @@ struct AggregatedTcpFlow : Flow {
     auto addSrt(int srt, int dataSize) -> void;
     auto getStatsdMetrics() const -> std::vector<std::string> override;
 
+    [[nodiscard]] static auto sortByMtu(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->mtu[0] + aCast->mtu[1] < bCast->mtu[0] + bCast->mtu[1];
+    }
+
     [[nodiscard]] static auto sortBySrt(Flow const* a, Flow const* b) -> bool
     {
         auto aCast = static_cast<AggregatedTcpFlow const*>(a);

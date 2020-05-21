@@ -224,6 +224,9 @@ auto TcpStatsCollector::getSortFun(Field field) const -> sortFlowFun
     case Field::CLOSE_RATE:
         return &AggregatedTcpFlow::sortByCloseRate;
 
+    case Field::MTU:
+        return &AggregatedTcpFlow::sortByMtu;
+
     case Field::CT_P95:
         return &AggregatedTcpFlow::sortByCtP95;
     case Field::CT_P99:
