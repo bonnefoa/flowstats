@@ -307,7 +307,7 @@ TEST_CASE("Request size", "[tcp]")
         std::map<Field, std::string> cltValues;
         flow->fillValues(cltValues, FROM_CLIENT, 0);
 
-        REQUIRE(cltValues[Field::DSMAX] == "183.5 KB");
+        REQUIRE(cltValues[Field::DS_MAX] == "183.5 KB");
     }
 }
 

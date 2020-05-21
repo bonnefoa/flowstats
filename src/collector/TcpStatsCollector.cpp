@@ -23,7 +23,7 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
     setDisplayPairs({
         DisplayPair(DisplayFlags, { Field::SYN, Field::SYNACK, Field::FIN, Field::RST, Field::ZWIN }),
         DisplayPair(DisplayConnections, { Field::ACTIVE_CONNECTIONS, Field::FAILED_CONNECTIONS, Field::CONN, Field::CONN_RATE, Field::CT_P95, Field::CT_P99, Field::CLOSE, Field::CLOSE_RATE }),
-        DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::SRTMAX, Field::DS_P95, Field::DS_P99, Field::DSMAX }),
+        DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::SRT_MAX, Field::DS_P95, Field::DS_P99, Field::DS_MAX }),
         DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
     setTotalFlow(new AggregatedTcpFlow());
@@ -195,6 +195,8 @@ auto TcpStatsCollector::getSortFun(Field field) const -> sortFlowFun
     switch (field) {
     case Field::SRT:
         return &AggregatedTcpFlow::sortBySrt;
+    case Field::SRT_RATE:
+        return &AggregatedTcpFlow::sortBySrtRate;
     case Field::REQ:
         return &AggregatedTcpFlow::sortByRequest;
     case Field::REQ_RATE:
@@ -202,9 +204,44 @@ auto TcpStatsCollector::getSortFun(Field field) const -> sortFlowFun
     case Field::SYN:
         return &AggregatedTcpFlow::sortBySyn;
     case Field::SYNACK:
+        return &AggregatedTcpFlow::sortBySynAck;
     case Field::ZWIN:
+        return &AggregatedTcpFlow::sortByZwin;
     case Field::RST:
+        return &AggregatedTcpFlow::sortByRst;
     case Field::FIN:
+        return &AggregatedTcpFlow::sortByFin;
+    case Field::ACTIVE_CONNECTIONS:
+        return &AggregatedTcpFlow::sortByActiveConnections;
+    case Field::FAILED_CONNECTIONS:
+        return &AggregatedTcpFlow::sortByFailedConnections;
+    case Field::CONN:
+        return &AggregatedTcpFlow::sortByConnections;
+    case Field::CONN_RATE:
+        return &AggregatedTcpFlow::sortByConnectionRate;
+    case Field::CLOSE:
+        return &AggregatedTcpFlow::sortByClose;
+    case Field::CLOSE_RATE:
+        return &AggregatedTcpFlow::sortByCloseRate;
+
+    case Field::CT_P95:
+        return &AggregatedTcpFlow::sortByCtP95;
+    case Field::CT_P99:
+        return &AggregatedTcpFlow::sortByCtP99;
+
+    case Field::SRT_P95:
+        return &AggregatedTcpFlow::sortBySrtP95;
+    case Field::SRT_P99:
+        return &AggregatedTcpFlow::sortBySrtP99;
+    case Field::SRT_MAX:
+        return &AggregatedTcpFlow::sortBySrtMax;
+
+    case Field::DS_P95:
+        return &AggregatedTcpFlow::sortByDsP95;
+    case Field::DS_P99:
+        return &AggregatedTcpFlow::sortByDsP99;
+    case Field::DS_MAX:
+        return &AggregatedTcpFlow::sortByDsMax;
     default:
         return nullptr;
     }

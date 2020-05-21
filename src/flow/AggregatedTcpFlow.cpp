@@ -56,11 +56,10 @@ auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>& values,
         values[Field::SRT] = prettyFormatNumber(totalSrts);
         values[Field::SRT_P95] = srts.getPercentileStr(0.95);
         values[Field::SRT_P99] = srts.getPercentileStr(0.99);
-        values[Field::SRTMAX] = srts.getPercentileStr(1);
 
         values[Field::DS_P95] = prettyFormatBytes(requestSizes.getPercentile(0.95));
         values[Field::DS_P99] = prettyFormatBytes(requestSizes.getPercentile(0.99));
-        values[Field::DSMAX] = prettyFormatBytes(requestSizes.getPercentile(1));
+        values[Field::DS_MAX] = prettyFormatBytes(requestSizes.getPercentile(1));
 
         values[Field::FQDN] = getFqdn();
         values[Field::IP] = getSrvIp().to_string();

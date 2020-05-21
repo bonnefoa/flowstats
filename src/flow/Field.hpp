@@ -32,11 +32,11 @@ BETTER_ENUM(Field, char,
     SRT_RATE,
     SRT_P95,
     SRT_P99,
-    SRTMAX,
+    SRT_MAX,
 
     DS_P95,
     DS_P99,
-    DSMAX,
+    DS_MAX,
 
     MTU,
     PKTS,

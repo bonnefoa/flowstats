@@ -99,14 +99,14 @@ auto fieldToHeader(Field field) -> char const*
         return "Srt95";
     case Field::SRT_P99:
         return "Srt99";
-    case Field::SRTMAX:
+    case Field::SRT_MAX:
         return "SrtMax";
 
     case Field::DS_P95:
         return "Ds95";
     case Field::DS_P99:
         return "Ds99";
-    case Field::DSMAX:
+    case Field::DS_MAX:
         return "DsMax";
 
     case Field::SYN:

@@ -47,7 +47,14 @@ struct AggregatedTcpFlow : Flow {
     {
         auto aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto bCast = static_cast<AggregatedTcpFlow const*>(b);
-        return aCast->srts.getPercentile(1.0) < bCast->srts.getPercentile(1.0);
+        return aCast->numSrts < bCast->numSrts;
+    }
+
+    [[nodiscard]] static auto sortBySrtRate(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->srts.getCount() < bCast->srts.getCount();
     }
 
     [[nodiscard]] static auto sortByRequest(Flow const* a, Flow const* b) -> bool
@@ -71,6 +78,139 @@ struct AggregatedTcpFlow : Flow {
         return aCast->syns < bCast->syns;
     }
 
+    [[nodiscard]] static auto sortBySynAck(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->synacks < bCast->synacks;
+    }
+
+    [[nodiscard]] static auto sortByZwin(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->zeroWins < bCast->zeroWins;
+    }
+
+    [[nodiscard]] static auto sortByRst(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->rsts < bCast->rsts;
+    }
+
+    [[nodiscard]] static auto sortByFin(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->fins < bCast->fins;
+    }
+
+    [[nodiscard]] static auto sortByActiveConnections(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->activeConnections < bCast->activeConnections;
+    }
+
+    [[nodiscard]] static auto sortByFailedConnections(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->failedConnections < bCast->failedConnections;
+    }
+
+    [[nodiscard]] static auto sortByConnectionRate(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->numConnections < bCast->numConnections;
+    }
+
+    [[nodiscard]] static auto sortByConnections(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalConnections < bCast->totalConnections;
+    }
+
+    [[nodiscard]] static auto sortByCtP95(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->connections.getPercentile(0.95) < bCast->connections.getPercentile(0.95);
+    }
+
+    [[nodiscard]] static auto sortByCtP99(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->connections.getPercentile(0.99) < bCast->connections.getPercentile(0.99);
+    }
+
+    [[nodiscard]] static auto sortByCtMax(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->connections.getPercentile(1) < bCast->connections.getPercentile(1);
+    }
+
+    [[nodiscard]] static auto sortBySrtP95(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->srts.getPercentile(0.95) < bCast->srts.getPercentile(0.95);
+    }
+
+    [[nodiscard]] static auto sortBySrtP99(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->srts.getPercentile(0.99) < bCast->srts.getPercentile(0.99);
+    }
+
+    [[nodiscard]] static auto sortBySrtMax(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->srts.getPercentile(1) < bCast->srts.getPercentile(1);
+    }
+
+    [[nodiscard]] static auto sortByDsP95(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->requestSizes.getPercentile(0.95) < bCast->requestSizes.getPercentile(0.95);
+    }
+
+    [[nodiscard]] static auto sortByDsP99(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->requestSizes.getPercentile(0.99) < bCast->requestSizes.getPercentile(0.99);
+    }
+
+    [[nodiscard]] static auto sortByDsMax(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->requestSizes.getPercentile(1) < bCast->requestSizes.getPercentile(1);
+    }
+
+    [[nodiscard]] static auto sortByClose(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalCloses < bCast->totalCloses;
+    }
+
+    [[nodiscard]] static auto sortByCloseRate(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->closes < bCast->closes;
+    }
+
 private:
     std::array<int, 2> syns = {};
     std::array<int, 2> synacks = {};
@@ -83,7 +223,6 @@ private:
     int totalCloses = 0;
 
     int activeConnections = 0;
-
     int failedConnections = 0;
 
     int numConnections = 0;
