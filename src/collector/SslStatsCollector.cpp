@@ -104,7 +104,14 @@ auto SslStatsCollector::getSortFun(Field field) const -> sortFlowFun
         return sortFun;
     }
     switch (field) {
-    case Field::SRT:
+    case Field::CONN:
+        return AggregatedSslFlow::sortByConnections;
+    case Field::CONN_RATE:
+        return AggregatedSslFlow::sortByConnectionRate;
+    case Field::CT_P95:
+        return AggregatedSslFlow::sortByConnectionP95;
+    case Field::CT_P99:
+        return AggregatedSslFlow::sortByConnectionP99;
     default:
         return nullptr;
     }
