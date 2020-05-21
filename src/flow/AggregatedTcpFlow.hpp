@@ -64,6 +64,13 @@ struct AggregatedTcpFlow : Flow {
         return aCast->srts.getCount() < bCast->srts.getCount();
     }
 
+    [[nodiscard]] static auto sortBySyn(Flow const* a, Flow const* b) -> bool
+    {
+        auto aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->syns < bCast->syns;
+    }
+
 private:
     std::array<int, 2> syns = {};
     std::array<int, 2> synacks = {};

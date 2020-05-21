@@ -125,7 +125,7 @@ auto DnsStatsCollector::advanceTick(timeval now) -> void
     }
 }
 
-auto DnsStatsCollector::getSortFun(Field field) const -> Flow::sortFlowFun
+auto DnsStatsCollector::getSortFun(Field field) const -> sortFlowFun
 {
     auto sortFun = Collector::getSortFun(field);
     if (sortFun != nullptr) {

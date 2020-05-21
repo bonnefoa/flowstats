@@ -32,7 +32,7 @@ private:
         FlowId const& flowId) -> TcpFlow*;
     auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedTcpFlow*>;
     auto detectServer(Tins::TCP const& tcp, FlowId const& flowId, std::map<uint16_t, int>& srvPortsCounter) -> Direction;
-    auto getSortFun(Field field) const -> Flow::sortFlowFun override;
+    auto getSortFun(Field field) const -> sortFlowFun override;
 
     void timeoutOpeningConnections(timeval now);
     void timeoutFlows(timeval now);

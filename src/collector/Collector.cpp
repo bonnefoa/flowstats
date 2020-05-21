@@ -69,17 +69,22 @@ auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
 
 auto Collector::fillSortFields() -> void
 {
-    auto displayKeys = flowFormatter.getDisplayKeys();
-    sortFields.insert(sortFields.begin(),
-        displayKeys.begin(), displayKeys.end());
-    for (auto i : displayPairs) {
-        auto displayVector = i.second;
-        sortFields.insert(sortFields.end(),
-            displayVector.begin(), displayVector.end());
+    auto const& displayKeys = flowFormatter.getDisplayKeys();
+    for (auto const& keyField : displayKeys) {
+        if (fieldToSortable(keyField)) {
+            sortFields.push_back(keyField);
+        }
+    }
+    for (auto const& pair : displayPairs) {
+        for (auto const& valueField : pair.second) {
+            if (fieldToSortable(valueField)) {
+                sortFields.push_back(valueField);
+            }
+        }
     }
 }
 
-auto Collector::getSortFun(Field field) const -> Flow::sortFlowFun
+auto Collector::getSortFun(Field field) const -> sortFlowFun
 {
     switch (field) {
     case Field::FQDN:

@@ -23,23 +23,4 @@ private:
     std::string fqdn;
 };
 
-using AggregatedPairPointer = std::pair<AggregatedKey, Flow*>;
-
-auto sortAggregatedPairByFqdn(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool;
-auto sortAggregatedPairByFqdn(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool;
-auto sortAggregatedPairByIp(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool;
-auto sortAggregatedPairByPort(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool;
-auto sortAggregatedPairByBytes(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool;
-auto sortAggregatedPairByTotalBytes(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool;
-auto sortAggregatedPairByPackets(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool;
-auto sortAggregatedPairByTotalPackets(AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool;
-
 } // namespace flowstats

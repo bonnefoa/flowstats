@@ -97,16 +97,17 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet) -> void
     sslFlow->updateFlow(packet, direction, tcp);
 }
 
-typedef bool (AggregatedSslFlow::*sortFlowFun)(AggregatedSslFlow const&) const;
-auto sortAggregatedSsl(sortFlowFun sortFlow,
-    AggregatedPairPointer const& left,
-    AggregatedPairPointer const& right) -> bool
+auto SslStatsCollector::getSortFun(Field field) const -> sortFlowFun
 {
-    auto* rightSsl = dynamic_cast<AggregatedSslFlow*>(right.second);
-    auto* leftSsl = dynamic_cast<AggregatedSslFlow*>(left.second);
-    if (rightSsl == nullptr || leftSsl == nullptr) {
-        return false;
+    auto sortFun = Collector::getSortFun(field);
+    if (sortFun != nullptr) {
+        return sortFun;
     }
-    return (rightSsl->*sortFlow)(*leftSsl);
+    switch (field) {
+    case Field::SRT:
+    default:
+        return nullptr;
+    }
 }
+
 } // namespace flowstats

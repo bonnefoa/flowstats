@@ -186,7 +186,7 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
     }
 }
 
-auto TcpStatsCollector::getSortFun(Field field) const -> Flow::sortFlowFun
+auto TcpStatsCollector::getSortFun(Field field) const -> sortFlowFun
 {
     auto sortFun = Collector::getSortFun(field);
     if (sortFun != nullptr) {
@@ -199,6 +199,12 @@ auto TcpStatsCollector::getSortFun(Field field) const -> Flow::sortFlowFun
         return &AggregatedTcpFlow::sortByRequest;
     case Field::REQ_RATE:
         return &AggregatedTcpFlow::sortByRequestRate;
+    case Field::SYN:
+        return &AggregatedTcpFlow::sortBySyn;
+    case Field::SYNACK:
+    case Field::ZWIN:
+    case Field::RST:
+    case Field::FIN:
     default:
         return nullptr;
     }

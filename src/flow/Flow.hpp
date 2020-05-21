@@ -129,8 +129,6 @@ public:
         return a->totalPackets[0] + a->totalPackets[1] < b->totalPackets[0] + b->totalPackets[1];
     }
 
-    typedef bool (*sortFlowFun)(Flow const*, Flow const*);
-
 private:
     FlowId flowId;
     std::string fqdn;

@@ -55,6 +55,7 @@ BETTER_ENUM(Field, char,
     TRUNC,
     TYPE);
 
+auto fieldToSortable(Field field) -> bool;
 auto fieldToHeader(Field field) -> char const*;
 auto fieldToFormat(Field field) -> char const*;
 

@@ -22,13 +22,13 @@ public:
 
     auto toString() const -> std::string override { return "DnsStatsCollector"; }
     auto getProtocol() const -> CollectorProtocol override { return DNS; };
-    auto getSortFun(Field field) const -> Flow::sortFlowFun override;
 
 private:
     auto newDnsQuery(Tins::Packet const& packet, Tins::DNS const& dns) -> void;
     auto newDnsResponse(Tins::Packet const& packet, Tins::DNS const& dns, DnsFlow* flow) -> void;
     auto updateIpToFqdn(Tins::DNS const& dns, std::string const& fqdn) -> void;
     auto addFlowToAggregation(DnsFlow const* flow) -> void;
+    auto getSortFun(Field field) const -> sortFlowFun override;
 
     IpToFqdn* ipToFqdn;
     std::map<uint16_t, DnsFlow> transactionIdToDnsFlow;

@@ -27,6 +27,17 @@ auto fieldToFormat(Field field) -> char const*
     }
 }
 
+auto fieldToSortable(Field field) -> bool
+{
+    switch (field) {
+    case Field::DIR:
+    case Field::TOP_CLIENT_IPS:
+        return false;
+    default:
+        return true;
+    }
+}
+
 auto fieldToHeader(Field field) -> char const*
 {
     switch (field) {

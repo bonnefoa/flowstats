@@ -29,6 +29,7 @@ public:
 
 private:
     std::map<uint32_t, SslFlow> hashToSslFlow;
+    auto getSortFun(Field field) const -> sortFlowFun override;
     auto lookupSslFlow(FlowId const& flowId) -> SslFlow*;
     auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedSslFlow*>;
     IpToFqdn* ipToFqdn;

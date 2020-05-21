@@ -41,7 +41,8 @@ public:
 
     auto getDisplayPairs() const { return displayPairs; };
     auto getSortFields() const { return sortFields; };
-    virtual auto getSortFun(Field field) const -> Flow::sortFlowFun;
+    typedef bool (*sortFlowFun)(Flow const*, Flow const*);
+    virtual auto getSortFun(Field field) const -> sortFlowFun;
     auto outputStatus(int duration) -> CollectorOutput;
 
     auto updateDisplayType(int displayIndex) -> void { flowFormatter.setDisplayValues(displayPairs[displayIndex].second); };
