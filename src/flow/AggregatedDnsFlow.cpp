@@ -58,7 +58,7 @@ auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>& values,
         values[Field::SRT_P99] = srts.getPercentileStr(0.99);
 
         values[Field::TRUNC] = std::to_string(totalTruncated);
-        values[Field::RCRD_RSP] = "-";
+        values[Field::RCRD_AVG] = "-";
 
         values[Field::TOP_CLIENT_IPS] = getTopClientIpsStr();
         return;
@@ -83,7 +83,7 @@ auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>& values,
 
         values[Field::TRUNC] = std::to_string(totalTruncated);
         if (totalQueries > 0) {
-            values[Field::RCRD_RSP] = std::to_string(totalRecords / totalQueries);
+            values[Field::RCRD_AVG] = std::to_string(totalRecords / totalQueries);
         }
     } else {
         if (fqdn.size() > FQDN_SIZE) {

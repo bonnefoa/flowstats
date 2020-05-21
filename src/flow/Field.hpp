@@ -23,7 +23,7 @@ BETTER_ENUM(Field, char,
     CT_P95,
     CT_P99,
 
-    RCRD_RSP,
+    RCRD_AVG,
     TOP_CLIENT_IPS,
     REQ,
     REQ_RATE,

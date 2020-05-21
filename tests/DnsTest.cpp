@@ -49,5 +49,5 @@ TEST_CASE("Dns rcrd/rsps", "[dns]")
     std::map<Field, std::string> cltValues;
     firstFlow->fillValues(cltValues, FROM_CLIENT, 0);
     CHECK(cltValues[Field::REQ] == "1");
-    CHECK(cltValues[Field::RCRD_RSP] == "48");
+    CHECK(cltValues[Field::RCRD_AVG] == "48");
 }

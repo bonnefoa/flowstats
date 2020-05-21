@@ -13,7 +13,7 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
     getFlowFormatter().setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::PROTO, Field::TYPE, Field::DIR });
     setDisplayPairs({
         DisplayPair(DisplayRequests, { Field::REQ, Field::REQ_RATE, Field::TIMEOUTS, Field::TIMEOUTS_RATE }),
-        DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::RCRD_RSP }),
+        DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::RCRD_AVG }),
         DisplayPair(DisplayClients, { Field::TOP_CLIENT_IPS }),
         DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
@@ -132,12 +132,30 @@ auto DnsStatsCollector::getSortFun(Field field) const -> sortFlowFun
         return sortFun;
     }
     switch (field) {
-    case Field::SRT:
-        return &AggregatedDnsFlow::sortBySrt;
+    case Field::PROTO:
+        return &AggregatedDnsFlow::sortByProto;
+    case Field::TYPE:
+        return &AggregatedDnsFlow::sortByType;
     case Field::REQ:
         return &AggregatedDnsFlow::sortByRequest;
     case Field::REQ_RATE:
         return &AggregatedDnsFlow::sortByRequestRate;
+    case Field::TIMEOUTS:
+        return &AggregatedDnsFlow::sortByTimeout;
+    case Field::TIMEOUTS_RATE:
+        return &AggregatedDnsFlow::sortByTimeoutRate;
+    case Field::SRT:
+        return &AggregatedDnsFlow::sortBySrt;
+    case Field::SRT_RATE:
+        return &AggregatedDnsFlow::sortBySrtRate;
+    case Field::SRT_P95:
+        return &AggregatedDnsFlow::sortBySrtP95;
+    case Field::SRT_P99:
+        return &AggregatedDnsFlow::sortBySrtP99;
+    case Field::SRT_MAX:
+        return &AggregatedDnsFlow::sortBySrtMax;
+    case Field::RCRD_AVG:
+        return &AggregatedDnsFlow::sortByRcrdAvg;
     default:
         return nullptr;
     }

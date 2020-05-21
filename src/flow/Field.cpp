@@ -81,8 +81,8 @@ auto fieldToHeader(Field field) -> char const*
         return "Port";
     case Field::PROTO:
         return "Proto";
-    case Field::RCRD_RSP:
-        return "Rcrd/rsp";
+    case Field::RCRD_AVG:
+        return "Rcrd avg";
     case Field::TOP_CLIENT_IPS:
         return "TopClientIps";
     case Field::REQ:
