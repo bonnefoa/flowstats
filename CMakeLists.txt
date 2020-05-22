@@ -39,9 +39,7 @@ endif()
 
 if(BUILD_PROFILER)
     pkg_check_modules (PROFILER REQUIRED libprofiler)
-    pkg_check_modules (UNWIND REQUIRED libunwind)
-    pkg_check_modules (LZMA REQUIRED liblzma)
-    list(APPEND ADDITIONAL_EXECUTABLE_LIBRARIES "-Wl,--no-as-needed" ${PROFILER_LIBRARIES} "-Wl,--as-needed" "${UNWIND_LIBRARIES}" "${LZMA_LIBRARIES}" "-Wl,--allow-multiple-definition")
+    list(APPEND ADDITIONAL_EXECUTABLE_LIBRARIES ${PROFILER_LIBRARIES})
 endif()
 
 add_subdirectory( src )
