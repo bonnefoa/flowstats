@@ -27,7 +27,7 @@ void Collector::sendMetrics()
 auto Collector::outputFlow(Flow const* flow,
     std::vector<std::string>* keyLines,
     std::vector<std::string>* valueLines,
-    int duration, int position) const -> void
+    int position) const -> void
 {
     for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
         auto direction = static_cast<Direction>(j);
@@ -61,10 +61,10 @@ auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
         }
         totalFlow->addAggregatedFlow(flow);
         if (i++ <= displayConf.maxResults) {
-            outputFlow(flow, keyLines, valueLines, duration, -1);
+            outputFlow(flow, keyLines, valueLines, duration);
         }
     }
-    outputFlow(totalFlow, keyLines, valueLines, duration, 0);
+    outputFlow(totalFlow, keyLines, valueLines, duration);
 }
 
 auto Collector::fillSortFields() -> void

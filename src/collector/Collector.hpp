@@ -71,7 +71,7 @@ protected:
     auto outputFlow(Flow const* flow,
         std::vector<std::string>* keyLines,
         std::vector<std::string>* valueLines,
-        int duration, int position) const -> void;
+        int position) const -> void;
 
     auto getDataMutex() -> std::mutex* { return &dataMutex; };
     auto getFlowFormatter() -> FlowFormatter& { return flowFormatter; };
