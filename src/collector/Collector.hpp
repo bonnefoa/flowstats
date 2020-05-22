@@ -66,7 +66,7 @@ public:
 protected:
     auto fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
         std::vector<std::string>* keyLines,
-        std::vector<std::string>* valueLines, int duration);
+        std::vector<std::string>* valueLines);
 
     auto outputFlow(Flow const* flow,
         std::vector<std::string>* keyLines,

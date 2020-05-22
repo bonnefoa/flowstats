@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.1)
 
 project (flowstats)
 
-SET( CMAKE_EXPORT_COMPILE_COMMANDS ON )
-SET( CMAKE_CXX_STANDARD 17 )
-SET( CMAKE_CXX_COMPILER clang++)
-set (CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fPIE -fno-omit-frame-pointer")
+SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_COMPILER clang++)
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fPIE -fno-omit-frame-pointer")
 
 find_package(PkgConfig)
 find_package(fmt REQUIRED)

@@ -45,7 +45,7 @@ auto Collector::outputFlow(Flow const* flow,
 
 auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
     std::vector<std::string>* keyLines,
-    std::vector<std::string>* valueLines, int duration)
+    std::vector<std::string>* valueLines)
 {
     FlowFormatter flowFormatter = getFlowFormatter();
 
@@ -61,10 +61,10 @@ auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
         }
         totalFlow->addAggregatedFlow(flow);
         if (i++ <= displayConf.maxResults) {
-            outputFlow(flow, keyLines, valueLines, duration);
+            outputFlow(flow, keyLines, valueLines, -1);
         }
     }
-    outputFlow(totalFlow, keyLines, valueLines, duration);
+    outputFlow(totalFlow, keyLines, valueLines, 0);
 }
 
 auto Collector::fillSortFields() -> void
@@ -143,7 +143,7 @@ auto Collector::outputStatus(int duration) -> CollectorOutput
     const std::lock_guard<std::mutex> lock(dataMutex);
     mergePercentiles();
     std::vector<Flow const*> tempVector = getAggregatedFlows();
-    fillOutputs(tempVector, &keyLines, &valueLines, duration);
+    fillOutputs(tempVector, &keyLines, &valueLines);
     return CollectorOutput(toString(), keyLines, valueLines,
         pairHeaders.first, pairHeaders.second, duration);
 }
