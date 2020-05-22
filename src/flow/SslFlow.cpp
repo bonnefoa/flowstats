@@ -56,8 +56,11 @@ void SslFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         return;
     }
 
-    auto rawData = tcp.rfind_pdu<Tins::RawPDU>();
-    auto payload = rawData.payload();
+    auto rawData = tcp.find_pdu<Tins::RawPDU>();
+    if (rawData == nullptr) {
+        return;
+    }
+    auto payload = rawData->payload();
     auto cursor = Cursor(payload);
     if (direction == FROM_CLIENT) {
         processHandshake(packet, &cursor);

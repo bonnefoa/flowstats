@@ -27,7 +27,12 @@ auto DnsStatsCollector::processPacket(Tins::Packet const& packet) -> void
     timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
     auto const* pdu = packet.pdu();
-    auto dns = pdu->rfind_pdu<Tins::RawPDU>().to<Tins::DNS>();
+    auto rawPdu = pdu->find_pdu<Tins::RawPDU>();
+    if (rawPdu == nullptr) {
+        return;
+    }
+    // TODO Avoid exception
+    auto dns = rawPdu->to<Tins::DNS>();
 
     if (dns.type() == Tins::DNS::QUERY) {
         newDnsQuery(packet, dns);

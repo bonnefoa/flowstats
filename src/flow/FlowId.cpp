@@ -46,14 +46,23 @@ auto FlowId::operator=(FlowId const& flowId) -> FlowId&
 
 FlowId::FlowId(Tins::Packet const& packet)
 {
-    auto ip = packet.pdu()->rfind_pdu<Tins::IP>();
+    auto ip = packet.pdu()->find_pdu<Tins::IP>();
+    if (ip == nullptr) {
+        return;
+    }
     try {
-        auto tcp = ip.rfind_pdu<Tins::TCP>();
-        *this = FlowId(ip, tcp);
+        auto tcp = ip->find_pdu<Tins::TCP>();
+        if (tcp == nullptr) {
+            return;
+        }
+        *this = FlowId(*ip, *tcp);
         return;
     } catch (Tins::pdu_not_found const&) {
-        auto udp = ip.rfind_pdu<Tins::UDP>();
-        *this = FlowId(ip, udp);
+        auto udp = ip->find_pdu<Tins::UDP>();
+        if (udp == nullptr) {
+            return;
+        }
+        *this = FlowId(*ip, *udp);
     }
 }
 

@@ -127,11 +127,17 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet) -> void
 {
     advanceTick(packetToTimeval(packet));
     auto const* pdu = packet.pdu();
-    auto ip = pdu->rfind_pdu<Tins::IP>();
-    auto tcp = ip.rfind_pdu<Tins::TCP>();
-    FlowId flowId(ip, tcp);
+    auto ip = pdu->find_pdu<Tins::IP>();
+    if (ip == nullptr) {
+        return;
+    }
+    auto tcp = ip->find_pdu<Tins::TCP>();
+    if (tcp == nullptr) {
+        return;
+    }
+    FlowId flowId(*ip, *tcp);
 
-    auto tcpFlow = lookupTcpFlow(ip, tcp, flowId);
+    auto tcpFlow = lookupTcpFlow(*ip, *tcp, flowId);
     if (tcpFlow == nullptr) {
         return;
     }
@@ -141,10 +147,10 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet) -> void
 
     for (auto subflow : tcpFlow->getAggregatedFlows()) {
         subflow->addPacket(packet, direction);
-        subflow->updateFlow(packet, flowId, tcp);
+        subflow->updateFlow(packet, flowId, *tcp);
     }
 
-    tcpFlow->updateFlow(packet, direction, ip, tcp);
+    tcpFlow->updateFlow(packet, direction, *ip, *tcp);
 }
 
 auto TcpStatsCollector::advanceTick(timeval now) -> void
