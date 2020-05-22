@@ -23,15 +23,16 @@ public:
     [[nodiscard]] auto getTcpFlow() const { return hashToTcpFlow; }
 
 private:
+    typedef std::array<int, 65536> portArray;
     std::map<size_t, TcpFlow> hashToTcpFlow;
-    std::map<uint16_t, int> srvPortsCounter;
+    portArray srvPortsCounter;
 
     std::vector<std::pair<TcpFlow*, std::vector<AggregatedTcpFlow*>>> openingTcpFlow;
     auto lookupTcpFlow(Tins::IP const& ipv4Layer,
         Tins::TCP const& tcpLayer,
         FlowId const& flowId) -> TcpFlow*;
     auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedTcpFlow*>;
-    auto detectServer(Tins::TCP const& tcp, FlowId const& flowId, std::map<uint16_t, int>& srvPortsCounter) -> Direction;
+    auto detectServer(Tins::TCP const& tcp, FlowId const& flowId, portArray& srvPortsCounter) -> Direction;
     auto getSortFun(Field field) const -> sortFlowFun override;
 
     void timeoutOpeningConnections(timeval now);

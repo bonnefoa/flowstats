@@ -31,7 +31,7 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
     updateDisplayType(0);
 };
 
-auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId, std::map<uint16_t, int>& srvPortsCounter) -> Direction
+auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId, portArray& srvPortsCounter) -> Direction
 {
     auto const flags = tcp.flags();
     auto direction = flowId.getDirection();
@@ -52,11 +52,11 @@ auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId,
     int firstPortCount = 0;
     int secondPortCount = 0;
     auto firstPort = flowId.getPort(direction);
-    if (srvPortsCounter.find(firstPort) != srvPortsCounter.end()) {
+    if (srvPortsCounter[firstPort] == 0) {
         firstPortCount = srvPortsCounter[firstPort];
     }
     auto secondPort = flowId.getPort(!direction);
-    if (srvPortsCounter.find(secondPort) != srvPortsCounter.end()) {
+    if (srvPortsCounter[secondPort] == 0) {
         secondPortCount = srvPortsCounter[secondPort];
     }
     if (firstPortCount > secondPortCount) {
