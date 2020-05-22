@@ -37,6 +37,8 @@ public:
     auto getCurrentChoice() -> std::string;
     auto updateDisplay(int ts, bool updateOutput) -> void;
 
+    [[nodiscard]] auto getDisplayConf() const { return displayConf; };
+
 private:
     auto displayLoop() -> void;
     auto refreshPads() -> void;

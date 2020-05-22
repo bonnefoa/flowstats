@@ -65,14 +65,17 @@ auto PktSource::analyzePcapFile()
             }
         }
     }
-
-    for (auto* collector : collectors) {
-        collector->advanceTick(maxTimeval);
-        int delta = getTimevalDeltaS(start, end);
-        CollectorOutput o = collector->outputStatus(delta);
-        o.print();
-    }
     delete reader;
+
+    if (screen->getDisplayConf().noCurses) {
+        return 0;
+    }
+
+    screen->updateDisplay(end.tv_sec, true);
+    while (!shouldStop->load()) {
+        sleep(1);
+    }
+
     return 0;
 }
 

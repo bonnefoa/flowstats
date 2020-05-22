@@ -154,12 +154,12 @@ auto main(int argc, char* argv[]) -> int
     std::atomic_bool shouldStop = false;
     flowstats::Screen screen(&shouldStop, displayConf, collectors);
     flowstats::PktSource pktSource(&screen, conf, collectors, &shouldStop);
+    screen.StartDisplay();
     if (conf.getPcapFileName() != "") {
         pktSource.analyzePcapFile();
     } else {
         std::vector<Tins::IPv4Address> localIps = pktSource.getLocalIps();
         ipToFqdn.updateFqdn("localhost", localIps);
-        screen.StartDisplay();
         pktSource.analyzeLiveTraffic();
     }
 
