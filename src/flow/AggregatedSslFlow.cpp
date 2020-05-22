@@ -3,9 +3,9 @@
 namespace flowstats {
 
 auto AggregatedSslFlow::fillValues(std::map<Field, std::string>& values,
-    Direction direction, int duration) const -> void
+    Direction direction) const -> void
 {
-    Flow::fillValues(values, direction, duration);
+    Flow::fillValues(values, direction);
 
     if (direction == FROM_CLIENT) {
         values[Field::FQDN] = getFqdn();

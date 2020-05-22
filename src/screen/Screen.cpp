@@ -65,6 +65,7 @@ auto Screen::updateDisplay(int ts, bool updateOutput) -> void
     if (firstTs == 0) {
         firstTs = ts;
     }
+    assert(ts >= lastTs);
     lastTs = ts;
 
     const std::lock_guard<std::mutex> lock(screenMutex);
@@ -389,6 +390,9 @@ auto Screen::displayLoop() -> void
 
         c = getch();
         if (c == ERR) {
+            if (displayConf.pcapReplay) {
+                continue;
+            }
             auto currentTs = time(nullptr);
             if (currentTs > lastTs) {
                 updateDisplay(currentTs, true);

@@ -19,15 +19,10 @@ auto Flow::addPacket(Tins::Packet const& packet,
 }
 
 auto Flow::fillValues(std::map<Field, std::string>& values,
-    Direction direction, int duration) const -> void
+    Direction direction) const -> void
 {
-    if (duration) {
-        values[Field::PKTS_RATE] = prettyFormatNumber(totalPackets[direction] / duration);
-        values[Field::BYTES_RATE] = prettyFormatBytes(totalBytes[direction] / duration);
-    } else {
-        values[Field::PKTS_RATE] = prettyFormatNumber(packets[direction]);
-        values[Field::BYTES_RATE] = prettyFormatBytes(bytes[direction]);
-    }
+    values[Field::PKTS_RATE] = prettyFormatNumber(packets[direction]);
+    values[Field::BYTES_RATE] = prettyFormatBytes(bytes[direction]);
     values[Field::PKTS] = prettyFormatNumber(totalPackets[direction]);
     values[Field::BYTES] = prettyFormatBytes(totalBytes[direction]);
     values[Field::DIR] = directionToString(static_cast<Direction>(direction));

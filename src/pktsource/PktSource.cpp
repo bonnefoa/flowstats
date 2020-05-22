@@ -44,19 +44,14 @@ auto PktSource::analyzePcapFile()
     if (reader == nullptr) {
         return 1;
     }
+    int lastTs = 0;
 
-    timeval start = { 0, 0 };
-    timeval end = { 0, 0 };
     for (auto packet : *reader) {
         if (packet.timestamp().seconds() == 0) {
             break;
         }
 
         spdlog::debug("parsedPacket: {}", packet.pdu()->pdu_type());
-        auto pktTv = packetToTimeval(packet);
-        if (start.tv_sec == 0) {
-            start = pktTv;
-        }
         for (auto* collector : collectors) {
             try {
                 collector->processPacket(packet);
@@ -64,14 +59,18 @@ auto PktSource::analyzePcapFile()
             } catch (const Tins::pdu_not_found&) {
             }
         }
+        lastTs = packet.timestamp().seconds();
+        updateScreen(lastTs);
     }
     delete reader;
 
+    for (auto* collector : collectors) {
+        collector->resetMetrics();
+    }
     if (screen->getDisplayConf().noCurses) {
         return 0;
     }
 
-    screen->updateDisplay(end.tv_sec, true);
     while (!shouldStop->load()) {
         sleep(1);
     }
@@ -106,7 +105,6 @@ auto PktSource::updateScreen(int currentTime) -> void
  */
 auto PktSource::analyzeLiveTraffic() -> int
 {
-    int64_t startTs = time(nullptr);
     spdlog::info("Start live traffic capture with filter {}",
         conf.getBpfFilter());
     auto* dev = getLiveDevice();
@@ -129,19 +127,6 @@ auto PktSource::analyzeLiveTraffic() -> int
     dev->stop_sniff();
     spdlog::info("Stopping screen");
     screen->StopDisplay();
-
-    fmt::print("\n");
-    int64_t endTs = time(nullptr);
-    for (auto* collector : collectors) {
-        collector->advanceTick(maxTimeval);
-        collector->sendMetrics();
-        collector->resetMetrics();
-
-        int64_t delta = endTs - startTs;
-        CollectorOutput o = collector->outputStatus(delta);
-        o.print();
-    }
-
     return 0;
 }
 } // namespace flowstats

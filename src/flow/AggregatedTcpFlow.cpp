@@ -35,9 +35,9 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
 }
 
 auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>& values,
-    Direction direction, int duration) const -> void
+    Direction direction) const -> void
 {
-    Flow::fillValues(values, direction, duration);
+    Flow::fillValues(values, direction);
     values[Field::SYN] = std::to_string(syns[direction]);
     values[Field::SYNACK] = std::to_string(synacks[direction]);
     values[Field::FIN] = std::to_string(fins[direction]);
@@ -64,15 +64,10 @@ auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>& values,
         values[Field::FQDN] = getFqdn();
         values[Field::IP] = getSrvIp().to_string();
         values[Field::PORT] = std::to_string(getSrvPort());
-        if (duration) {
-            values[Field::CONN_RATE] = std::to_string(connections.getCount() / duration);
-            values[Field::CLOSE_RATE] = std::to_string(totalCloses / duration);
-            values[Field::SRT_RATE] = prettyFormatNumber(numSrts);
-        } else {
-            values[Field::CONN_RATE] = std::to_string(numConnections);
-            values[Field::CLOSE_RATE] = std::to_string(closes);
-            values[Field::SRT_RATE] = prettyFormatNumber(numSrts);
-        }
+
+        values[Field::CONN_RATE] = std::to_string(numConnections);
+        values[Field::CLOSE_RATE] = std::to_string(closes);
+        values[Field::SRT_RATE] = prettyFormatNumber(numSrts);
     }
 }
 

@@ -32,7 +32,7 @@ struct AggregatedTcpFlow : Flow {
 
     auto resetFlow(bool resetTotal) -> void override;
     auto fillValues(std::map<Field, std::string>& map,
-        Direction direction, int duration) const -> void override;
+        Direction direction) const -> void override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
 
     auto mergePercentiles() -> void override;

@@ -26,6 +26,7 @@ struct DisplayConfiguration {
     int maxResults = 15;
     std::string filter;
     bool noCurses = false;
+    bool pcapReplay = false;
 };
 
 struct FlowstatsConfiguration {

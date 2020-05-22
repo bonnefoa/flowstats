@@ -32,7 +32,7 @@ auto Collector::outputFlow(Flow const* flow,
     for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
         auto direction = static_cast<Direction>(j);
         std::map<Field, std::string> values;
-        flow->fillValues(values, direction, duration);
+        flow->fillValues(values, direction);
         if (position == -1) {
             keyLines->push_back(flowFormatter.outputKey(values));
             valueLines->push_back(flowFormatter.outputValue(values));

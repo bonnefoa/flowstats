@@ -156,6 +156,7 @@ auto main(int argc, char* argv[]) -> int
     flowstats::PktSource pktSource(&screen, conf, collectors, &shouldStop);
     screen.StartDisplay();
     if (conf.getPcapFileName() != "") {
+        displayConf.pcapReplay = true;
         pktSource.analyzePcapFile();
     } else {
         std::vector<Tins::IPv4Address> localIps = pktSource.getLocalIps();
