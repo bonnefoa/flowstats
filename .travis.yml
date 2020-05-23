@@ -28,7 +28,7 @@ before_install:
   - |
     git clone --depth 1 --branch libpcap-1.9.1 https://github.com/the-tcpdump-group/libpcap.git
     mkdir -p libpcap/build && cd libpcap/build
-    cmake ../ -DBUILD_SHARED_LIBS=0 -DCMAKE_BUILD_TYPE=relwithdebinfo
+    cmake ../ -DBUILD_SHARED_LIBS=0 -DCMAKE_BUILD_TYPE=release
     make -j2
     sudo make install
     cd -
@@ -36,7 +36,7 @@ before_install:
   - |
     git clone --depth 1 --branch 6.1.2 https://github.com/fmtlib/fmt.git
     mkdir -p fmt/build && cd fmt/build
-    cmake ../ -DFMT_TEST=off -DCMAKE_BUILD_TYPE=relwithdebinfo
+    cmake ../ -DFMT_TEST=off -DCMAKE_BUILD_TYPE=release
     make -j2
     sudo make install
     cd -
@@ -44,7 +44,7 @@ before_install:
   - |
     git clone --depth 1 https://github.com/mfontanini/libtins.git
     mkdir -p libtins/build && cd libtins/build
-    cmake ../ -DLIBTINS_BUILD_SHARED=0 -DLIBTINS_ENABLE_CXX11=1 -DLIBTINS_ENABLE_WPA2=0 -DCMAKE_BUILD_TYPE=relwithdebinfo
+    cmake ../ -DLIBTINS_BUILD_SHARED=0 -DLIBTINS_ENABLE_CXX11=1 -DLIBTINS_ENABLE_WPA2=0 -DCMAKE_BUILD_TYPE=release
     make -j2
     sudo make install
     cd -
@@ -60,7 +60,7 @@ before_install:
   - |
     git clone --depth 1 --branch v1.5.0 https://github.com/gabime/spdlog.git;
     mkdir -p spdlog/build && cd spdlog/build
-    cmake ../ -DSPDLOG_FMT_EXTERNAL=on -DSPDLOG_BUILD_TESTS=off -DCMAKE_BUILD_TYPE=relwithdebinfo
+    cmake ../ -DSPDLOG_FMT_EXTERNAL=on -DSPDLOG_BUILD_TESTS=off -DCMAKE_BUILD_TYPE=release
     make -j2
     sudo make install
     cd -
@@ -68,7 +68,7 @@ before_install:
 script:
   - |
     mkdir -p build && cd build
-    cmake -DBUILD_STATIC_EXE=on -DCMAKE_BUILD_TYPE=relwithdebinfo -DENABLE_TESTS=on ..
+    cmake -DBUILD_STATIC_EXE=on -DCMAKE_BUILD_TYPE=release -DENABLE_TESTS=on ..
     make -j2
     ctest
 
