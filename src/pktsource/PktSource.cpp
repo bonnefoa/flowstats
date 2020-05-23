@@ -73,7 +73,9 @@ auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
     }
 
     auto flowId = tcp ? FlowId(*ip, *tcp) : FlowId(*ip, *udp);
+    timeval pktTs = packetToTimeval(packet);
     for (auto* collector : collectors) {
+        collector->advanceTick(pktTs);
         try {
             collector->processPacket(packet, flowId, *ip, tcp, udp);
         } catch (const Tins::malformed_packet&) {

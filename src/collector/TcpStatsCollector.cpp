@@ -129,7 +129,6 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet,
     Tins::TCP const* tcp,
     Tins::UDP const* udp) -> void
 {
-    advanceTick(packetToTimeval(packet));
     if (tcp == nullptr) {
         return;
     }

@@ -53,8 +53,6 @@ auto DnsStatsCollector::processPacket(Tins::Packet const& packet,
     Tins::TCP const* tcp,
     Tins::UDP const* udp) -> void
 {
-    timeval pktTs = packetToTimeval(packet);
-    advanceTick(pktTs);
     auto const* pdu = packet.pdu();
     if (pdu == nullptr) {
         return;

@@ -78,8 +78,6 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet,
     Tins::TCP const* tcp,
     Tins::UDP const* udp) -> void
 {
-    timeval pktTs = packetToTimeval(packet);
-    advanceTick(pktTs);
     if (tcp == nullptr) {
         return;
     }
