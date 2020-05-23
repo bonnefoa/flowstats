@@ -33,9 +33,9 @@ enum SSLRecordType {
     SSL_APPLICATION_DATA = 23
 };
 
-[[nodiscard]] auto getSslDomainFromExtension(Cursor* cursor) -> std::string;
+[[nodiscard]] auto getSslDomainFromExtension(Cursor* cursor) -> std::optional<std::string>;
 [[nodiscard]] auto checkValidSsl(Cursor* cursor) -> bool;
-[[nodiscard]] auto checkValidSslVersion(uint16_t sslVersion) -> bool;
+[[nodiscard]] auto checkValidSslVersion(std::optional<uint16_t> sslVersion) -> bool;
 [[nodiscard]] auto checkSslHandshake(Cursor* cursor) -> bool;
 [[nodiscard]] auto checkSslChangeCipherSpec(Cursor* cursor) -> bool;
 

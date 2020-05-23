@@ -17,7 +17,12 @@ void SslFlow::processHandshake(Tins::Packet const& packet,
         return;
     }
     auto pduLength = cursor->readUint24();
-    cursor->checkSize(pduLength - 4);
+    if (pduLength.has_value() == false) {
+        return;
+    }
+    if (cursor->checkSize(pduLength.value() - 4) == false) {
+        return;
+    };
 
     auto sslVersion = cursor->readUint16();
     if (checkValidSslVersion(sslVersion) == false) {
@@ -28,17 +33,25 @@ void SslFlow::processHandshake(Tins::Packet const& packet,
     spdlog::debug("Start ssl connection at {}", timevalInMs(startHandshake));
 
     // Random
-    cursor->skip(32);
+    if (cursor->skip(32) == false) {
+        return;
+    };
     auto sessionIdLength = cursor->readUint8();
-    cursor->skip(sessionIdLength);
+    if (cursor->skip(sessionIdLength) == false) {
+        return;
+    };
     auto cipherSuiteLength = cursor->readUint16();
-    cursor->skip(cipherSuiteLength);
+    if (cursor->skip(cipherSuiteLength) == false) {
+        return;
+    };
     auto compressionMethodLength = cursor->readUint8();
-    cursor->skip(compressionMethodLength);
+    if (cursor->skip(compressionMethodLength) == false) {
+        return;
+    }
 
     auto extractedDomain = getSslDomainFromExtension(cursor);
-    if (extractedDomain != "") {
-        domain = extractedDomain;
+    if (extractedDomain.value_or("") != "") {
+        domain = extractedDomain.value();
         for (auto* aggregatedSslFlow : aggregatedFlows) {
             aggregatedSslFlow->setDomain(domain);
         }

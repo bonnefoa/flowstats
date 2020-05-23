@@ -53,7 +53,6 @@ auto Tester::readPcap(std::string pcap, std::string bpf, bool advanceTick) -> in
         for (auto collector : collectors) {
             try {
                 collector->processPacket(packet, flowId, *ip, tcp, udp);
-            } catch (payload_too_small const&) {
             } catch (Tins::malformed_packet const&) {
             }
         }

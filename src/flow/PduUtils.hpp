@@ -8,14 +8,6 @@ namespace flowstats {
 
 auto getTcpPayloadSize(Tins::IP const& ip, Tins::TCP const& tcp) -> uint32_t;
 
-class payload_too_small : public std::runtime_error {
-public:
-    payload_too_small()
-        : std::runtime_error("payload too small")
-    {
-    }
-};
-
 class Cursor {
 public:
     explicit Cursor(std::vector<uint8_t> const& payload)
@@ -23,18 +15,20 @@ public:
     virtual ~Cursor() = default;
 
     auto remainingBytes() -> uint32_t { return payload.size() - index; };
-    auto readUint8() -> uint8_t;
-    auto readUint16() -> uint16_t;
-    auto readUint24() -> uint32_t;
-    auto readUint32() -> uint32_t;
-    auto readString(int n) -> std::string;
 
-    auto skip(int n) -> void;
-    auto skipUint8() -> void;
-    auto skipUint16() -> void;
-    auto skipUint24() -> void;
-    auto skipUint32() -> void;
-    auto checkSize(uint32_t size) -> void;
+    [[nodiscard]] auto readUint8() -> std::optional<uint8_t>;
+    [[nodiscard]] auto readUint16() -> std::optional<uint16_t>;
+    [[nodiscard]] auto readUint24() -> std::optional<uint32_t>;
+    [[nodiscard]] auto readUint32() -> std::optional<uint32_t>;
+    [[nodiscard]] auto readString(int n) -> std::optional<std::string>;
+
+    [[nodiscard]] auto skip(std::optional<int> n) -> bool;
+    [[nodiscard]] auto skip(int n) -> bool;
+    [[nodiscard]] auto skipUint8() -> bool;
+    [[nodiscard]] auto skipUint16() -> bool;
+    [[nodiscard]] auto skipUint24() -> bool;
+    [[nodiscard]] auto skipUint32() -> bool;
+    [[nodiscard]] auto checkSize(uint32_t size) -> bool;
 
 private:
     std::vector<uint8_t> const& payload;
