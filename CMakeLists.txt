@@ -12,7 +12,6 @@ find_package(fmt REQUIRED)
 find_package(libtins REQUIRED)
 pkg_check_modules (NCURSES REQUIRED ncurses)
 pkg_check_modules (SPDLOG REQUIRED spdlog )
-pkg_check_modules (TCMALLOC REQUIRED libtcmalloc)
 pkg_check_modules (PCAP REQUIRED libpcap)
 
 option(BUILD_STATIC_EXE "Build statics executable" OFF)
@@ -31,10 +30,12 @@ endif()
 
 if(BUILD_TSAN)
     SET(CMAKE_EXE_LINKER_FLAGS "-fsanitize=thread")
+    list(APPEND ADDITIONAL_EXECUTABLE_LIBRARIES ${TCMALLOC})
 endif()
 
 if(BUILD_ASAN)
     SET(CMAKE_EXE_LINKER_FLAGS "-fsanitize=address -fno-omit-frame-pointer")
+    list(APPEND ADDITIONAL_EXECUTABLE_LIBRARIES ${TCMALLOC})
 endif()
 
 if(BUILD_PROFILER)
