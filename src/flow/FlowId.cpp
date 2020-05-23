@@ -59,7 +59,7 @@ FlowId::FlowId(std::array<uint16_t, 2> pktPorts, std::array<IPv4, 2> pktIps, Tra
 auto FlowId::toString() const -> std::string
 {
     return fmt::format("{}:{} -> {}:{}",
-        Tins::IPv4Address(ips[direction]).to_string(), ports[direction],
-        Tins::IPv4Address(ips[!direction]).to_string(), ports[!direction]);
+        ipv4ToString(ips[direction]), ports[direction],
+        ipv4ToString(ips[!direction]), ports[!direction]);
 }
 } // namespace flowstats

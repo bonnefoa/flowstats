@@ -155,9 +155,9 @@ auto ipv4ToString(uint32_t ipv4) -> std::string
 {
     std::array<uint8_t, 4> ipParts = {
         uint8_t(ipv4 & 0xff),
-        uint8_t((ipv4 >> 2) & 0xff),
-        uint8_t((ipv4 >> 4) & 0xff),
-        uint8_t((ipv4 >> 6) & 0xff),
+        uint8_t((ipv4 >> 8) & 0xff),
+        uint8_t((ipv4 >> 16) & 0xff),
+        uint8_t((ipv4 >> 24) & 0xff),
     };
     return fmt::format("{}.{}.{}.{}", ipParts[0], ipParts[1], ipParts[2], ipParts[3]);
 }
