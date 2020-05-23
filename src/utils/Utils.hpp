@@ -53,4 +53,5 @@ auto getIpToFqdn(std::vector<std::string> const& initialDomains) -> std::map<uin
 auto getDomainToServerPort(std::vector<std::string> const& initialServerPorts) -> std::map<std::string, uint16_t>;
 
 auto packetToTimeval(Tins::Packet const& packet) -> timeval;
+auto ipv4ToString(uint32_t ipv4) -> std::string;
 } // namespace flowstats

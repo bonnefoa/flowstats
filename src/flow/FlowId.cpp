@@ -50,8 +50,8 @@ FlowId::FlowId(std::array<uint16_t, 2> pktPorts, std::array<IPv4, 2> pktIps, Tra
     if (pktPorts[0] < pktPorts[1]) {
         direction = FROM_SERVER;
     }
-    ips[0] = Tins::IPv4Address(pktIps[0 + direction]);
-    ips[1] = Tins::IPv4Address(pktIps[1 - direction]);
+    ips[0] = pktIps[0 + direction];
+    ips[1] = pktIps[1 - direction];
     ports[0] = pktPorts[0 + direction];
     ports[1] = pktPorts[1 - direction];
 }

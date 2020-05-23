@@ -33,11 +33,11 @@ struct FlowId {
     [[nodiscard]] auto getDirection() const { return direction; };
     [[nodiscard]] auto hash() const
     {
-        return std::hash<Tins::IPv4Address>()(ips[0]) + std::hash<Tins::IPv4Address>()(ips[1]) + std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1]);
+        return std::hash<IPv4>()(ips[0]) + std::hash<IPv4>()(ips[1]) + std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1]);
     };
 
 private:
-    std::array<Tins::IPv4Address, 2> ips = {};
+    std::array<IPv4, 2> ips = {};
     std::array<Port, 2> ports = {};
     Transport transport = Transport::TCP;
     Direction direction = FROM_CLIENT;

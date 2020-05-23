@@ -68,7 +68,7 @@ auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>& values,
         values[Field::FQDN] = fqdn;
         values[Field::PROTO] = getTransport()._to_string();
         values[Field::TYPE] = dnsTypeToString(dnsType);
-        values[Field::IP] = getSrvIp().to_string();
+        values[Field::IP] = getSrvIp();
         values[Field::TIMEOUTS_RATE] = std::to_string(timeouts);
         values[Field::TIMEOUTS] = std::to_string(totalTimeouts);
         values[Field::PORT] = std::to_string(getSrvPort());

@@ -81,8 +81,8 @@ public:
     [[nodiscard]] auto getTransport() const { return flowId.getTransport(); };
     [[nodiscard]] auto getPort(uint8_t pos) const { return flowId.getPort(pos); }
     [[nodiscard]] auto getSrvPort() const { return flowId.getPort(srvPos); }
-    [[nodiscard]] auto getSrvIp() const -> Tins::IPv4Address { return flowId.getIp(srvPos); }
-    [[nodiscard]] auto getCltIp() const -> Tins::IPv4Address { return flowId.getIp(!srvPos); }
+    [[nodiscard]] auto getSrvIp() const -> std::string { return ipv4ToString(flowId.getIp(srvPos)); }
+    [[nodiscard]] auto getCltIp() const -> IPv4 { return flowId.getIp(!srvPos); }
     [[nodiscard]] auto getCltIpInt() const { return flowId.getIp(!srvPos); }
     [[nodiscard]] auto getSrvIpInt() const { return flowId.getIp(srvPos); }
 
@@ -96,7 +96,7 @@ public:
 
     [[nodiscard]] static auto sortByIp(Flow const* a, Flow const* b) -> bool
     {
-        return a->getSrvIp() < b->getSrvIp();
+        return a->getSrvIpInt() < b->getSrvIpInt();
     }
 
     [[nodiscard]] static auto sortByPort(Flow const* a, Flow const* b) -> bool

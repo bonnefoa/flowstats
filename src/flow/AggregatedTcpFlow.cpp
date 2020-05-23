@@ -62,7 +62,7 @@ auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>& values,
         values[Field::DS_MAX] = prettyFormatBytes(requestSizes.getPercentile(1));
 
         values[Field::FQDN] = getFqdn();
-        values[Field::IP] = getSrvIp().to_string();
+        values[Field::IP] = getSrvIp();
         values[Field::PORT] = std::to_string(getSrvPort());
 
         values[Field::CONN_RATE] = std::to_string(numConnections);
@@ -171,7 +171,7 @@ auto AggregatedTcpFlow::getStatsdMetrics() const -> std::vector<std::string>
 {
     std::vector<std::string> lst;
     DogFood::Tags tags = DogFood::Tags({ { "fqdn", getFqdn() },
-        { "ip", getSrvIp().to_string() },
+        { "ip", getSrvIp() },
         { "port", std::to_string(getSrvPort()) } });
     for (auto& i : srts.getPoints()) {
         lst.push_back(DogFood::Metric("flowstats.tcp.srt", i,
