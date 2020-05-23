@@ -5,25 +5,29 @@ namespace flowstats {
 #define SSL_SERVER_NAME_EXT 0
 #define SSL_SNI_HOST_NAME 0
 
-auto checkValidSslVersion(uint16_t sslVersion) -> void
+auto checkValidSslVersion(uint16_t sslVersion) -> bool
 {
     if (sslVersion != SSL3 && sslVersion != TLS1_0 && sslVersion != TLS1_1 && sslVersion != TLS1_2) {
-        throw Tins::malformed_packet();
+        return false;
     }
+    return true;
 }
 
-auto checkValidSsl(Cursor* cursor) -> void
+auto checkValidSsl(Cursor* cursor) -> bool
 {
     uint8_t recordType = cursor->readUint8();
     if (recordType != SSL_CHANGE_CIPHER_SPEC && recordType != SSL_ALERT && recordType != SSL_HANDSHAKE && recordType != SSL_APPLICATION_DATA) {
-        throw Tins::malformed_packet();
+        return false;
     }
     auto sslVersion = cursor->readUint16();
-    checkValidSslVersion(sslVersion);
+    if (checkValidSslVersion(sslVersion) == false) {
+        return false;
+    }
     auto length = cursor->readUint16();
     if (cursor->remainingBytes() < length) {
-        throw Tins::malformed_packet();
+        return false;
     }
+    return true;
 }
 
 auto getSslDomainFromSni(Cursor* cursor) -> std::string
@@ -59,32 +63,36 @@ auto getSslDomainFromExtension(Cursor* cursor) -> std::string
     return "";
 }
 
-auto checkSslHandshake(Cursor* cursor) -> void
+auto checkSslHandshake(Cursor* cursor) -> bool
 {
     uint8_t recordType = cursor->readUint8();
     if (recordType != SSL_HANDSHAKE) {
-        throw Tins::malformed_packet();
+        return false;
     }
     cursor->skipUint16();
     cursor->skipUint16();
+    return true;
 }
 
-auto checkSslChangeCipherSpec(Cursor* cursor) -> void
+auto checkSslChangeCipherSpec(Cursor* cursor) -> bool
 {
     uint8_t recordType = cursor->readUint8();
     if (recordType != SSL_CHANGE_CIPHER_SPEC) {
-        throw Tins::malformed_packet();
+        return false;
     }
     auto sslVersion = cursor->readUint16();
-    checkValidSslVersion(sslVersion);
+    if (checkValidSslVersion(sslVersion) == false) {
+        return false;
+    }
     auto length = cursor->readUint16();
     if (length != 1) {
-        throw Tins::malformed_packet();
+        return false;
     }
     auto message = cursor->readUint8();
     if (message != 1) {
-        throw Tins::malformed_packet();
+        return false;
     }
+    return true;
 }
 
 } // namespace flowstats

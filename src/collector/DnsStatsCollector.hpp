@@ -17,14 +17,23 @@ public:
         DisplayConfiguration const& displayConf,
         IpToFqdn* ipToFqdn);
 
-    auto processPacket(Tins::Packet const& packet) -> void override;
+    auto processPacket(Tins::Packet const& packet,
+        FlowId const& flowId,
+        Tins::IP const& ip,
+        Tins::TCP const* tcp,
+        Tins::UDP const* udp) -> void override;
     auto advanceTick(timeval now) -> void override;
 
     auto toString() const -> std::string override { return "DnsStatsCollector"; }
     auto getProtocol() const -> CollectorProtocol override { return DNS; };
 
 private:
-    auto newDnsQuery(Tins::Packet const& packet, Tins::DNS const& dns) -> void;
+    auto isDnsPort(uint16_t port) -> bool;
+    auto isPossibleDns(Tins::TCP const* tcp, Tins::UDP const* udp) -> bool;
+
+    auto newDnsQuery(Tins::Packet const& packet,
+        FlowId const& flowId,
+        Tins::DNS const& dns) -> void;
     auto newDnsResponse(Tins::Packet const& packet, Tins::DNS const& dns, DnsFlow* flow) -> void;
     auto updateIpToFqdn(Tins::DNS const& dns, std::string const& fqdn) -> void;
     auto addFlowToAggregation(DnsFlow const* flow) -> void;

@@ -28,12 +28,15 @@ public:
     auto analyzePcapFile() -> int;
 
 private:
+    auto processPacketSource(Tins::Packet const& packet) -> void;
+
     Screen* screen;
     FlowstatsConfiguration const& conf;
     std::vector<Collector*> const& collectors;
     std::atomic_bool* shouldStop;
 
     int lastUpdate = 0;
+    int lastTs = 0;
 
     auto getLiveDevice() -> Tins::Sniffer*;
 };

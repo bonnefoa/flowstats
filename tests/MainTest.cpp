@@ -37,12 +37,24 @@ auto Tester::readPcap(std::string pcap, std::string bpf, bool advanceTick) -> in
             break;
         }
         i++;
+
+        auto const* pdu = packet.pdu();
+        auto const* ip = pdu->find_pdu<Tins::IP>();
+        if (ip == nullptr) {
+            continue;
+        }
+        auto const* tcp = ip->find_pdu<Tins::TCP>();
+        Tins::UDP const* udp = nullptr;
+        if (tcp == nullptr) {
+            udp = ip->find_pdu<Tins::UDP>();
+        }
+
+        auto flowId = tcp ? FlowId(*ip, *tcp) : FlowId(*ip, *udp);
         for (auto collector : collectors) {
             try {
-                collector->processPacket(packet);
+                collector->processPacket(packet, flowId, *ip, tcp, udp);
             } catch (payload_too_small const&) {
             } catch (Tins::malformed_packet const&) {
-            } catch (Tins::pdu_not_found const&) {
             }
         }
     }

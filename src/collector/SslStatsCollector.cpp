@@ -72,17 +72,14 @@ auto SslStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string 
     return subflows;
 }
 
-auto SslStatsCollector::processPacket(Tins::Packet const& packet) -> void
+auto SslStatsCollector::processPacket(Tins::Packet const& packet,
+    FlowId const& flowId,
+    Tins::IP const& ip,
+    Tins::TCP const* tcp,
+    Tins::UDP const* udp) -> void
 {
     timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
-    auto const* pdu = packet.pdu();
-    auto ip = pdu->find_pdu<Tins::IP>();
-    if (ip == nullptr) {
-        return;
-    }
-
-    auto tcp = ip->find_pdu<Tins::TCP>();
     if (tcp == nullptr) {
         return;
     }
@@ -93,9 +90,10 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet) -> void
     }
     auto payload = rawData->payload();
     auto cursor = Cursor(payload);
-    checkValidSsl(&cursor);
+    if (checkValidSsl(&cursor) == false) {
+        return;
+    }
 
-    FlowId flowId(*ip, *tcp);
     auto sslFlow = lookupSslFlow(flowId);
     if (sslFlow == nullptr) {
         return;

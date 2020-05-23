@@ -13,7 +13,11 @@ public:
         DisplayConfiguration const& displayConf,
         IpToFqdn* ipToFqdn);
 
-    auto processPacket(Tins::Packet const& packet) -> void override;
+    auto processPacket(Tins::Packet const& packet,
+        FlowId const& flowId,
+        Tins::IP const& ip,
+        Tins::TCP const* tcp,
+        Tins::UDP const* udp) -> void override;
 
     auto advanceTick(timeval now) -> void override;
 

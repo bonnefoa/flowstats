@@ -3,8 +3,9 @@
 
 namespace flowstats {
 
-DnsFlow::DnsFlow(const Tins::Packet& packet, Tins::DNS const& dns)
-    : Flow(packet)
+DnsFlow::DnsFlow(Tins::Packet const& packet, FlowId const& flowId,
+    Tins::DNS const& dns)
+    : Flow(flowId)
 {
     addPacket(packet, FROM_CLIENT);
     startTv = packetToTimeval(packet);

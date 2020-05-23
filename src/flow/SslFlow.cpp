@@ -8,7 +8,9 @@ namespace flowstats {
 void SslFlow::processHandshake(Tins::Packet const& packet,
     Cursor* cursor)
 {
-    checkSslHandshake(cursor);
+    if (checkSslHandshake(cursor) == false) {
+        return;
+    }
 
     auto handshakeType = cursor->readUint8();
     if (handshakeType != SSL_CLIENT_HELLO) {
@@ -18,7 +20,9 @@ void SslFlow::processHandshake(Tins::Packet const& packet,
     cursor->checkSize(pduLength - 4);
 
     auto sslVersion = cursor->readUint16();
-    checkValidSslVersion(sslVersion);
+    if (checkValidSslVersion(sslVersion) == false) {
+        return;
+    }
 
     startHandshake = packetToTimeval(packet);
     spdlog::debug("Start ssl connection at {}", timevalInMs(startHandshake));
@@ -68,7 +72,9 @@ void SslFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     }
 
     if (direction == FROM_SERVER) {
-        checkSslChangeCipherSpec(&cursor);
+        if (checkSslChangeCipherSpec(&cursor) == false) {
+            return;
+        }
         connectionEstablished = true;
         uint32_t delta = getTimevalDeltaMs(startHandshake, packetToTimeval(packet));
         for (auto* aggregatedSslFlow : aggregatedFlows) {

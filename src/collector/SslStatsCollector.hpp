@@ -20,7 +20,11 @@ class SslStatsCollector : public Collector {
 public:
     SslStatsCollector(FlowstatsConfiguration const& conf, DisplayConfiguration const& displayConf, IpToFqdn* ipToFqdn);
 
-    auto processPacket(Tins::Packet const& packet) -> void override;
+    auto processPacket(Tins::Packet const& packet,
+        FlowId const& flowId,
+        Tins::IP const& ip,
+        Tins::TCP const* tcp,
+        Tins::UDP const* udp) -> void override;
 
     auto getProtocol() const -> CollectorProtocol override { return SSL; };
     auto toString() const -> std::string override { return "SslStatsCollector"; }

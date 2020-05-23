@@ -16,11 +16,6 @@ public:
     {
     }
 
-    explicit Flow(Tins::Packet const& packet)
-        : flowId(packet)
-    {
-    }
-
     explicit Flow(std::string fqdn)
         : fqdn(std::move(fqdn))
     {

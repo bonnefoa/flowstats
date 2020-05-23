@@ -44,28 +44,6 @@ auto FlowId::operator=(FlowId const& flowId) -> FlowId&
     return *this;
 }
 
-FlowId::FlowId(Tins::Packet const& packet)
-{
-    auto ip = packet.pdu()->find_pdu<Tins::IP>();
-    if (ip == nullptr) {
-        return;
-    }
-    try {
-        auto tcp = ip->find_pdu<Tins::TCP>();
-        if (tcp == nullptr) {
-            return;
-        }
-        *this = FlowId(*ip, *tcp);
-        return;
-    } catch (Tins::pdu_not_found const&) {
-        auto udp = ip->find_pdu<Tins::UDP>();
-        if (udp == nullptr) {
-            return;
-        }
-        *this = FlowId(*ip, *udp);
-    }
-}
-
 FlowId::FlowId(std::array<uint16_t, 2> pktPorts, std::array<IPv4, 2> pktIps, Transport transport)
     : transport(transport)
 {

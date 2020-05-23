@@ -2,6 +2,7 @@
 
 #include <tins/ip.h>
 #include <tins/tcp.h>
+#include <tins/udp.h>
 
 namespace flowstats {
 
@@ -39,5 +40,7 @@ private:
     std::vector<uint8_t> const& payload;
     int index = 0;
 };
+
+auto getPorts(Tins::TCP const* tcp, Tins::UDP const* udp) -> std::array<int, 2>;
 
 } // namespace flowstats

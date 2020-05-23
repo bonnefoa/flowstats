@@ -34,50 +34,6 @@ auto PktSource::getLocalIps() -> std::vector<Tins::IPv4Address>
     return res;
 }
 
-/**
- * analysis pcap file
- */
-auto PktSource::analyzePcapFile()
-    -> int
-{
-    auto* reader = new Tins::FileSniffer(conf.getPcapFileName(), conf.getBpfFilter());
-    if (reader == nullptr) {
-        return 1;
-    }
-    int lastTs = 0;
-
-    for (auto packet : *reader) {
-        if (packet.timestamp().seconds() == 0) {
-            break;
-        }
-
-        spdlog::debug("parsedPacket: {}", packet.pdu()->pdu_type());
-        for (auto* collector : collectors) {
-            try {
-                collector->processPacket(packet);
-            } catch (const Tins::malformed_packet&) {
-            } catch (const Tins::pdu_not_found&) {
-            }
-        }
-        lastTs = packet.timestamp().seconds();
-        updateScreen(lastTs);
-    }
-    delete reader;
-
-    for (auto* collector : collectors) {
-        collector->resetMetrics();
-    }
-    if (screen->getDisplayConf().noCurses) {
-        return 0;
-    }
-
-    while (!shouldStop->load()) {
-        sleep(1);
-    }
-
-    return 0;
-}
-
 auto PktSource::getLiveDevice() -> Tins::Sniffer*
 {
     Tins::SnifferConfiguration snifferConf;
@@ -100,6 +56,67 @@ auto PktSource::updateScreen(int currentTime) -> void
     }
 }
 
+auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
+{
+    auto const* pdu = packet.pdu();
+    auto const* ip = pdu->find_pdu<Tins::IP>();
+    if (ip == nullptr) {
+        return;
+    }
+    auto const* tcp = ip->find_pdu<Tins::TCP>();
+    Tins::UDP const* udp = nullptr;
+    if (tcp == nullptr) {
+        udp = ip->find_pdu<Tins::UDP>();
+        if (udp == nullptr) {
+            return;
+        }
+    }
+
+    auto flowId = tcp ? FlowId(*ip, *tcp) : FlowId(*ip, *udp);
+    for (auto* collector : collectors) {
+        try {
+            collector->processPacket(packet, flowId, *ip, tcp, udp);
+        } catch (const Tins::malformed_packet&) {
+            spdlog::info("Malformed packet: {}", packet);
+        }
+    }
+    lastTs = packet.timestamp().seconds();
+    updateScreen(lastTs);
+}
+
+/**
+ * analysis pcap file
+ */
+auto PktSource::analyzePcapFile()
+    -> int
+{
+    auto* reader = new Tins::FileSniffer(conf.getPcapFileName(), conf.getBpfFilter());
+    if (reader == nullptr) {
+        return 1;
+    }
+
+    for (auto packet : *reader) {
+        if (packet.timestamp().seconds() == 0) {
+            break;
+        }
+        processPacketSource(packet);
+    }
+    delete reader;
+
+    for (auto* collector : collectors) {
+        collector->resetMetrics();
+    }
+    if (screen->getDisplayConf().noCurses) {
+        return 0;
+    }
+
+    while (!shouldStop->load()) {
+        sleep(1);
+    }
+
+    return 0;
+}
+
 /**
  * analysis live traffic
  */
@@ -112,15 +129,7 @@ auto PktSource::analyzeLiveTraffic() -> int
         if (shouldStop->load()) {
             break;
         }
-        for (auto* collector : collectors) {
-            try {
-                collector->processPacket(packet);
-            } catch (const Tins::malformed_packet&) {
-            } catch (const Tins::pdu_not_found&) {
-            }
-        }
-        int pktSeconds = packet.timestamp().seconds();
-        updateScreen(pktSeconds);
+        processPacketSource(packet);
     }
 
     spdlog::info("Stop capture");

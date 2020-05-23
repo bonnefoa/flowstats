@@ -10,7 +10,8 @@ class DnsFlow : public Flow {
 
 public:
     DnsFlow() = default;
-    DnsFlow(const Tins::Packet& packet, Tins::DNS const& dns);
+    DnsFlow(const Tins::Packet& packet, FlowId const& flowId,
+        Tins::DNS const& dns);
 
     auto processDnsResponse(Tins::Packet const& packet, Tins::DNS const& dns) -> void;
 

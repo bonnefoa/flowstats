@@ -7,6 +7,7 @@ auto getTcpPayloadSize(const Tins::IP& ip, const Tins::TCP& tcp) -> uint32_t
     return ip.advertised_size() - ip.header_size() - tcp.header_size();
 }
 
+// TODO Remove exception
 auto Cursor::checkSize(uint32_t size) -> void
 {
     if (payload.size() - index < size) {
@@ -80,6 +81,17 @@ auto Cursor::skipUint24() -> void
 auto Cursor::skipUint32() -> void
 {
     skip(4);
+}
+
+auto getPorts(Tins::TCP const* tcp, Tins::UDP const* udp) -> std::array<int, 2>
+{
+    if (tcp) {
+        return { tcp->sport(), tcp->dport() };
+    }
+    if (udp) {
+        return { udp->sport(), udp->dport() };
+    }
+    return {};
 }
 
 } // namespace flowstats

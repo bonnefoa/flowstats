@@ -28,7 +28,12 @@ public:
         , displayConf(displayConf) {};
     virtual ~Collector();
 
-    virtual auto processPacket(Tins::Packet const& pdu) -> void = 0;
+    virtual auto processPacket(Tins::Packet const& pdu,
+        FlowId const& flowId,
+        Tins::IP const& ip,
+        Tins::TCP const* tcp,
+        Tins::UDP const* udp) -> void
+        = 0;
     virtual auto advanceTick(timeval now) -> void {};
     auto resetMetrics() -> void;
 

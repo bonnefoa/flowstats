@@ -33,10 +33,10 @@ enum SSLRecordType {
     SSL_APPLICATION_DATA = 23
 };
 
-auto getSslDomainFromExtension(Cursor* cursor) -> std::string;
-auto checkValidSsl(Cursor* cursor) -> void;
-auto checkValidSslVersion(uint16_t sslVersion) -> void;
-auto checkSslHandshake(Cursor* cursor) -> void;
-auto checkSslChangeCipherSpec(Cursor* cursor) -> void;
+[[nodiscard]] auto getSslDomainFromExtension(Cursor* cursor) -> std::string;
+[[nodiscard]] auto checkValidSsl(Cursor* cursor) -> bool;
+[[nodiscard]] auto checkValidSslVersion(uint16_t sslVersion) -> bool;
+[[nodiscard]] auto checkSslHandshake(Cursor* cursor) -> bool;
+[[nodiscard]] auto checkSslChangeCipherSpec(Cursor* cursor) -> bool;
 
 } // namespace flowstats

@@ -23,7 +23,6 @@ struct FlowId {
         Transport transport);
     FlowId(const Tins::IP& ipv4Layer, const Tins::TCP& tcpLayer);
     FlowId(const Tins::IP& ipv4Layer, const Tins::UDP& udpLayer);
-    explicit FlowId(const Tins::Packet& packet);
 
     [[nodiscard]] auto toString() const -> std::string;
     [[nodiscard]] auto getIps() const { return ips; };

@@ -1,6 +1,7 @@
 #include "DnsStatsCollector.hpp"
+#include "PduUtils.hpp"
 #include "PrintHelper.hpp"
-#include "tins/rawpdu.h"
+#include <tins/rawpdu.h>
 
 namespace flowstats {
 
@@ -22,20 +23,54 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
     updateDisplayType(0);
 };
 
-auto DnsStatsCollector::processPacket(Tins::Packet const& packet) -> void
+auto DnsStatsCollector::isDnsPort(uint16_t port) -> bool
+{
+    switch (port) {
+    case 53:
+    case 5353:
+    case 5355:
+        return true;
+    }
+    return false;
+}
+
+auto DnsStatsCollector::isPossibleDns(Tins::TCP const* tcp, Tins::UDP const* udp) -> bool
+{
+    auto ports = getPorts(tcp, udp);
+    if (isDnsPort(ports[0])) {
+        return true;
+    }
+    if (isDnsPort(ports[1])) {
+        return true;
+    }
+
+    return false;
+}
+
+auto DnsStatsCollector::processPacket(Tins::Packet const& packet,
+    FlowId const& flowId,
+    Tins::IP const& ip,
+    Tins::TCP const* tcp,
+    Tins::UDP const* udp) -> void
 {
     timeval pktTs = packetToTimeval(packet);
     advanceTick(pktTs);
     auto const* pdu = packet.pdu();
+    if (pdu == nullptr) {
+        return;
+    }
+    if (!isPossibleDns(tcp, udp)) {
+        return;
+    }
+
     auto rawPdu = pdu->find_pdu<Tins::RawPDU>();
     if (rawPdu == nullptr) {
         return;
     }
-    // TODO Avoid exception
     auto dns = rawPdu->to<Tins::DNS>();
 
     if (dns.type() == Tins::DNS::QUERY) {
-        newDnsQuery(packet, dns);
+        newDnsQuery(packet, flowId, dns);
         return;
     }
 
@@ -59,7 +94,7 @@ auto DnsStatsCollector::updateIpToFqdn(Tins::DNS const& dns, std::string const& 
     ipToFqdn->updateFqdn(fqdn, ips);
 }
 
-auto DnsStatsCollector::newDnsQuery(Tins::Packet const& packet, Tins::DNS const& dns) -> void
+auto DnsStatsCollector::newDnsQuery(Tins::Packet const& packet, FlowId const& flowId, Tins::DNS const& dns) -> void
 {
     auto queries = dns.queries();
     if (queries.size() == 0) {
@@ -71,7 +106,7 @@ auto DnsStatsCollector::newDnsQuery(Tins::Packet const& packet, Tins::DNS const&
         spdlog::debug("Empty query in dns tid {}", dns.id());
         return;
     }
-    DnsFlow flow(packet, dns);
+    DnsFlow flow(packet, flowId, dns);
     transactionIdToDnsFlow[dns.id()] = std::move(flow);
 }
 
