@@ -38,7 +38,7 @@
 #define MENU_LINES 1
 #define MENU_COLUMNS 120
 
-#define SORT_LINES 30
+#define SORT_LINES 300
 #define SORT_TEXT_COLUMNS 19
 #define SORT_COLUMNS 20
 
@@ -132,7 +132,7 @@ auto Screen::updateSortSelection() -> void
         if (i == displayIndex) {
             wattron(sortSelectionWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
-        waddstr(sortSelectionWin, fmt::format("{:<15}", fieldToHeader(sortField)).c_str());
+        waddstr(sortSelectionWin, fmt::format("{:<" STR(SORT_TEXT_COLUMNS) "}", fieldToHeader(sortField)).c_str());
         if (i == displayIndex) {
             wattroff(sortSelectionWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
@@ -279,7 +279,7 @@ auto Screen::refreshPads() -> void
 
     int deltaValues = 0;
     if (editSort) {
-        deltaValues = SORT_COLUMNS + 1;
+        deltaValues = SORT_COLUMNS;
         wnoutrefresh(sortSelectionWin);
     }
 

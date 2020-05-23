@@ -21,6 +21,7 @@ struct FlowId {
 
     FlowId(std::array<uint16_t, 2> ports, std::array<IPv4, 2> pktIps,
         Transport transport);
+
     FlowId(const Tins::IP& ipv4Layer, const Tins::TCP& tcpLayer);
     FlowId(const Tins::IP& ipv4Layer, const Tins::UDP& udpLayer);
 
