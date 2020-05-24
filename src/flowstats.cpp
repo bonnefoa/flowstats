@@ -10,8 +10,6 @@
 #include <cstring>
 #include <getopt.h>
 #include <netinet/in.h>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/spdlog.h>
 
 #define EXIT_WITH_ERROR(reason, ...)                      \
     do {                                                  \
@@ -133,10 +131,6 @@ auto main(int argc, char* argv[]) -> int
     if (conf.getPcapFileName() == "" && conf.getInterfaceName() == "") {
         EXIT_WITH_ERROR("Neither interface nor input pcap file were provided");
     }
-
-    auto file_logger = spdlog::basic_logger_mt("basic_logger", "flowstats.log");
-    spdlog::set_default_logger(file_logger);
-    spdlog::set_pattern("[%H:%M:%S %z] [thread %t] %v");
 
     conf.setAgentConf(DogFood::Configure(agentAddr));
     std::vector<flowstats::Collector*> collectors;

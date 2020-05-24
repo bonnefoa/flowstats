@@ -6,6 +6,7 @@
 #include <map> // for map
 #include <mutex> // for mutex
 #include <optional> // for optional
+#include <spdlog/spdlog.h>
 #include <string> // for string, allocator
 
 namespace flowstats {
@@ -29,8 +30,10 @@ struct DisplayConfiguration {
     bool pcapReplay = false;
 };
 
-struct FlowstatsConfiguration {
-    FlowstatsConfiguration() = default;
+class FlowstatsConfiguration {
+public:
+    FlowstatsConfiguration();
+    virtual ~FlowstatsConfiguration() = default;
 
     [[nodiscard]] auto getInterfaceName() const -> std::string const& { return iface; };
     [[nodiscard]] auto getPcapFileName() const -> std::string const& { return pcapFileName; };
@@ -40,6 +43,7 @@ struct FlowstatsConfiguration {
     [[nodiscard]] auto getDisplayUnknownFqdn() const -> bool const& { return displayUnknownFqdn; };
     [[nodiscard]] auto getAgentConf() const -> std::optional<DogFood::Configuration> const& { return agentConf; };
     [[nodiscard]] auto getTimeoutFlow() const -> int const& { return timeoutFlow; };
+    [[nodiscard]] auto getErrLogger() const { return errLogger; };
 
     auto setBpfFilter(std::string b) { bpfFilter = std::move(b); };
     auto setPcapFileName(std::string p) { pcapFileName = std::move(p); };
@@ -60,6 +64,7 @@ private:
     bool displayUnknownFqdn = false;
     std::optional<DogFood::Configuration> agentConf;
     int timeoutFlow = 15;
+    std::shared_ptr<spdlog::logger> errLogger;
 };
 
 using DisplayPair = std::pair<DisplayType, std::vector<Field>>;

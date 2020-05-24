@@ -22,8 +22,9 @@ public:
         , shouldStop(shouldStop) {};
     virtual ~PktSource() = default;
 
-    auto getLocalIps() -> std::vector<Tins::IPv4Address>;
     auto updateScreen(int currentTime) -> void;
+    [[nodiscard]] auto getLocalIps() -> std::vector<Tins::IPv4Address>;
+
     auto analyzeLiveTraffic() -> int;
     auto analyzePcapFile() -> int;
 

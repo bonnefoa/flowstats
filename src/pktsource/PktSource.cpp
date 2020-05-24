@@ -40,8 +40,15 @@ auto PktSource::getLiveDevice() -> Tins::Sniffer*
     snifferConf.set_promisc_mode(true);
     snifferConf.set_immediate_mode(true);
     snifferConf.set_filter(conf.getBpfFilter());
-    auto* dev = new Tins::Sniffer(conf.getInterfaceName(), snifferConf);
-    return dev;
+    try {
+        auto* dev = new Tins::Sniffer(conf.getInterfaceName(), snifferConf);
+        return dev;
+    } catch (Tins::pcap_error const& err) {
+        conf.getErrLogger()->error("Could not open device {}: \"{}\"",
+            conf.getInterfaceName(),
+            err.what());
+    }
+    return nullptr;
 }
 
 auto PktSource::updateScreen(int currentTime) -> void
@@ -127,6 +134,9 @@ auto PktSource::analyzeLiveTraffic() -> int
     spdlog::info("Start live traffic capture with filter {}",
         conf.getBpfFilter());
     auto* dev = getLiveDevice();
+    if (dev == nullptr) {
+        return -1;
+    }
     for (const auto& packet : *dev) {
         if (shouldStop->load()) {
             break;
