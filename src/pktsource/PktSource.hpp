@@ -3,6 +3,7 @@
 #include "Collector.hpp"
 #include "Configuration.hpp"
 #include "Screen.hpp"
+#include <pcap/pcap.h>
 #include <tins/ip_address.h>
 #include <tins/sniffer.h>
 
@@ -23,6 +24,7 @@ public:
     virtual ~PktSource() = default;
 
     auto updateScreen(int currentTime) -> void;
+    [[nodiscard]] auto getCaptureStatus() -> std::string;
     [[nodiscard]] auto getLocalIps() -> std::vector<Tins::IPv4Address>;
 
     auto analyzeLiveTraffic() -> int;
@@ -40,6 +42,7 @@ private:
     int lastTs = 0;
 
     auto getLiveDevice() -> Tins::Sniffer*;
+    Tins::Sniffer* liveDevice = nullptr;
 };
 
 } // namespace flowstats

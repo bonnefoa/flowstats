@@ -57,7 +57,8 @@ std::array<CollectorProtocol, 3> protocols = { DNS, TCP, SSL };
 std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
 
-auto Screen::updateDisplay(int ts, bool updateOutput) -> void
+auto Screen::updateDisplay(int ts, bool updateOutput,
+    std::string captureStatus) -> void
 {
     if (displayConf->noCurses) {
         return;
@@ -69,7 +70,7 @@ auto Screen::updateDisplay(int ts, bool updateOutput) -> void
     lastTs = ts;
 
     const std::lock_guard<std::mutex> lock(screenMutex);
-    updateStatus();
+    updateStatus(captureStatus);
     updateSortSelection();
     updateMenu();
 
@@ -141,12 +142,16 @@ auto Screen::updateSortSelection() -> void
     }
 }
 
-auto Screen::updateStatus() -> void
+auto Screen::updateStatus(std::string captureStatus) -> void
 {
     werase(statusWin);
-    mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, sort edit {}, last key {}, Filter {}, line {}, sortIndex {}, reversedSort {}\n", shouldFreeze, editSort, lastKey, displayConf->filter, selectedLine, protocolToSortIndex[displayConf->protocolIndex], reversedSort).c_str());
-
+    //mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, sort edit {}, last key {}, Filter {}, line {}, sortIndex {}, reversedSort {}\n", shouldFreeze, editSort, lastKey, displayConf->filter, selectedLine, protocolToSortIndex[displayConf->protocolIndex], reversedSort).c_str());
     waddstr(statusWin, fmt::format("Running time: {}s\n", lastTs - firstTs).c_str());
+
+    if (captureStatus != "") {
+        lastCaptureStatus = captureStatus;
+    }
+    waddstr(statusWin, lastCaptureStatus.c_str());
 
     waddstr(statusWin, fmt::format("{:<10} ", "Protocol:").c_str());
     for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
@@ -395,7 +400,7 @@ auto Screen::displayLoop() -> void
             }
             auto currentTs = time(nullptr);
             if (currentTs > lastTs) {
-                updateDisplay(currentTs, true);
+                updateDisplay(currentTs, true, "");
             }
             continue;
         }
@@ -406,7 +411,7 @@ auto Screen::displayLoop() -> void
         }
 
         if (refreshableAction(c)) {
-            updateDisplay(lastTs, true);
+            updateDisplay(lastTs, true, "");
             continue;
         }
 
@@ -437,7 +442,7 @@ auto Screen::displayLoop() -> void
         } else if (selectedLine * 2 > (maxElements * 2 + verticalScroll)) {
             verticalScroll += selectedLine * 2 - (maxElements * 2 + verticalScroll);
         }
-        updateDisplay(lastTs, false);
+        updateDisplay(lastTs, false, "");
     }
 }
 

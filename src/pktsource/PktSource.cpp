@@ -34,6 +34,16 @@ auto PktSource::getLocalIps() -> std::vector<Tins::IPv4Address>
     return res;
 }
 
+auto PktSource::getCaptureStatus() -> std::string
+{
+    if (liveDevice == nullptr) {
+        return {};
+    }
+    pcap_stat pcapStat;
+    pcap_stats(liveDevice->get_pcap_handle(), &pcapStat);
+    return fmt::format("Packets Received: {:>10}, dropped: {:>6}, if dropped: {:>6}\n", pcapStat.ps_recv, pcapStat.ps_drop, pcapStat.ps_ifdrop);
+}
+
 auto PktSource::getLiveDevice() -> Tins::Sniffer*
 {
     Tins::SnifferConfiguration snifferConf;
@@ -55,7 +65,8 @@ auto PktSource::updateScreen(int currentTime) -> void
 {
     if (lastUpdate < currentTime) {
         lastUpdate = currentTime;
-        screen->updateDisplay(currentTime, true);
+        auto captureStatus = getCaptureStatus();
+        screen->updateDisplay(currentTime, true, captureStatus);
         for (auto* collector : collectors) {
             collector->sendMetrics();
             collector->resetMetrics();
@@ -133,11 +144,11 @@ auto PktSource::analyzeLiveTraffic() -> int
 {
     spdlog::info("Start live traffic capture with filter {}",
         conf.getBpfFilter());
-    auto* dev = getLiveDevice();
-    if (dev == nullptr) {
+    liveDevice = getLiveDevice();
+    if (liveDevice == nullptr) {
         return -1;
     }
-    for (const auto& packet : *dev) {
+    for (const auto& packet : *liveDevice) {
         if (shouldStop->load()) {
             break;
         }
@@ -145,7 +156,7 @@ auto PktSource::analyzeLiveTraffic() -> int
     }
 
     spdlog::info("Stop capture");
-    dev->stop_sniff();
+    liveDevice->stop_sniff();
     spdlog::info("Stopping screen");
     screen->StopDisplay();
     return 0;
