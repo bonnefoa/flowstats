@@ -31,7 +31,7 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
     updateDisplayType(0);
 };
 
-auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId, portArray& srvPortsCounter) -> Direction
+auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId) -> Direction
 {
     auto const flags = tcp.flags();
     auto direction = flowId.getDirection();
@@ -80,7 +80,7 @@ auto TcpStatsCollector::lookupTcpFlow(
         return &it->second;
     }
 
-    auto srvDir = detectServer(tcp, flowId, srvPortsCounter);
+    auto srvDir = detectServer(tcp, flowId);
     auto ipSrv = flowId.getIp(srvDir);
     spdlog::debug("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv);
     std::optional<std::string> fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
@@ -88,7 +88,7 @@ auto TcpStatsCollector::lookupTcpFlow(
         return nullptr;
     }
 
-    auto fqdn = fqdnOpt->data();
+    auto const* fqdn = fqdnOpt->data();
     auto aggregatedTcpFlows = lookupAggregatedFlows(flowId, fqdn, srvDir);
     auto tcpFlow = TcpFlow(ip, tcp, srvDir, aggregatedTcpFlows);
     spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), flowHash, fqdn);
@@ -116,7 +116,7 @@ auto TcpStatsCollector::lookupAggregatedFlows(FlowId const& flowId,
         aggregatedMap->emplace(tcpKey, aggregatedFlow);
         spdlog::debug("Create aggregated tcp flow for {}", tcpKey.toString());
     } else {
-        aggregatedFlow = static_cast<AggregatedTcpFlow*>(it->second);
+        aggregatedFlow = dynamic_cast<AggregatedTcpFlow*>(it->second);
     }
     std::vector<AggregatedTcpFlow*> aggregatedFlows;
     aggregatedFlows.push_back(aggregatedFlow);
@@ -127,13 +127,13 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet,
     FlowId const& flowId,
     Tins::IP const& ip,
     Tins::TCP const* tcp,
-    Tins::UDP const* udp) -> void
+    Tins::UDP const*) -> void
 {
     if (tcp == nullptr) {
         return;
     }
 
-    auto tcpFlow = lookupTcpFlow(ip, *tcp, flowId);
+    auto* tcpFlow = lookupTcpFlow(ip, *tcp, flowId);
     if (tcpFlow == nullptr) {
         return;
     }
@@ -141,7 +141,7 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet,
     auto direction = flowId.getDirection();
     tcpFlow->addPacket(packet, direction);
 
-    for (auto subflow : tcpFlow->getAggregatedFlows()) {
+    for (auto* subflow : tcpFlow->getAggregatedFlows()) {
         subflow->addPacket(packet, direction);
         subflow->updateFlow(packet, flowId, *tcp);
     }

@@ -24,8 +24,8 @@ public:
         Tins::UDP const* udp) -> void override;
     auto advanceTick(timeval now) -> void override;
 
-    auto toString() const -> std::string override { return "DnsStatsCollector"; }
-    auto getProtocol() const -> CollectorProtocol override { return DNS; };
+    [[nodiscard]] auto toString() const -> std::string override { return "DnsStatsCollector"; }
+    [[nodiscard]] auto getProtocol() const -> CollectorProtocol override { return DNS; };
 
 private:
     auto isDnsPort(uint16_t port) -> bool;
@@ -37,7 +37,7 @@ private:
     auto newDnsResponse(Tins::Packet const& packet, Tins::DNS const& dns, DnsFlow* flow) -> void;
     auto updateIpToFqdn(Tins::DNS const& dns, std::string const& fqdn) -> void;
     auto addFlowToAggregation(DnsFlow const* flow) -> void;
-    auto getSortFun(Field field) const -> sortFlowFun override;
+    [[nodiscard]] auto getSortFun(Field field) const -> sortFlowFun override;
 
     IpToFqdn* ipToFqdn;
     std::map<uint16_t, DnsFlow> transactionIdToDnsFlow;

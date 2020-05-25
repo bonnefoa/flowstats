@@ -124,8 +124,8 @@ auto Collector::resetMetrics() -> void
 auto Collector::getStatsdMetrics() const -> std::vector<std::string>
 {
     std::vector<std::string> res;
-    for (auto& pair : aggregatedMap) {
-        auto val = pair.second;
+    for (auto const& pair : aggregatedMap) {
+        auto const* val = pair.second;
         auto statsdMetrics = val->getStatsdMetrics();
         res.insert(res.end(), statsdMetrics.begin(), statsdMetrics.end());
     }
@@ -152,7 +152,8 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
 {
     auto aggregatedMap = getAggregatedMap();
     std::vector<Flow const*> tempVector;
-    for (auto pair : aggregatedMap) {
+    tempVector.reserve(aggregatedMap.size());
+    for (auto const& pair : aggregatedMap) {
         tempVector.push_back(pair.second);
     }
     spdlog::info("Got {} {} flows", tempVector.size(), toString());
@@ -187,7 +188,7 @@ auto collectorProtocolToString(CollectorProtocol proto) -> std::string
 Collector::~Collector()
 {
     delete totalFlow;
-    for (auto pair : aggregatedMap) {
+    for (auto const& pair : aggregatedMap) {
         delete pair.second;
     }
 }

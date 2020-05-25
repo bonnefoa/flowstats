@@ -37,18 +37,19 @@ public:
     virtual auto advanceTick(timeval now) -> void {};
     auto resetMetrics() -> void;
 
-    auto getStatsdMetrics() const -> std::vector<std::string>;
+    [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string>;
     auto sendMetrics() -> void;
     auto mergePercentiles() -> void;
 
-    virtual auto toString() const -> std::string = 0;
-    virtual auto getProtocol() const -> CollectorProtocol = 0;
+    [[nodiscard]] virtual auto toString() const -> std::string = 0;
+    [[nodiscard]] virtual auto getProtocol() const -> CollectorProtocol = 0;
 
-    auto getDisplayPairs() const { return displayPairs; };
-    auto getSortFields() const { return sortFields; };
+    [[nodiscard]] auto getDisplayPairs() const { return displayPairs; };
+    [[nodiscard]] auto getSortFields() const { return sortFields; };
     typedef bool (*sortFlowFun)(Flow const*, Flow const*);
-    virtual auto getSortFun(Field field) const -> sortFlowFun;
-    auto outputStatus(int duration) -> CollectorOutput;
+    [[nodiscard]] virtual auto getSortFun(Field field) const -> sortFlowFun;
+
+    [[nodiscard]] auto outputStatus(int duration) -> CollectorOutput;
 
     auto updateDisplayType(int displayIndex) -> void { flowFormatter.setDisplayValues(displayPairs[displayIndex].second); };
 
@@ -64,7 +65,7 @@ public:
         reversedSort = reversed;
     };
 
-    [[nodiscard]] auto const& getAggregatedMap() const { return aggregatedMap; }
+    [[nodiscard]] auto getAggregatedMap() const { return aggregatedMap; }
     [[nodiscard]] auto getAggregatedMap() { return &aggregatedMap; }
     [[nodiscard]] auto getAggregatedFlows() const -> std::vector<Flow const*>;
 
@@ -78,9 +79,9 @@ protected:
         std::vector<std::string>* valueLines,
         int position) const -> void;
 
-    auto getDataMutex() -> std::mutex* { return &dataMutex; };
-    auto getFlowFormatter() -> FlowFormatter& { return flowFormatter; };
-    auto getFlowFormatter() const -> FlowFormatter const& { return flowFormatter; };
+    [[nodiscard]] auto getDataMutex() -> std::mutex* { return &dataMutex; };
+    [[nodiscard]] auto getFlowFormatter() -> FlowFormatter& { return flowFormatter; };
+    [[nodiscard]] auto getFlowFormatter() const -> FlowFormatter const& { return flowFormatter; };
     [[nodiscard]] auto getDisplayConf() const -> DisplayConfiguration const& { return displayConf; };
     [[nodiscard]] auto getFlowstatsConfiguration() const -> FlowstatsConfiguration const& { return conf; };
 

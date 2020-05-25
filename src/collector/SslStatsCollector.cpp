@@ -40,7 +40,7 @@ auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow*
         return nullptr;
     }
 
-    auto fqdn = fqdnOpt->data();
+    auto const* fqdn = fqdnOpt->data();
     // TODO dectect server port
     auto aggregatedFlows = lookupAggregatedFlows(flowId, fqdn, FROM_SERVER);
     spdlog::debug("Create ssl flow {}", flowId.toString());
@@ -59,13 +59,13 @@ auto SslStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string 
     AggregatedTcpKey tcpKey = AggregatedTcpKey(fqdn, ipSrvInt, flowId.getPort(srvDir));
     AggregatedSslFlow* aggregatedFlow;
 
-    auto aggregatedMap = getAggregatedMap();
+    auto* aggregatedMap = getAggregatedMap();
     auto it = aggregatedMap->find(tcpKey);
     if (it == aggregatedMap->end()) {
         aggregatedFlow = new AggregatedSslFlow(flowId, fqdn);
         aggregatedMap->insert({ tcpKey, aggregatedFlow });
     } else {
-        aggregatedFlow = static_cast<AggregatedSslFlow*>(it->second);
+        aggregatedFlow = dynamic_cast<AggregatedSslFlow*>(it->second);
     }
     subflows.push_back(aggregatedFlow);
 
@@ -74,15 +74,15 @@ auto SslStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string 
 
 auto SslStatsCollector::processPacket(Tins::Packet const& packet,
     FlowId const& flowId,
-    Tins::IP const& ip,
+    Tins::IP const&,
     Tins::TCP const* tcp,
-    Tins::UDP const* udp) -> void
+    Tins::UDP const*) -> void
 {
     if (tcp == nullptr) {
         return;
     }
 
-    auto rawData = tcp->find_pdu<Tins::RawPDU>();
+    auto const* rawData = tcp->find_pdu<Tins::RawPDU>();
     if (rawData == nullptr) {
         return;
     }
@@ -92,7 +92,7 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet,
         return;
     }
 
-    auto sslFlow = lookupSslFlow(flowId);
+    auto* sslFlow = lookupSslFlow(flowId);
     if (sslFlow == nullptr) {
         return;
     }

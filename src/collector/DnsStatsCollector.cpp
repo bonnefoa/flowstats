@@ -49,7 +49,7 @@ auto DnsStatsCollector::isPossibleDns(Tins::TCP const* tcp, Tins::UDP const* udp
 
 auto DnsStatsCollector::processPacket(Tins::Packet const& packet,
     FlowId const& flowId,
-    Tins::IP const& ip,
+    Tins::IP const&,
     Tins::TCP const* tcp,
     Tins::UDP const* udp) -> void
 {
@@ -61,7 +61,7 @@ auto DnsStatsCollector::processPacket(Tins::Packet const& packet,
         return;
     }
 
-    auto rawPdu = pdu->find_pdu<Tins::RawPDU>();
+    auto const* rawPdu = pdu->find_pdu<Tins::RawPDU>();
     if (rawPdu == nullptr) {
         return;
     }
@@ -133,7 +133,7 @@ auto DnsStatsCollector::addFlowToAggregation(DnsFlow const* flow) -> void
         aggregatedFlow = new AggregatedDnsFlow(flow->getFlowId(), fqdn, dnsType);
         aggregatedMap->emplace(key, aggregatedFlow);
     } else {
-        aggregatedFlow = static_cast<AggregatedDnsFlow*>(it->second);
+        aggregatedFlow = dynamic_cast<AggregatedDnsFlow*>(it->second);
     }
     aggregatedFlow->addFlow(flow);
 }

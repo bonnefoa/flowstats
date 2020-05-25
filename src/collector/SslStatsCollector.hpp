@@ -26,14 +26,14 @@ public:
         Tins::TCP const* tcp,
         Tins::UDP const* udp) -> void override;
 
-    auto getProtocol() const -> CollectorProtocol override { return SSL; };
-    auto toString() const -> std::string override { return "SslStatsCollector"; }
+    [[nodiscard]] auto getProtocol() const -> CollectorProtocol override { return SSL; };
+    [[nodiscard]] auto toString() const -> std::string override { return "SslStatsCollector"; }
 
     [[nodiscard]] auto getSslFlow() const -> std::map<uint32_t, SslFlow> { return hashToSslFlow; }
 
 private:
     std::map<uint32_t, SslFlow> hashToSslFlow;
-    auto getSortFun(Field field) const -> sortFlowFun override;
+    [[nodiscard]] auto getSortFun(Field field) const -> sortFlowFun override;
     auto lookupSslFlow(FlowId const& flowId) -> SslFlow*;
     auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedSslFlow*>;
     IpToFqdn* ipToFqdn;
