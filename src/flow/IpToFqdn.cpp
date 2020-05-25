@@ -23,8 +23,8 @@ IpToFqdn::IpToFqdn(FlowstatsConfiguration const& flowstatsConfiguration,
 
 auto IpToFqdn::resolveDns(std::string const& domain) -> std::vector<std::string>
 {
-    struct addrinfo hints, *res;
-    memset(&hints, 0, sizeof(hints));
+    struct addrinfo hints = {};
+    struct addrinfo* res;
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags |= AI_CANONNAME;

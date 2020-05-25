@@ -73,7 +73,7 @@ void SslFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         return;
     }
 
-    auto rawData = tcp.find_pdu<Tins::RawPDU>();
+    auto const* rawData = tcp.find_pdu<Tins::RawPDU>();
     if (rawData == nullptr) {
         return;
     }

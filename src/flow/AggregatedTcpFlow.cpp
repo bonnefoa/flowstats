@@ -34,10 +34,11 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
         packet.pdu()->advertised_size());
 }
 
-auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>& values,
+auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>* ptrValues,
     Direction direction) const -> void
 {
-    Flow::fillValues(values, direction);
+    Flow::fillValues(ptrValues, direction);
+    auto& values = *ptrValues;
     values[Field::SYN] = std::to_string(syns[direction]);
     values[Field::SYNACK] = std::to_string(synacks[direction]);
     values[Field::FIN] = std::to_string(fins[direction]);

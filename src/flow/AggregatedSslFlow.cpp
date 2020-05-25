@@ -2,12 +2,13 @@
 
 namespace flowstats {
 
-auto AggregatedSslFlow::fillValues(std::map<Field, std::string>& values,
+auto AggregatedSslFlow::fillValues(std::map<Field, std::string>* ptrValues,
     Direction direction) const -> void
 {
-    Flow::fillValues(values, direction);
+    Flow::fillValues(ptrValues, direction);
 
     if (direction == FROM_CLIENT) {
+        auto& values = *ptrValues;
         values[Field::FQDN] = getFqdn();
         values[Field::IP] = getSrvIp();
         values[Field::PORT] = std::to_string(getSrvPort());

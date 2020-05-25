@@ -5,14 +5,14 @@ namespace flowstats {
 #define SSL_SERVER_NAME_EXT 0
 #define SSL_SNI_HOST_NAME 0
 
-#define RETURN_FALSE_IF_EMPTY(VAR)  \
-    if (VAR.has_value() == false) { \
-        return false;               \
+#define RETURN_FALSE_IF_EMPTY(VAR)    \
+    if ((VAR).has_value() == false) { \
+        return false;                 \
     }
 
-#define RETURN_EMPTY_IF_EMPTY(VAR)  \
-    if (VAR.has_value() == false) { \
-        return {};                  \
+#define RETURN_EMPTY_IF_EMPTY(VAR)    \
+    if ((VAR).has_value() == false) { \
+        return {};                    \
     }
 
 auto checkValidSslVersion(std::optional<uint16_t> sslVersion) -> bool

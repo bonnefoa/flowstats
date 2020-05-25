@@ -32,10 +32,11 @@ auto AggregatedDnsFlow::getTopClientIpsStr() const -> std::string
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
 
-auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>& values,
+auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>* ptrValues,
     Direction direction) const -> void
 {
-    Flow::fillValues(values, direction);
+    Flow::fillValues(ptrValues, direction);
+    auto& values = *ptrValues;
     auto fqdn = getFqdn();
     if (fqdn == "Total") {
         if (direction == FROM_SERVER) {

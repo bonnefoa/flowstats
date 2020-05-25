@@ -23,10 +23,10 @@ TEST_CASE("Ssl connection time", "[ssl]")
     REQUIRE(flow != nullptr);
 
     std::map<Field, std::string> cltValues;
-    flow->fillValues(cltValues, FROM_CLIENT);
+    flow->fillValues(&cltValues, FROM_CLIENT);
 
     std::map<Field, std::string> srvValues;
-    flow->fillValues(srvValues, FROM_SERVER);
+    flow->fillValues(&srvValues, FROM_SERVER);
 
     CHECK(cltValues[Field::DOMAIN] == "google.com");
     CHECK(cltValues[Field::PKTS] == "8");

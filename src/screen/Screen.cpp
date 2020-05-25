@@ -59,7 +59,7 @@ std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
 
 auto Screen::updateDisplay(int ts, bool updateOutput) -> void
 {
-    if (displayConf.noCurses) {
+    if (displayConf->noCurses) {
         return;
     }
     if (firstTs == 0) {
@@ -127,7 +127,7 @@ auto Screen::updateSortSelection() -> void
     waddstr(sortSelectionWin, " ");
 
     int i = 0;
-    int displayIndex = protocolToSortIndex[displayConf.protocolIndex];
+    int displayIndex = protocolToSortIndex[displayConf->protocolIndex];
     for (const auto& sortField : activeCollector->getSortFields()) {
         if (i == displayIndex) {
             wattron(sortSelectionWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
@@ -144,18 +144,18 @@ auto Screen::updateSortSelection() -> void
 auto Screen::updateStatus() -> void
 {
     werase(statusWin);
-    mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, sort edit {}, last key {}, Filter {}, line {}, sortIndex {}, reversedSort {}\n", shouldFreeze, editSort, lastKey, displayConf.filter, selectedLine, protocolToSortIndex[displayConf.protocolIndex], reversedSort).c_str());
+    mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, sort edit {}, last key {}, Filter {}, line {}, sortIndex {}, reversedSort {}\n", shouldFreeze, editSort, lastKey, displayConf->filter, selectedLine, protocolToSortIndex[displayConf->protocolIndex], reversedSort).c_str());
 
     waddstr(statusWin, fmt::format("Running time: {}s\n", lastTs - firstTs).c_str());
 
     waddstr(statusWin, fmt::format("{:<10} ", "Protocol:").c_str());
     for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
         auto proto = protocols[i];
-        if (displayConf.protocolIndex == i) {
+        if (displayConf->protocolIndex == i) {
             wattron(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }
         waddstr(statusWin, fmt::format("{}: {:<10} ", i + 1, collectorProtocolToString(proto)).c_str());
-        if (displayConf.protocolIndex == i) {
+        if (displayConf->protocolIndex == i) {
             wattroff(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }
     }
@@ -163,7 +163,7 @@ auto Screen::updateStatus() -> void
 
     waddstr(statusWin, fmt::format("{:<10} ", "Display:").c_str());
     int i = 0;
-    int displayIndex = protocolToDisplayIndex[displayConf.protocolIndex];
+    int displayIndex = protocolToDisplayIndex[displayConf->protocolIndex];
     for (const auto& displayPair : activeCollector->getDisplayPairs()) {
         if (i == displayIndex) {
             wattron(statusWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
@@ -216,7 +216,7 @@ auto Screen::updateMenu() -> void
 
     if (editFilter) {
         wattron(menuWin, COLOR_PAIR(MENU_COLOR));
-        waddstr(menuWin, fmt::format("Filter: {}", displayConf.filter).c_str());
+        waddstr(menuWin, fmt::format("Filter: {}", displayConf->filter).c_str());
         wattroff(menuWin, COLOR_PAIR(MENU_COLOR));
     }
 }
@@ -224,7 +224,7 @@ auto Screen::updateMenu() -> void
 auto Screen::getActiveCollector() -> Collector*
 {
     for (auto& collector : collectors) {
-        if (protocols[displayConf.protocolIndex] != collector->getProtocol()) {
+        if (protocols[displayConf->protocolIndex] != collector->getProtocol()) {
             continue;
         }
         return collector;
@@ -233,13 +233,13 @@ auto Screen::getActiveCollector() -> Collector*
 }
 
 Screen::Screen(std::atomic_bool* shouldStop,
-    DisplayConfiguration& displayConf,
+    DisplayConfiguration* displayConf,
     std::vector<Collector*> collectors)
     : shouldStop(shouldStop)
     , displayConf(displayConf)
     , collectors(std::move(std::move(collectors)))
 {
-    if (displayConf.noCurses) {
+    if (displayConf->noCurses) {
         return;
     }
     initscr();
@@ -315,17 +315,17 @@ auto Screen::refreshableAction(int c) -> bool
             c = getch();
             nodelay(stdscr, false);
             if (c == -1) {
-                displayConf.filter = "";
+                displayConf->filter = "";
                 editFilter = false;
             }
         } else if (c == CTRL('u')) {
-            displayConf.filter = "";
+            displayConf->filter = "";
         } else if (c == KEY_VALID) {
             editFilter = false;
-        } else if (c == KEY_BACKSPACE && displayConf.filter.size() > 0) {
-            displayConf.filter.pop_back();
+        } else if (c == KEY_BACKSPACE && displayConf->filter.size() > 0) {
+            displayConf->filter.pop_back();
         } else if (isprint(c)) {
-            displayConf.filter.push_back(c);
+            displayConf->filter.push_back(c);
         } else {
             return false;
         }
@@ -334,15 +334,15 @@ auto Screen::refreshableAction(int c) -> bool
 
     if (editSort) {
         if (c == KEY_UP) {
-            protocolToSortIndex[displayConf.protocolIndex] = std::max(
-                protocolToSortIndex[displayConf.protocolIndex] - 1, 0);
-            activeCollector->updateSort(protocolToSortIndex[displayConf.protocolIndex], reversedSort);
+            protocolToSortIndex[displayConf->protocolIndex] = std::max(
+                protocolToSortIndex[displayConf->protocolIndex] - 1, 0);
+            activeCollector->updateSort(protocolToSortIndex[displayConf->protocolIndex], reversedSort);
             return true;
         } else if (c == KEY_DOWN) {
-            protocolToSortIndex[displayConf.protocolIndex] = std::min(
-                protocolToSortIndex[displayConf.protocolIndex] + 1,
+            protocolToSortIndex[displayConf->protocolIndex] = std::min(
+                protocolToSortIndex[displayConf->protocolIndex] + 1,
                 static_cast<int>(activeCollector->getSortFields().size()) - 1);
-            activeCollector->updateSort(protocolToSortIndex[displayConf.protocolIndex], reversedSort);
+            activeCollector->updateSort(protocolToSortIndex[displayConf->protocolIndex], reversedSort);
             return true;
         } else if (c == KEY_VALID) {
             editSort = false;
@@ -351,32 +351,32 @@ auto Screen::refreshableAction(int c) -> bool
     }
 
     if (c >= KEY_NUM(1) && c <= KEY_NUM(3)) {
-        displayConf.protocolIndex = c - KEY_NUM(1);
+        displayConf->protocolIndex = c - KEY_NUM(1);
         activeCollector = getActiveCollector();
         return true;
     } else if (c == KEY_F(4)) {
         editFilter = true;
         return true;
     } else if (c == KEY_LEFT) {
-        protocolToDisplayIndex[displayConf.protocolIndex] = std::max(
-            protocolToDisplayIndex[displayConf.protocolIndex] - 1, 0);
-        activeCollector->updateDisplayType(protocolToDisplayIndex[displayConf.protocolIndex]);
+        protocolToDisplayIndex[displayConf->protocolIndex] = std::max(
+            protocolToDisplayIndex[displayConf->protocolIndex] - 1, 0);
+        activeCollector->updateDisplayType(protocolToDisplayIndex[displayConf->protocolIndex]);
         return true;
     } else if (c == KEY_RIGHT) {
-        protocolToDisplayIndex[displayConf.protocolIndex] = std::min(
-            protocolToDisplayIndex[displayConf.protocolIndex] + 1,
+        protocolToDisplayIndex[displayConf->protocolIndex] = std::min(
+            protocolToDisplayIndex[displayConf->protocolIndex] + 1,
             static_cast<int>(activeCollector->getDisplayPairs().size()) - 1);
-        activeCollector->updateDisplayType(protocolToDisplayIndex[displayConf.protocolIndex]);
+        activeCollector->updateDisplayType(protocolToDisplayIndex[displayConf->protocolIndex]);
         return true;
     } else if (c == KEY_SUP) {
         editSort = true;
         reversedSort = false;
-        activeCollector->updateSort(protocolToSortIndex[displayConf.protocolIndex], reversedSort);
+        activeCollector->updateSort(protocolToSortIndex[displayConf->protocolIndex], reversedSort);
         return true;
     } else if (c == KEY_INF) {
         editSort = true;
         reversedSort = true;
-        activeCollector->updateSort(protocolToSortIndex[displayConf.protocolIndex], reversedSort);
+        activeCollector->updateSort(protocolToSortIndex[displayConf->protocolIndex], reversedSort);
         return true;
     }
 
@@ -390,7 +390,7 @@ auto Screen::displayLoop() -> void
 
         c = getch();
         if (c == ERR) {
-            if (displayConf.pcapReplay) {
+            if (displayConf->pcapReplay) {
                 continue;
             }
             auto currentTs = time(nullptr);
@@ -443,7 +443,7 @@ auto Screen::displayLoop() -> void
 
 auto Screen::StartDisplay() -> int
 {
-    if (displayConf.noCurses) {
+    if (displayConf->noCurses) {
         return 0;
     }
     screenThread = std::thread(&Screen::displayLoop, this);
@@ -452,7 +452,7 @@ auto Screen::StartDisplay() -> int
 
 auto Screen::StopDisplay() -> void
 {
-    if (displayConf.noCurses) {
+    if (displayConf->noCurses) {
         return;
     }
     screenThread.join();

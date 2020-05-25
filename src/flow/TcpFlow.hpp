@@ -16,7 +16,7 @@ public:
         uint8_t srvPos,
         std::vector<AggregatedTcpFlow*> _aggregatedFlows)
         : Flow(ip, tcp, srvPos)
-        , aggregatedFlows(_aggregatedFlows)
+        , aggregatedFlows(std::move(_aggregatedFlows))
     {
     }
 

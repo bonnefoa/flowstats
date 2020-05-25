@@ -18,18 +18,8 @@ namespace flowstats {
 class Screen {
 public:
     Screen(std::atomic_bool* shouldStop,
-        DisplayConfiguration& displayConf,
+        DisplayConfiguration* displayConf,
         std::vector<Collector*> collectors);
-    Screen(Screen const& s)
-        : keyWin(s.keyWin)
-        , valueWin(s.valueWin)
-        , keyHeaderWin(s.keyHeaderWin)
-        , valueHeaderWin(s.valueHeaderWin)
-        , statusWin(s.statusWin)
-        , menuWin(s.menuWin)
-        , shouldStop(s.shouldStop)
-        , displayConf(s.displayConf)
-        , activeCollector(s.activeCollector) {};
     virtual ~Screen();
 
     auto StartDisplay() -> int;
@@ -72,7 +62,7 @@ private:
     bool shouldFreeze = false;
     int lastTs = 0;
     int firstTs = 0;
-    DisplayConfiguration& displayConf;
+    DisplayConfiguration* displayConf;
     std::vector<Collector*> collectors;
     Collector* activeCollector;
     CollectorOutput collectorOutput;

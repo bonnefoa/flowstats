@@ -14,7 +14,7 @@ auto listInterfaces() -> void
 {
     const std::vector<Tins::NetworkInterface> ifaces = Tins::NetworkInterface::all();
     printf("\nNetwork interfaces:\n");
-    for (auto iter : ifaces) {
+    for (auto const& iter : ifaces) {
         printf("    -> Name: '%s'   IP address: %s\n",
             iter.name().c_str(),
             iter.ipv4_address().to_string().c_str());
@@ -115,7 +115,7 @@ auto PktSource::analyzePcapFile()
     for (auto* collector : collectors) {
         collector->resetMetrics();
     }
-    if (screen->getDisplayConf().noCurses) {
+    if (screen->getDisplayConf()->noCurses) {
         return 0;
     }
 

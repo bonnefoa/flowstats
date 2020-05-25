@@ -146,7 +146,7 @@ auto main(int argc, char* argv[]) -> int
         new flowstats::TcpStatsCollector(conf, displayConf, &ipToFqdn));
 
     std::atomic_bool shouldStop = false;
-    flowstats::Screen screen(&shouldStop, displayConf, collectors);
+    flowstats::Screen screen(&shouldStop, &displayConf, collectors);
     flowstats::PktSource pktSource(&screen, conf, collectors, &shouldStop);
     screen.StartDisplay();
     if (conf.getPcapFileName() != "") {

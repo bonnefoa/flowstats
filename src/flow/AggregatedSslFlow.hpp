@@ -13,7 +13,7 @@ public:
     AggregatedSslFlow(FlowId const& flowId, std::string const& fqdn)
         : Flow(flowId, fqdn) {};
 
-    auto fillValues(std::map<Field, std::string>& map, Direction direction) const -> void override;
+    auto fillValues(std::map<Field, std::string>* map, Direction direction) const -> void override;
     auto resetFlow(bool resetTotal) -> void override;
     auto setDomain(std::string _domain) -> void { domain = std::move(_domain); }
     auto addConnection(int delta) -> void;
