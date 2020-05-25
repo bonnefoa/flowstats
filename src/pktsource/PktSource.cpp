@@ -44,7 +44,7 @@ auto PktSource::getLiveDevice() -> Tins::Sniffer*
         auto* dev = new Tins::Sniffer(conf.getInterfaceName(), snifferConf);
         return dev;
     } catch (Tins::pcap_error const& err) {
-        conf.getErrLogger()->error("Could not open device {}: \"{}\"",
+        spdlog::error("Could not open device {}: \"{}\"",
             conf.getInterfaceName(),
             err.what());
     }

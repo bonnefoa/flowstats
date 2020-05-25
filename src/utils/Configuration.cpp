@@ -1,4 +1,5 @@
 #include "Configuration.hpp"
+#include <spdlog/logger.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -6,12 +7,18 @@ namespace flowstats {
 
 FlowstatsConfiguration::FlowstatsConfiguration()
 {
-    errLogger = spdlog::stderr_color_mt("stderr");
-    errLogger->set_level(spdlog::level::err);
+    auto errLogger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    errLogger->set_level(spdlog::level::warn);
+    errLogger->set_pattern("[multi_sink_example] [%^%l%$] %v");
 
-    auto fileLogger = spdlog::basic_logger_mt("basic_logger", "flowstats.log");
-    fileLogger->set_pattern("[%H:%M:%S %z] [thread %t] %v");
-    spdlog::set_default_logger(fileLogger);
+    auto fileLogger = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/multisink.txt", true);
+    fileLogger->set_level(spdlog::level::trace);
+
+    std::initializer_list<spdlog::sink_ptr> sinks = { errLogger, fileLogger };
+    auto logger = std::make_shared<spdlog::logger>("multi_sink", sinks);
+
+    logger->set_level(spdlog::level::debug);
+    spdlog::set_default_logger(logger);
 }
 
 auto displayTypeToString(enum DisplayType displayType) -> std::string
