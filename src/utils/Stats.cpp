@@ -1,5 +1,6 @@
 #include "Stats.hpp"
 #include <algorithm>
+#include <cmath>
 #include <fmt/core.h> // for format
 
 namespace flowstats {
@@ -32,7 +33,7 @@ auto Percentile::getPercentile(float p) const -> uint32_t
     if (p == 0) {
         return points[0];
     }
-    return points[int(points.size() * p + 0.5) - 1];
+    return points[lround(points.size() * p + 0.5) - 1];
 }
 
 auto Percentile::getPercentileStr(float p) const -> std::string
