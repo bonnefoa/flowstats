@@ -33,7 +33,7 @@ auto Percentile::getPercentile(float p) const -> uint32_t
     if (p == 0) {
         return points[0];
     }
-    return points[lround(points.size() * p + 0.5) - 1];
+    return points[floor(points.size() * p + 0.5) - 1];
 }
 
 auto Percentile::getPercentileStr(float p) const -> std::string
