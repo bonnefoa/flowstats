@@ -15,9 +15,20 @@ BETTER_ENUM(Transport, char, TCP, UDP);
 
 struct FlowId {
     FlowId() = default;
+
+    FlowId(FlowId&& flowId) noexcept;
+    auto operator=(FlowId&& other) noexcept -> FlowId&;
+
     FlowId(FlowId const& flowId);
-    FlowId(FlowId const&& flowId) noexcept;
-    auto operator=(FlowId const& other) -> FlowId&;
+    auto operator=(FlowId const& other) noexcept -> FlowId&;
+
+    //  MoveOnly(MoveOnly&& other);
+    //  MoveOnly& operator=(MoveOnly&& other);
+    //
+    //  // The copy operations are implicitly deleted, but you can
+    //  // spell that out explicitly if you want:
+    //  MoveOnly(const MoveOnly&) = delete;
+    //  MoveOnly& operator=(const MoveOnly&) = delete;
 
     FlowId(std::array<uint16_t, 2> ports, std::array<IPv4, 2> pktIps,
         Transport transport);

@@ -58,7 +58,6 @@ public:
     }
 
     auto setSrvPos(uint8_t pos) { srvPos = pos; };
-    auto setFlowId(FlowId const& _flowId) { flowId = _flowId; };
 
     virtual auto addPacket(Tins::Packet const& packet,
         Direction const direction) -> void;
@@ -71,7 +70,6 @@ public:
     [[nodiscard]] virtual auto getStatsdMetrics() const -> std::vector<std::string> { return {}; };
 
     [[nodiscard]] auto getFlowId() const { return flowId; };
-    auto setFqdn(std::string _fqdn) { fqdn = _fqdn; };
     [[nodiscard]] auto getFqdn() const { return fqdn; };
     [[nodiscard]] auto getSrvPos() const { return srvPos; }
     [[nodiscard]] auto getPackets() const { return packets; };
