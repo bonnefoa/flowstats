@@ -1,5 +1,6 @@
 #pragma once
 #include <fmt/format.h>
+#include <optional> // for optional
 #include <pcap/pcap.h>
 #include <string>
 #include <vector>
