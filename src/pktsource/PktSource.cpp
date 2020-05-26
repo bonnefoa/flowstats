@@ -34,25 +34,15 @@ auto PktSource::getLocalIps() -> std::vector<Tins::IPv4Address>
     return res;
 }
 
-auto PktSource::getCaptureStatus() -> std::array<std::string, 2>
+auto PktSource::getCaptureStatus() -> std::optional<CaptureStat>
 {
     if (liveDevice == nullptr) {
         return {};
     }
     pcap_stat pcapStat;
     pcap_stats(liveDevice->get_pcap_handle(), &pcapStat);
-    auto pktRate = pcapStat.ps_recv;
-    auto dropRate = pcapStat.ps_drop;
-    auto ifDropRate = pcapStat.ps_ifdrop;
-    if (lastPcapStat.ps_recv > 0) {
-        pktRate = pcapStat.ps_recv - lastPcapStat.ps_recv;
-        dropRate = pcapStat.ps_drop - lastPcapStat.ps_drop;
-        ifDropRate = pcapStat.ps_ifdrop - lastPcapStat.ps_ifdrop;
-    }
-    lastPcapStat = pcapStat;
-    auto stats = fmt::format("Packets recv: {:>8}, drop: {:>6}, ifDrop: {:>6}\n", pcapStat.ps_recv, pcapStat.ps_drop, pcapStat.ps_ifdrop);
-    auto rate = fmt::format("Packets recv:   {:>6}/s, drop: {:>4}/s, ifDrop: {:>4}/s\n", pktRate, dropRate, ifDropRate);
-    return { stats, rate };
+    auto captureStat = CaptureStat(pcapStat);
+    return captureStat;
 }
 
 auto PktSource::getLiveDevice() -> Tins::Sniffer*
@@ -72,9 +62,9 @@ auto PktSource::getLiveDevice() -> Tins::Sniffer*
     return nullptr;
 }
 
-auto PktSource::updateScreen(int currentTime) -> void
+auto PktSource::updateScreen(timeval currentTime) -> void
 {
-    if (lastUpdate < currentTime) {
+    if (lastUpdate.tv_sec < currentTime.tv_sec) {
         lastUpdate = currentTime;
         auto captureStatus = getCaptureStatus();
         screen->updateDisplay(currentTime, true, captureStatus);
@@ -111,8 +101,8 @@ auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
             spdlog::info("Malformed packet: {}", packet);
         }
     }
-    lastTs = packet.timestamp().seconds();
-    updateScreen(lastTs);
+    auto ts = packet.timestamp();
+    updateScreen({ ts.seconds(), ts.microseconds() / 1000 });
 }
 
 /**

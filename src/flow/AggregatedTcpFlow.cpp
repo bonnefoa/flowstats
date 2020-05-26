@@ -74,6 +74,8 @@ auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>* ptrValues,
 
 auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
 {
+    Flow::addFlow(flow);
+
     auto const* tcpFlow = dynamic_cast<const AggregatedTcpFlow*>(flow);
     for (int i = 0; i <= FROM_SERVER; ++i) {
         syns[i] += tcpFlow->syns[i];

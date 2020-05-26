@@ -3,6 +3,7 @@
 #include "Collector.hpp"
 #include "CollectorOutput.hpp"
 #include "Configuration.hpp"
+#include "Stats.hpp"
 #include <atomic>
 #include <iostream>
 #include <menu.h>
@@ -26,8 +27,8 @@ public:
     auto StartDisplay() -> int;
     auto StopDisplay() -> void;
     auto getCurrentChoice() -> std::string;
-    auto updateDisplay(int ts, bool updateOutput,
-        std::array<std::string, 2> captureStatus) -> void;
+    auto updateDisplay(timeval tv, bool updateOutput,
+        std::optional<CaptureStat> captureStatus) -> void;
 
     [[nodiscard]] auto getDisplayConf() const { return displayConf; };
 
@@ -39,7 +40,7 @@ private:
     auto refreshableAction(int c) -> bool;
     auto updateHeaders() -> void;
     auto updateValues() -> void;
-    auto updateStatus(std::array<std::string, 2> captureStatus) -> void;
+    auto updateStatus(std::optional<CaptureStat> captureStat) -> void;
     auto updateMenu() -> void;
     auto updateSortSelection() -> void;
 
@@ -62,13 +63,17 @@ private:
     std::thread screenThread;
     std::atomic_bool* shouldStop;
     bool shouldFreeze = false;
-    int lastTs = 0;
-    int firstTs = 0;
+    timeval lastTv = {};
+    timeval firstTv = {};
     DisplayConfiguration* displayConf;
     std::vector<Collector*> collectors;
     Collector* activeCollector;
     CollectorOutput collectorOutput;
-    std::array<std::string, 2> lastCaptureStatus;
+
+    timeval lastCaptureStatUpdate = {};
+    CaptureStat stagingCaptureStat;
+    CaptureStat currentCaptureStat;
+    CaptureStat previousCaptureStat;
 
     bool editFilter = false;
     bool editSort = false;

@@ -57,20 +57,19 @@ std::array<CollectorProtocol, 3> protocols = { DNS, TCP, SSL };
 std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
 
-auto Screen::updateDisplay(int ts, bool updateOutput,
-    std::array<std::string, 2> captureStatus) -> void
+auto Screen::updateDisplay(timeval tv, bool updateOutput,
+    std::optional<CaptureStat> captureStat) -> void
 {
     if (displayConf->noCurses) {
         return;
     }
-    if (firstTs == 0) {
-        firstTs = ts;
+    if (firstTv.tv_sec == 0) {
+        firstTv = tv;
     }
-    assert(ts >= lastTs);
-    lastTs = ts;
+    lastTv = tv;
 
     const std::lock_guard<std::mutex> lock(screenMutex);
-    updateStatus(captureStatus);
+    updateStatus(captureStat);
     updateSortSelection();
     updateMenu();
 
@@ -80,7 +79,7 @@ auto Screen::updateDisplay(int ts, bool updateOutput,
     }
 
     if (updateOutput) {
-        collectorOutput = activeCollector->outputStatus(ts);
+        collectorOutput = activeCollector->outputStatus(tv.tv_sec);
     }
 
     updateHeaders();
@@ -142,17 +141,26 @@ auto Screen::updateSortSelection() -> void
     }
 }
 
-auto Screen::updateStatus(std::array<std::string, 2> captureStatus) -> void
+auto Screen::updateStatus(std::optional<CaptureStat> captureStat) -> void
 {
     werase(statusWin);
     //mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, sort edit {}, last key {}, Filter {}, line {}, sortIndex {}, reversedSort {}\n", shouldFreeze, editSort, lastKey, displayConf->filter, selectedLine, protocolToSortIndex[displayConf->protocolIndex], reversedSort).c_str());
-    waddstr(statusWin, fmt::format("Running time: {}s\n", lastTs - firstTs).c_str());
+    waddstr(statusWin, fmt::format("Running time: {}s\n", lastTv.tv_sec - firstTv.tv_sec).c_str());
 
-    if (captureStatus[0] != "") {
-        lastCaptureStatus = captureStatus;
+    if (captureStat.has_value()) {
+        stagingCaptureStat = captureStat.value();
     }
-    waddstr(statusWin, lastCaptureStatus[0].c_str());
-    waddstr(statusWin, lastCaptureStatus[1].c_str());
+
+    auto previousUpdateMs = timevalInMs(lastCaptureStatUpdate);
+    auto lastTsMs = timevalInMs(lastTv);
+    if (lastTsMs > previousUpdateMs && lastTsMs - previousUpdateMs > 1000) {
+        previousCaptureStat = currentCaptureStat;
+        currentCaptureStat = stagingCaptureStat;
+        lastCaptureStatUpdate = lastTv;
+    }
+
+    waddstr(statusWin, currentCaptureStat.getTotal().c_str());
+    waddstr(statusWin, currentCaptureStat.getRate(previousCaptureStat).c_str());
 
     waddstr(statusWin, fmt::format("{:<10} ", "Protocol:").c_str());
     for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
@@ -399,9 +407,10 @@ auto Screen::displayLoop() -> void
             if (displayConf->pcapReplay) {
                 continue;
             }
-            auto currentTs = time(nullptr);
-            if (currentTs > lastTs) {
-                updateDisplay(currentTs, true, {});
+            struct timeval currentTime;
+            gettimeofday(&currentTime, NULL);
+            if (getTimevalDeltaMs(lastTv, currentTime) > 1000) {
+                updateDisplay(currentTime, true, {});
             }
             continue;
         }
@@ -412,7 +421,7 @@ auto Screen::displayLoop() -> void
         }
 
         if (refreshableAction(c)) {
-            updateDisplay(lastTs, true, {});
+            updateDisplay(lastTv, true, {});
             continue;
         }
 
@@ -443,7 +452,7 @@ auto Screen::displayLoop() -> void
         } else if (selectedLine * 2 > (maxElements * 2 + verticalScroll)) {
             verticalScroll += selectedLine * 2 - (maxElements * 2 + verticalScroll);
         }
-        updateDisplay(lastTs, false, {});
+        updateDisplay(lastTv, false, {});
     }
 }
 

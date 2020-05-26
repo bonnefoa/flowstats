@@ -3,7 +3,7 @@
 #include "Collector.hpp"
 #include "Configuration.hpp"
 #include "Screen.hpp"
-#include <pcap/pcap.h>
+#include "Stats.hpp"
 #include <tins/ip_address.h>
 #include <tins/sniffer.h>
 
@@ -26,8 +26,8 @@ public:
     };
     virtual ~PktSource() = default;
 
-    auto updateScreen(int currentTime) -> void;
-    [[nodiscard]] auto getCaptureStatus() -> std::array<std::string, 2>;
+    auto updateScreen(timeval currentTime) -> void;
+    [[nodiscard]] auto getCaptureStatus() -> std::optional<CaptureStat>;
     [[nodiscard]] auto getLocalIps() -> std::vector<Tins::IPv4Address>;
 
     auto analyzeLiveTraffic() -> int;
@@ -41,8 +41,7 @@ private:
     std::vector<Collector*> const& collectors;
     std::atomic_bool* shouldStop;
 
-    int lastUpdate = 0;
-    int lastTs = 0;
+    timeval lastUpdate = {};
     pcap_stat lastPcapStat = {};
 
     auto getLiveDevice() -> Tins::Sniffer*;
