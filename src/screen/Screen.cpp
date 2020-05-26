@@ -58,7 +58,7 @@ std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
 
 auto Screen::updateDisplay(int ts, bool updateOutput,
-    std::string captureStatus) -> void
+    std::array<std::string, 2> captureStatus) -> void
 {
     if (displayConf->noCurses) {
         return;
@@ -142,16 +142,17 @@ auto Screen::updateSortSelection() -> void
     }
 }
 
-auto Screen::updateStatus(std::string captureStatus) -> void
+auto Screen::updateStatus(std::array<std::string, 2> captureStatus) -> void
 {
     werase(statusWin);
     //mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, sort edit {}, last key {}, Filter {}, line {}, sortIndex {}, reversedSort {}\n", shouldFreeze, editSort, lastKey, displayConf->filter, selectedLine, protocolToSortIndex[displayConf->protocolIndex], reversedSort).c_str());
     waddstr(statusWin, fmt::format("Running time: {}s\n", lastTs - firstTs).c_str());
 
-    if (captureStatus != "") {
+    if (captureStatus[0] != "") {
         lastCaptureStatus = captureStatus;
     }
-    waddstr(statusWin, lastCaptureStatus.c_str());
+    waddstr(statusWin, lastCaptureStatus[0].c_str());
+    waddstr(statusWin, lastCaptureStatus[1].c_str());
 
     waddstr(statusWin, fmt::format("{:<10} ", "Protocol:").c_str());
     for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
@@ -400,7 +401,7 @@ auto Screen::displayLoop() -> void
             }
             auto currentTs = time(nullptr);
             if (currentTs > lastTs) {
-                updateDisplay(currentTs, true, "");
+                updateDisplay(currentTs, true, {});
             }
             continue;
         }
@@ -411,7 +412,7 @@ auto Screen::displayLoop() -> void
         }
 
         if (refreshableAction(c)) {
-            updateDisplay(lastTs, true, "");
+            updateDisplay(lastTs, true, {});
             continue;
         }
 
@@ -442,7 +443,7 @@ auto Screen::displayLoop() -> void
         } else if (selectedLine * 2 > (maxElements * 2 + verticalScroll)) {
             verticalScroll += selectedLine * 2 - (maxElements * 2 + verticalScroll);
         }
-        updateDisplay(lastTs, false, "");
+        updateDisplay(lastTs, false, {});
     }
 }
 

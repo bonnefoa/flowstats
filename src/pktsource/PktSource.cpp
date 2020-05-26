@@ -34,14 +34,25 @@ auto PktSource::getLocalIps() -> std::vector<Tins::IPv4Address>
     return res;
 }
 
-auto PktSource::getCaptureStatus() -> std::string
+auto PktSource::getCaptureStatus() -> std::array<std::string, 2>
 {
     if (liveDevice == nullptr) {
         return {};
     }
     pcap_stat pcapStat;
     pcap_stats(liveDevice->get_pcap_handle(), &pcapStat);
-    return fmt::format("Packets Received: {:>10}, dropped: {:>6}, if dropped: {:>6}\n", pcapStat.ps_recv, pcapStat.ps_drop, pcapStat.ps_ifdrop);
+    auto pktRate = pcapStat.ps_recv;
+    auto dropRate = pcapStat.ps_drop;
+    auto ifDropRate = pcapStat.ps_ifdrop;
+    if (lastPcapStat.ps_recv > 0) {
+        pktRate = pcapStat.ps_recv - lastPcapStat.ps_recv;
+        dropRate = pcapStat.ps_drop - lastPcapStat.ps_drop;
+        ifDropRate = pcapStat.ps_ifdrop - lastPcapStat.ps_ifdrop;
+    }
+    lastPcapStat = pcapStat;
+    auto stats = fmt::format("Packets recv: {:>8}, drop: {:>6}, ifDrop: {:>6}\n", pcapStat.ps_recv, pcapStat.ps_drop, pcapStat.ps_ifdrop);
+    auto rate = fmt::format("Packets recv:   {:>6}/s, drop: {:>4}/s, ifDrop: {:>4}/s\n", pktRate, dropRate, ifDropRate);
+    return { stats, rate };
 }
 
 auto PktSource::getLiveDevice() -> Tins::Sniffer*

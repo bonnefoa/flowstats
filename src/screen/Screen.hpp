@@ -27,7 +27,7 @@ public:
     auto StopDisplay() -> void;
     auto getCurrentChoice() -> std::string;
     auto updateDisplay(int ts, bool updateOutput,
-        std::string captureStatus) -> void;
+        std::array<std::string, 2> captureStatus) -> void;
 
     [[nodiscard]] auto getDisplayConf() const { return displayConf; };
 
@@ -39,7 +39,7 @@ private:
     auto refreshableAction(int c) -> bool;
     auto updateHeaders() -> void;
     auto updateValues() -> void;
-    auto updateStatus(std::string captureStatus) -> void;
+    auto updateStatus(std::array<std::string, 2> captureStatus) -> void;
     auto updateMenu() -> void;
     auto updateSortSelection() -> void;
 
@@ -68,7 +68,7 @@ private:
     std::vector<Collector*> collectors;
     Collector* activeCollector;
     CollectorOutput collectorOutput;
-    std::string lastCaptureStatus = "";
+    std::array<std::string, 2> lastCaptureStatus;
 
     bool editFilter = false;
     bool editSort = false;

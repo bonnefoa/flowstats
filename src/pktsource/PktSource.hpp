@@ -20,11 +20,14 @@ public:
         : screen(screen)
         , conf(conf)
         , collectors(collectors)
-        , shouldStop(shouldStop) {};
+        , shouldStop(shouldStop)
+    {
+        lastPcapStat.ps_recv = 0;
+    };
     virtual ~PktSource() = default;
 
     auto updateScreen(int currentTime) -> void;
-    [[nodiscard]] auto getCaptureStatus() -> std::string;
+    [[nodiscard]] auto getCaptureStatus() -> std::array<std::string, 2>;
     [[nodiscard]] auto getLocalIps() -> std::vector<Tins::IPv4Address>;
 
     auto analyzeLiveTraffic() -> int;
@@ -40,6 +43,7 @@ private:
 
     int lastUpdate = 0;
     int lastTs = 0;
+    pcap_stat lastPcapStat = {};
 
     auto getLiveDevice() -> Tins::Sniffer*;
     Tins::Sniffer* liveDevice = nullptr;
