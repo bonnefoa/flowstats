@@ -23,29 +23,29 @@ public:
 
     [[nodiscard]] static auto sortByConnections(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = dynamic_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = dynamic_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
         return aCast->totalConnections < bCast->totalConnections;
     }
 
     [[nodiscard]] static auto sortByConnectionRate(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = dynamic_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = dynamic_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
         return aCast->numConnections < bCast->numConnections;
     }
 
     [[nodiscard]] static auto sortByConnectionP95(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = dynamic_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = dynamic_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
         return aCast->connections.getPercentile(.95) < bCast->connections.getPercentile(.95);
     }
 
     [[nodiscard]] static auto sortByConnectionP99(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = dynamic_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = dynamic_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
         return aCast->connections.getPercentile(.99) < bCast->connections.getPercentile(.99);
     }
 
