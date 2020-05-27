@@ -126,7 +126,6 @@ auto fieldToHeader(Field field) -> char const*
     default:
         return "Unknown";
     }
-    return "needed for gcc 5";
 }
 
 } // namespace flowstats
