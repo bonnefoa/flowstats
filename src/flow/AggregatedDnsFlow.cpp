@@ -97,7 +97,7 @@ auto AggregatedDnsFlow::addFlow(Flow const* flow) -> void
 {
     Flow::addFlow(flow);
 
-    auto const* dnsFlow = dynamic_cast<DnsFlow const*>(flow);
+    auto const* dnsFlow = static_cast<DnsFlow const*>(flow);
     queries++;
     truncated += dnsFlow->getTruncated();
     records += dnsFlow->getNumberRecords();
