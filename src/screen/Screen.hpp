@@ -44,16 +44,16 @@ private:
     auto updateMenu() -> void;
     auto updateSortSelection() -> void;
 
-    WINDOW* keyWin;
-    WINDOW* valueWin;
+    WINDOW* keyWin = nullptr;
+    WINDOW* valueWin = nullptr;
 
-    WINDOW* keyHeaderWin;
-    WINDOW* valueHeaderWin;
+    WINDOW* keyHeaderWin = nullptr;
+    WINDOW* valueHeaderWin = nullptr;
 
-    WINDOW* statusWin;
-    WINDOW* menuWin;
+    WINDOW* statusWin = nullptr;
+    WINDOW* menuWin = nullptr;
 
-    WINDOW* sortSelectionWin;
+    WINDOW* sortSelectionWin = nullptr;
 
     int maxElements = 0;
     int numberElements = 0;
