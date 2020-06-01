@@ -61,24 +61,27 @@ TEST_CASE("Tcp sort", "[tcp]")
     {
         tester.readPcap("testcom.pcap");
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
-        REQUIRE(aggregatedMap->size() == 3);
+        REQUIRE(aggregatedMap->size() == 4);
 
         auto flows = tcpStatsCollector.getAggregatedFlows();
         CHECK(flows[0]->getFqdn() == "news.ycombinator.com");
         CHECK(flows[1]->getFqdn() == "Unknown");
         CHECK(flows[2]->getFqdn() == "www.test.com");
+        CHECK(flows[3]->getFqdn() == "www.test.com");
 
         tcpStatsCollector.setSortField(Field::FQDN, true);
         flows = tcpStatsCollector.getAggregatedFlows();
         CHECK(flows[0]->getFqdn() == "www.test.com");
-        CHECK(flows[1]->getFqdn() == "Unknown");
-        CHECK(flows[2]->getFqdn() == "news.ycombinator.com");
+        CHECK(flows[1]->getFqdn() == "www.test.com");
+        CHECK(flows[2]->getFqdn() == "Unknown");
+        CHECK(flows[3]->getFqdn() == "news.ycombinator.com");
 
         tcpStatsCollector.setSortField(Field::PORT, false);
         flows = tcpStatsCollector.getAggregatedFlows();
         CHECK(flows[0]->getSrvPort() == 80);
         CHECK(flows[1]->getSrvPort() == 443);
         CHECK(flows[2]->getSrvPort() == 443);
+        CHECK(flows[3]->getSrvPort() == 443);
     }
 }
 
