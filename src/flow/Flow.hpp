@@ -21,29 +21,7 @@ public:
     {
     }
 
-    explicit Flow(FlowId flowId)
-        : flowId(std::move(flowId))
-    {
-    }
-
-    Flow(Tins::IP const& ipv4, Tins::TCP const& tcp, uint8_t srvPos)
-        : flowId(ipv4, tcp)
-        , srvPos(srvPos)
-    {
-    }
-
-    Flow(Tins::IP const& ipv4, Tins::UDP const& udp)
-        : flowId(ipv4, udp)
-    {
-    }
-
-    Flow(FlowId flowId, std::string fqdn)
-        : flowId(std::move(flowId))
-        , fqdn(std::move(fqdn))
-    {
-    }
-
-    Flow(FlowId flowId, std::string fqdn, uint8_t srvPos)
+    explicit Flow(FlowId flowId, std::string fqdn = "", uint8_t srvPos = 1)
         : flowId(std::move(flowId))
         , fqdn(std::move(fqdn))
         , srvPos(srvPos)
@@ -76,6 +54,7 @@ public:
     [[nodiscard]] auto getTotalBytes() const { return totalBytes; };
     [[nodiscard]] auto getTotalPackets() const { return totalPackets; };
 
+    [[nodiscard]] auto getNetwork() const { return flowId.getNetwork(); };
     [[nodiscard]] auto getTransport() const { return flowId.getTransport(); };
     [[nodiscard]] auto getPort(uint8_t pos) const { return flowId.getPort(pos); }
     [[nodiscard]] auto getSrvPort() const { return flowId.getPort(srvPos); }

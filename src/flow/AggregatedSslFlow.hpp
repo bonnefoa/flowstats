@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AggregatedFlow.hpp"
+#include "Flow.hpp"
 #include "Stats.hpp"
 
 namespace flowstats {

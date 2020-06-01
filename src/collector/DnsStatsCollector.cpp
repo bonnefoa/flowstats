@@ -49,7 +49,8 @@ auto DnsStatsCollector::isPossibleDns(Tins::TCP const* tcp, Tins::UDP const* udp
 
 auto DnsStatsCollector::processPacket(Tins::Packet const& packet,
     FlowId const& flowId,
-    Tins::IP const&,
+    Tins::IP const*,
+    Tins::IPv6 const*,
     Tins::TCP const* tcp,
     Tins::UDP const* udp) -> void
 {
@@ -83,13 +84,16 @@ auto DnsStatsCollector::updateIpToFqdn(Tins::DNS const& dns, std::string const& 
 {
     auto answers = dns.answers();
     std::vector<Tins::IPv4Address> ips;
+    std::vector<Tins::IPv6Address> ipv6;
     for (auto const& answer : answers) {
         if (answer.query_type() == Tins::DNS::A) {
             ips.emplace_back(Tins::IPv4Address(answer.data()));
+        } else if (answer.query_type() == Tins::DNS::AAAA) {
+            ipv6.emplace_back(Tins::IPv6Address(answer.data()));
         }
     }
 
-    ipToFqdn->updateFqdn(fqdn, ips);
+    ipToFqdn->updateFqdn(fqdn, ips, ipv6);
 }
 
 auto DnsStatsCollector::newDnsQuery(Tins::Packet const& packet, FlowId const& flowId, Tins::DNS const& dns) -> void
@@ -121,7 +125,7 @@ auto DnsStatsCollector::addFlowToAggregation(DnsFlow const* flow) -> void
 {
     auto dnsType = flow->getType();
     auto fqdn = flow->getFqdn();
-    AggregatedDnsKey key(fqdn, dnsType, flow->getTransport());
+    auto key = AggregatedKey::aggregatedDnsKey(fqdn, dnsType, flow->getTransport());
 
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto* aggregatedMap = getAggregatedMap();
@@ -129,10 +133,11 @@ auto DnsStatsCollector::addFlowToAggregation(DnsFlow const* flow) -> void
     AggregatedDnsFlow* aggregatedFlow;
     if (it == aggregatedMap->end()) {
         spdlog::debug("Create new dns aggregation for {} {} {}", fqdn,
-            dnsTypeToString(dnsType), flow->getTransport());
+            dnsTypeToString(dnsType), flow->getTransport()._to_string());
         aggregatedFlow = new AggregatedDnsFlow(flow->getFlowId(), fqdn, dnsType);
         aggregatedMap->emplace(key, aggregatedFlow);
     } else {
+        assert(it->first == key);
         aggregatedFlow = dynamic_cast<AggregatedDnsFlow*>(it->second);
     }
     aggregatedFlow->addFlow(flow);

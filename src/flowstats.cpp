@@ -154,7 +154,7 @@ auto main(int argc, char* argv[]) -> int
         pktSource.analyzePcapFile();
     } else {
         std::vector<Tins::IPv4Address> localIps = pktSource.getLocalIps();
-        ipToFqdn.updateFqdn("localhost", localIps);
+        ipToFqdn.updateFqdn("localhost", localIps, {});
         pktSource.analyzeLiveTraffic();
     }
 

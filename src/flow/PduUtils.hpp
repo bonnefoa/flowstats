@@ -1,12 +1,15 @@
 #pragma once
 
 #include <tins/ip.h>
+#include <tins/ipv6.h>
 #include <tins/tcp.h>
 #include <tins/udp.h>
 
 namespace flowstats {
 
-auto getTcpPayloadSize(Tins::IP const& ip, Tins::TCP const& tcp) -> uint32_t;
+auto getTcpPayloadSize(Tins::IP const* ip,
+    Tins::IPv6 const* ipv6,
+    Tins::TCP const& tcp) -> uint32_t;
 
 class Cursor {
 public:

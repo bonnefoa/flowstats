@@ -14,15 +14,14 @@
 
 namespace flowstats {
 
-using hashFlow = std::pair<uint32_t, SslFlow>;
-
 class SslStatsCollector : public Collector {
 public:
     SslStatsCollector(FlowstatsConfiguration const& conf, DisplayConfiguration const& displayConf, IpToFqdn* ipToFqdn);
 
     auto processPacket(Tins::Packet const& packet,
         FlowId const& flowId,
-        Tins::IP const& ip,
+        Tins::IP const* ip,
+        Tins::IPv6 const* ipv6,
         Tins::TCP const* tcp,
         Tins::UDP const* udp) -> void override;
 

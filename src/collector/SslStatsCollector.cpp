@@ -56,7 +56,7 @@ auto SslStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string 
     if (getFlowstatsConfiguration().getPerIpAggr()) {
         ipSrvInt = flowId.getIp(srvDir);
     }
-    AggregatedTcpKey tcpKey = AggregatedTcpKey(fqdn, ipSrvInt, flowId.getPort(srvDir));
+    auto tcpKey = AggregatedKey(fqdn, ipSrvInt, {}, flowId.getPort(srvDir));
     AggregatedSslFlow* aggregatedFlow;
 
     auto* aggregatedMap = getAggregatedMap();
@@ -74,7 +74,8 @@ auto SslStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string 
 
 auto SslStatsCollector::processPacket(Tins::Packet const& packet,
     FlowId const& flowId,
-    Tins::IP const&,
+    Tins::IP const*,
+    Tins::IPv6 const*,
     Tins::TCP const* tcp,
     Tins::UDP const*) -> void
 {

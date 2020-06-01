@@ -10,7 +10,6 @@ using namespace flowstats;
 
 TEST_CASE("Tcp simple", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
@@ -19,7 +18,7 @@ TEST_CASE("Tcp simple", "[tcp]")
         tester.readPcap("tcp_simple.pcap", "port 53");
         tester.readPcap("tcp_simple.pcap", "port 80", false);
 
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("google.com", 0, 80);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("google.com", 0, 80);
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
@@ -46,7 +45,7 @@ TEST_CASE("Tcp simple", "[tcp]")
         CHECK(flows.size() == 1);
         CHECK(flows[0].getGap() == 0);
 
-        AggregatedTcpKey totalKey = AggregatedTcpKey("Total", 0, 0);
+        AggregatedKey totalKey = AggregatedKey::aggregatedIpv4TcpKey("Total", 0, 0);
         std::map<Field, std::string> totalValues;
         aggregatedFlow->fillValues(&totalValues, FROM_CLIENT);
         CHECK(totalValues[Field::SYN] == "1");
@@ -55,7 +54,6 @@ TEST_CASE("Tcp simple", "[tcp]")
 
 TEST_CASE("Tcp sort", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto& tcpStatsCollector = tester.getTcpStatsCollector();
 
@@ -86,13 +84,12 @@ TEST_CASE("Tcp sort", "[tcp]")
 
 TEST_CASE("https pcap", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("Active connections are correctly counted")
     {
-        auto tcpKey = AggregatedTcpKey("Unknown", 0, 443);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 443);
         tester.readPcap("https.pcap", "port 443", false);
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
@@ -117,14 +114,13 @@ TEST_CASE("https pcap", "[tcp]")
 
 TEST_CASE("Tcp reused port", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
     SECTION("Reused connections")
     {
         tester.readPcap("reuse_port.pcap");
 
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 1234);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 1234);
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
         auto aggregatedFlow = aggregatedMap[tcpKey];
@@ -147,12 +143,11 @@ TEST_CASE("Tcp reused port", "[tcp]")
 
 TEST_CASE("Ssl stream ack + srt", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
     SECTION("Only payload from client starts SRT")
     {
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 443);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 443);
         tester.readPcap("ssl_ack_srt.pcap");
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
@@ -171,12 +166,11 @@ TEST_CASE("Ssl stream ack + srt", "[tcp]")
 
 TEST_CASE("Ssl stream multiple srts", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
     SECTION("Srts are correctly computed from single flow")
     {
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 443);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 443);
         tester.readPcap("tls_stream_extract.pcap");
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
@@ -199,7 +193,7 @@ TEST_CASE("Tcp double", "[tcp]")
 
     SECTION("Srts are correctly computed from multiple flows")
     {
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 3834);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 3834);
         tester.readPcap("tcp_double.pcap");
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
@@ -217,7 +211,6 @@ TEST_CASE("Tcp double", "[tcp]")
 
 TEST_CASE("Tcp 0 win", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester(true);
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
@@ -228,7 +221,7 @@ TEST_CASE("Tcp 0 win", "[tcp]")
         auto ipFlows = tcpStatsCollector.getAggregatedMap();
         REQUIRE(ipFlows.size() == 1);
 
-        auto tcpKey = AggregatedTcpKey("Unknown", Tins::IPv4Address("127.0.0.1"), 443);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", Tins::IPv4Address("127.0.0.1"), 443);
         auto flow = ipFlows[tcpKey];
 
         std::map<Field, std::string> srvValues;
@@ -248,7 +241,7 @@ TEST_CASE("Tcp rst", "[tcp]")
 
     auto& ipToFqdn = tester.getIpToFqdn();
     Tins::IPv4Address ip("10.142.226.42");
-    ipToFqdn.updateFqdn("whatever", ip);
+    ipToFqdn.updateFqdn("whatever", { ip }, {});
 
     SECTION("Rst only close once")
     {
@@ -257,7 +250,7 @@ TEST_CASE("Tcp rst", "[tcp]")
         auto ipFlows = tcpStatsCollector.getAggregatedMap();
         REQUIRE(ipFlows.size() == 1);
 
-        auto tcpKey = AggregatedTcpKey("whatever", ip, 3834);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("whatever", ip, 3834);
         auto flow = ipFlows[tcpKey];
 
         std::map<Field, std::string> cltValues;
@@ -270,13 +263,12 @@ TEST_CASE("Tcp rst", "[tcp]")
 
 TEST_CASE("Inversed srt", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("We correctly detect the server")
     {
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 9000);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 9000);
         tester.readPcap("inversed_srv.pcap", "");
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
@@ -290,13 +282,12 @@ TEST_CASE("Inversed srt", "[tcp]")
 
 TEST_CASE("Request size", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("We correctly detect the server")
     {
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 9000);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 9000);
         tester.readPcap("6_sec_srt_extract.pcap", "");
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
@@ -314,13 +305,12 @@ TEST_CASE("Request size", "[tcp]")
 
 TEST_CASE("Srv port detection", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("We correctly detect srv port")
     {
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 9000);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 9000);
         tester.readPcap("port_detection.pcap", "", false);
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
@@ -338,13 +328,12 @@ TEST_CASE("Srv port detection", "[tcp]")
 
 TEST_CASE("Gap in capture", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
 
     SECTION("We don't compute SRT on gap")
     {
-        AggregatedTcpKey tcpKey = AggregatedTcpKey("Unknown", 0, 80);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 80);
         tester.readPcap("tcp_gap.pcap", "", false);
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
@@ -367,7 +356,6 @@ TEST_CASE("Gap in capture", "[tcp]")
 
 TEST_CASE("Mtu is correctly computed", "[tcp]")
 {
-    spdlog::set_level(spdlog::level::debug);
     auto tester = Tester();
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
     tester.readPcap("tcp_mtu.pcap", "");
@@ -377,7 +365,7 @@ TEST_CASE("Mtu is correctly computed", "[tcp]")
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        auto tcpKey = AggregatedTcpKey("Unknown", 0, 80);
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 80);
         auto flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
@@ -388,5 +376,41 @@ TEST_CASE("Mtu is correctly computed", "[tcp]")
 
         CHECK(cltValues[Field::MTU] == "15346");
         CHECK(srvValues[Field::MTU] == "413");
+    }
+}
+
+TEST_CASE("Ipv6", "[tcp]")
+{
+    auto tester = Tester();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
+    auto const& dnsStatsCollector = tester.getDnsStatsCollector();
+    tester.readPcap("ipv6.pcap", "");
+
+    SECTION("We build ipv6 to fqdn mapping")
+    {
+        auto aggregatedMap = dnsStatsCollector.getAggregatedMap();
+        REQUIRE(aggregatedMap.size() == 2);
+        auto dnsKey = AggregatedKey::aggregatedDnsKey("google.fr",
+            Tins::DNS::AAAA, Transport::UDP);
+        auto flow = aggregatedMap[dnsKey];
+        REQUIRE(flow != nullptr);
+    }
+
+    SECTION("We correctly compute ipv6 tcp traffic")
+    {
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        REQUIRE(aggregatedMap.size() == 1);
+
+        auto tcpKey = AggregatedKey::aggregatedIpv6TcpKey("google.fr", {}, 80);
+        auto flow = aggregatedMap[tcpKey];
+        REQUIRE(flow != nullptr);
+
+        std::map<Field, std::string> cltValues;
+        flow->fillValues(&cltValues, FROM_CLIENT);
+        std::map<Field, std::string> srvValues;
+        flow->fillValues(&srvValues, FROM_SERVER);
+
+        CHECK(cltValues[Field::BYTES] == "609 B");
+        CHECK(srvValues[Field::BYTES] == "886 B");
     }
 }

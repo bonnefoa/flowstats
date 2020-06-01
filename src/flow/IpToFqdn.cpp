@@ -59,20 +59,17 @@ auto IpToFqdn::resolveDomains(const std::vector<std::string>& initialDomains,
 }
 
 auto IpToFqdn::updateFqdn(std::string fqdn,
-    Tins::IPv4Address const& ip) -> void
-{
-    const std::lock_guard<std::mutex> lock(mutex);
-    spdlog::debug("Fqdn mapping {} -> {}", ip.to_string(), fqdn);
-    ipToFqdn[ip] = fqdn;
-}
-
-auto IpToFqdn::updateFqdn(std::string fqdn,
-    std::vector<Tins::IPv4Address> const& ips) -> void
+    std::vector<Tins::IPv4Address> const& ips,
+    std::vector<Tins::IPv6Address> const& ipv6) -> void
 {
     const std::lock_guard<std::mutex> lock(mutex);
     for (auto const& ip : ips) {
         spdlog::debug("Fqdn mapping {} -> {}", ip.to_string(), fqdn);
         ipToFqdn[ip] = fqdn;
+    }
+    for (auto const& ip : ipv6) {
+        spdlog::debug("Fqdn mapping {} -> {}", ip.to_string(), fqdn);
+        ipv6ToFqdn[ip] = fqdn;
     }
 }
 
@@ -82,6 +79,22 @@ auto IpToFqdn::getFlowFqdn(uint32_t srvIp) -> std::optional<std::string>
     const std::lock_guard<std::mutex> lock(mutex);
     auto it = ipToFqdn.find(srvIp);
     if (it == ipToFqdn.end()) {
+        if (conf.getDisplayUnknownFqdn() == false) {
+            return {};
+        }
+        fqdn = "Unknown";
+        return fqdn;
+    }
+    fqdn = it->second;
+    return fqdn;
+}
+
+auto IpToFqdn::getFlowFqdn(Tins::IPv6Address ipv6) -> std::optional<std::string>
+{
+    std::optional<std::string> fqdn;
+    const std::lock_guard<std::mutex> lock(mutex);
+    auto it = ipv6ToFqdn.find(ipv6);
+    if (it == ipv6ToFqdn.end()) {
         if (conf.getDisplayUnknownFqdn() == false) {
             return {};
         }

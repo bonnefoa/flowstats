@@ -6,6 +6,7 @@
 #include <mutex> // for mutex
 #include <string> // for string, allocator
 #include <tins/ip_address.h>
+#include <tins/ipv6_address.h>
 #include <vector>
 
 namespace flowstats {
@@ -23,18 +24,18 @@ public:
     [[nodiscard]] auto getIpToFqdn() -> std::map<uint32_t, std::string> { return ipToFqdn; };
 
     auto getFlowFqdn(uint32_t srvIp) -> std::optional<std::string>;
+    auto getFlowFqdn(Tins::IPv6Address ipv6) -> std::optional<std::string>;
     auto updateFqdn(std::string fqdn,
-        Tins::IPv4Address const& ip) -> void;
-    auto updateFqdn(std::string fqdn,
-        std::vector<Tins::IPv4Address> const& ips) -> void;
+        std::vector<Tins::IPv4Address> const& ips,
+        std::vector<Tins::IPv6Address> const& ipv6) -> void;
 
 private:
     FlowstatsConfiguration const& conf;
 
     std::mutex mutex;
     std::map<uint32_t, std::string> ipToFqdn;
+    std::map<Tins::IPv6Address, std::string> ipv6ToFqdn;
 
-    auto setIpToFqdn(std::map<uint32_t, std::string> i) { ipToFqdn = std::move(i); };
     auto resolveDomains(const std::vector<std::string>& initialDomains,
         std::map<uint32_t, std::string> ipToFqdn) -> void;
     auto resolveDns(std::string const& domain) -> std::vector<std::string>;

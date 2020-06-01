@@ -2,6 +2,7 @@
 #include "Utils.hpp"
 #include <cstdint>
 #include <spdlog/spdlog.h>
+#include <tins/ipv6.h>
 #include <tins/network_interface.h>
 #include <utility>
 
@@ -78,25 +79,33 @@ auto PktSource::updateScreen(timeval currentTime) -> void
 auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
 {
     auto const* pdu = packet.pdu();
-    auto const* ip = pdu->find_pdu<Tins::IP>();
+    Tins::IP const* ip = pdu->find_pdu<Tins::IP>();
+    Tins::IPv6 const* ipv6 = nullptr;
+    Tins::PDU const* ipPdu;
     if (ip == nullptr) {
-        return;
+        ipv6 = pdu->find_pdu<Tins::IPv6>();
+        if (ipv6 == nullptr) {
+            return;
+        }
+        ipPdu = ipv6;
+    } else {
+        ipPdu = ip;
     }
-    auto const* tcp = ip->find_pdu<Tins::TCP>();
+    auto const* tcp = ipPdu->find_pdu<Tins::TCP>();
     Tins::UDP const* udp = nullptr;
     if (tcp == nullptr) {
-        udp = ip->find_pdu<Tins::UDP>();
+        udp = ipPdu->find_pdu<Tins::UDP>();
         if (udp == nullptr) {
             return;
         }
     }
 
-    auto flowId = tcp ? FlowId(*ip, *tcp) : FlowId(*ip, *udp);
+    auto flowId = FlowId(ip, ipv6, tcp, udp);
     timeval pktTs = packetToTimeval(packet);
     for (auto* collector : collectors) {
         collector->advanceTick(pktTs);
         try {
-            collector->processPacket(packet, flowId, *ip, tcp, udp);
+            collector->processPacket(packet, flowId, ip, ipv6, tcp, udp);
         } catch (const Tins::malformed_packet&) {
             spdlog::info("Malformed packet: {}", packet);
         }

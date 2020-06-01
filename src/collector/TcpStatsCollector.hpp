@@ -15,7 +15,8 @@ public:
 
     auto processPacket(Tins::Packet const& packet,
         FlowId const& flowId,
-        Tins::IP const& ip,
+        Tins::IP const* ip,
+        Tins::IPv6 const* ipv6,
         Tins::TCP const* tcp,
         Tins::UDP const* udp) -> void override;
 
@@ -32,8 +33,7 @@ private:
     portArray srvPortsCounter = {};
 
     std::vector<std::pair<TcpFlow*, std::vector<AggregatedTcpFlow*>>> openingTcpFlow;
-    auto lookupTcpFlow(Tins::IP const& ipv4Layer,
-        Tins::TCP const& tcpLayer,
+    auto lookupTcpFlow(Tins::TCP const& tcpLayer,
         FlowId const& flowId) -> TcpFlow*;
     auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedTcpFlow*>;
     [[nodiscard]] auto detectServer(Tins::TCP const& tcp, FlowId const& flowId) -> Direction;

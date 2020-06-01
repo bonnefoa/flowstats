@@ -20,14 +20,14 @@ TEST_CASE("Dns queries timeout", "[dns]")
     auto aggregatedFlows = dnsStatsCollector.getAggregatedMap();
     REQUIRE(aggregatedFlows->size() == 3);
 
-    AggregatedDnsKey firstKey("test.com", Tins::DNS::A, Transport::UDP);
+    auto firstKey = AggregatedKey::aggregatedDnsKey("test.com", Tins::DNS::A, Transport::UDP);
     auto firstFlow = aggregatedFlows->at(firstKey);
     std::map<Field, std::string> cltValues;
     firstFlow->fillValues(&cltValues, FROM_CLIENT);
     CHECK(cltValues[Field::REQ] == "1");
     CHECK(cltValues[Field::TIMEOUTS] == "0");
 
-    AggregatedDnsKey thirdKey("google.com", Tins::DNS::A, Transport::UDP);
+    auto thirdKey = AggregatedKey::aggregatedDnsKey("google.com", Tins::DNS::A, Transport::UDP);
     auto thirdFlow = aggregatedFlows->at(thirdKey);
     thirdFlow->fillValues(&cltValues, FROM_CLIENT);
     CHECK(cltValues[Field::REQ] == "1");
@@ -44,7 +44,8 @@ TEST_CASE("Dns rcrd/rsps", "[dns]")
     auto aggregatedFlows = dnsStatsCollector.getAggregatedMap();
     REQUIRE(aggregatedFlows->size() == 1);
 
-    AggregatedDnsKey udpKey("all.alb-metrics-agent-shard1-770518637.us-east-1.elb.amazonaws.com", Tins::DNS::A, Transport::UDP);
+    auto udpKey = AggregatedKey::aggregatedDnsKey("all.alb-metrics-agent-shard1-770518637.us-east-1.elb.amazonaws.com",
+        Tins::DNS::A, Transport::UDP);
     auto firstFlow = aggregatedFlows->at(udpKey);
     std::map<Field, std::string> cltValues;
     firstFlow->fillValues(&cltValues, FROM_CLIENT);

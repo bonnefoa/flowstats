@@ -18,7 +18,7 @@ TEST_CASE("Ssl connection time", "[ssl]")
 
     auto ipFlows = tester.getSslStatsCollector().getAggregatedMap();
     REQUIRE(ipFlows.size() == 1);
-    AggregatedTcpKey key("google.com", 0, 443);
+    AggregatedKey key("google.com", 0, {}, 443);
     auto flow = ipFlows[key];
     REQUIRE(flow != nullptr);
 
@@ -47,7 +47,7 @@ TEST_CASE("Ssl port detection", "[ssl]")
     // Not working for now
 
     //REQUIRE(ipFlows.size() == 1);
-    //AggregatedTcpKey key("Unknown", 0, 4433);
+    //AggregatedKey key("Unknown", 0, 4433);
     //AggregatedSslFlow* flow = ipFlows[key];
     //REQUIRE(flow->domain == "google.com");
     //REQUIRE(flow->packets[FROM_CLIENT] == 8);

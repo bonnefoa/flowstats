@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <sstream>
 #include <tins/ip.h>
+#include <tins/ipv6.h>
 #include <tins/tcp.h>
 #include <tins/udp.h>
 
@@ -11,9 +12,12 @@ namespace flowstats {
 
 using Port = uint16_t;
 using IPv4 = uint32_t;
+using IPv6 = Tins::IPv6Address;
 BETTER_ENUM(Transport, char, TCP, UDP);
+BETTER_ENUM(Network, char, IPV6, IPV4);
 
 struct FlowId {
+
     FlowId() = default;
 
     FlowId(FlowId&& flowId) noexcept;
@@ -22,35 +26,44 @@ struct FlowId {
     FlowId(FlowId const& flowId);
     auto operator=(FlowId const& other) noexcept -> FlowId&;
 
-    //  MoveOnly(MoveOnly&& other);
-    //  MoveOnly& operator=(MoveOnly&& other);
-    //
-    //  // The copy operations are implicitly deleted, but you can
-    //  // spell that out explicitly if you want:
-    //  MoveOnly(const MoveOnly&) = delete;
-    //  MoveOnly& operator=(const MoveOnly&) = delete;
-
     FlowId(std::array<uint16_t, 2> ports, std::array<IPv4, 2> pktIps,
-        Transport transport);
+        Network network, Transport transport);
+    FlowId(std::array<uint16_t, 2> ports, std::array<IPv6, 2> pktIps,
+        Network network, Transport transport);
 
-    FlowId(const Tins::IP& ipv4Layer, const Tins::TCP& tcpLayer);
-    FlowId(const Tins::IP& ipv4Layer, const Tins::UDP& udpLayer);
+    FlowId(Tins::IP const* ip, Tins::IPv6 const* ipv6,
+        Tins::TCP const* tcp, Tins::UDP const* udp);
+    FlowId(Tins::IPv6 const& ip, Tins::TCP const& tcp);
+    FlowId(Tins::IP const& ip, Tins::TCP const& tcp);
+    FlowId(Tins::IPv6 const& ip, Tins::UDP const& udp);
+    FlowId(Tins::IP const& ip, Tins::UDP const& udp);
 
     [[nodiscard]] auto toString() const -> std::string;
-    [[nodiscard]] auto getIps() const { return ips; };
-    [[nodiscard]] auto getIp(uint8_t pos) const { return ips[pos]; };
+    [[nodiscard]] auto getIp(uint8_t pos) const { return ipv4[pos]; };
+    [[nodiscard]] auto getIpv6(uint8_t pos) const { return ipv6[pos]; };
+
     [[nodiscard]] auto getPorts() const { return ports; };
     [[nodiscard]] auto getPort(uint8_t pos) const { return ports[pos]; };
+    [[nodiscard]] auto getNetwork() const { return network; };
     [[nodiscard]] auto getTransport() const { return transport; };
     [[nodiscard]] auto getDirection() const { return direction; };
+
     [[nodiscard]] auto hash() const
     {
-        return std::hash<IPv4>()(ips[0]) + std::hash<IPv4>()(ips[1]) + std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1]);
+        if (network == +Network::IPV4) {
+            return std::hash<IPv4>()(ipv4[0]) + std::hash<IPv4>()(ipv4[1]) + std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1]);
+        } else {
+            return std::hash<IPv6>()(ipv6[0]) + std::hash<IPv6>()(ipv6[1]) + std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1]);
+        }
     };
 
 private:
-    std::array<IPv4, 2> ips = {};
+    union {
+        std::array<IPv4, 2> ipv4;
+        std::array<IPv6, 2> ipv6 = {};
+    };
     std::array<Port, 2> ports = {};
+    Network network = Network::IPV4;
     Transport transport = Transport::TCP;
     Direction direction = FROM_CLIENT;
 };

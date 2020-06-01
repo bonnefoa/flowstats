@@ -45,13 +45,14 @@ auto TcpFlow::nextSeqnum(Tins::TCP const& tcp, int tcpPayloadSize) -> uint32_t
 }
 
 auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
-    Tins::IP const& ip,
+    Tins::IP const* ip,
+    Tins::IPv6 const* ipv6,
     Tins::TCP const& tcp) -> void
 {
     auto const flags = tcp.flags();
     timeval tv = packetToTimeval(packet);
 
-    int tcpPayloadSize = getTcpPayloadSize(ip, tcp);
+    int tcpPayloadSize = getTcpPayloadSize(ip, ipv6, tcp);
     lastPacketTime[direction] = tv;
     uint32_t nextSeq = std::max(seqNum[direction], nextSeqnum(tcp, tcpPayloadSize));
     spdlog::debug("Update flow {}, nextSeq {}, ts {}ms, direction {}, tcp {}, payload {}",

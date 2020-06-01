@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AggregatedFlow.hpp"
+#include "AggregatedKeys.hpp"
 #include "CollectorOutput.hpp"
 #include "Configuration.hpp"
 #include "DogFood.hpp"
@@ -30,7 +30,8 @@ public:
 
     virtual auto processPacket(Tins::Packet const& pdu,
         FlowId const& flowId,
-        Tins::IP const& ip,
+        Tins::IP const* ip,
+        Tins::IPv6 const* ipv6,
         Tins::TCP const* tcp,
         Tins::UDP const* udp) -> void
         = 0;
@@ -100,6 +101,6 @@ private:
     std::vector<Field> sortFields;
     Field selectedSortField = Field::FQDN;
     bool reversedSort = false;
-    std::map<AggregatedKey, Flow*> aggregatedMap;
+    std::unordered_map<AggregatedKey, Flow*, std::hash<AggregatedKey>> aggregatedMap;
 };
 } // namespace flowstats

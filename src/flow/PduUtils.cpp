@@ -2,9 +2,15 @@
 
 namespace flowstats {
 
-auto getTcpPayloadSize(const Tins::IP& ip, const Tins::TCP& tcp) -> uint32_t
+auto getTcpPayloadSize(Tins::IP const* ip, Tins::IPv6 const* ipv6,
+    Tins::TCP const& tcp) -> uint32_t
 {
-    return ip.advertised_size() - ip.header_size() - tcp.header_size();
+    if (ip) {
+        return ip->advertised_size() - ip->header_size() - tcp.header_size();
+    } else if (ipv6) {
+        return ipv6->advertised_size() - ipv6->header_size() - tcp.header_size();
+    }
+    return 0;
 }
 
 auto Cursor::checkSize(uint32_t size) -> bool

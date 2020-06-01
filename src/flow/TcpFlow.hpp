@@ -11,17 +11,17 @@ class TcpFlow : public Flow {
 public:
     TcpFlow()
         : Flow() {};
-    TcpFlow(Tins::IP const& ip,
-        Tins::TCP const& tcp,
+    TcpFlow(FlowId flowId,
         uint8_t srvPos,
         std::vector<AggregatedTcpFlow*> _aggregatedFlows)
-        : Flow(ip, tcp, srvPos)
+        : Flow(flowId, "", srvPos)
         , aggregatedFlows(std::move(_aggregatedFlows))
     {
     }
 
     auto updateFlow(Tins::Packet const& packet, Direction direction,
-        Tins::IP const& ip,
+        Tins::IP const* ip,
+        Tins::IPv6 const* ipv6,
         Tins::TCP const& tcp) -> void;
     auto closeConnection() -> void;
     auto timeoutFlow() -> void;

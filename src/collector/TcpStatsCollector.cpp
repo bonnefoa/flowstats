@@ -68,9 +68,7 @@ auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId)
     return static_cast<Direction>(!direction);
 }
 
-auto TcpStatsCollector::lookupTcpFlow(
-    Tins::IP const& ip,
-    Tins::TCP const& tcp,
+auto TcpStatsCollector::lookupTcpFlow(Tins::TCP const& tcp,
     FlowId const& flowId) -> TcpFlow*
 {
     std::hash<FlowId> hash_fn;
@@ -81,16 +79,24 @@ auto TcpStatsCollector::lookupTcpFlow(
     }
 
     auto srvDir = detectServer(tcp, flowId);
-    auto ipSrv = flowId.getIp(srvDir);
-    spdlog::debug("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv);
-    std::optional<std::string> fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
+    std::optional<std::string> fqdnOpt = {};
+    if (flowId.getNetwork() == +Network::IPV4) {
+        auto ipSrv = flowId.getIp(srvDir);
+        spdlog::debug("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv);
+        fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
+    } else {
+        auto ipSrv = flowId.getIpv6(srvDir);
+        spdlog::debug("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv.to_string());
+        fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
+    }
+
     if (!fqdnOpt.has_value()) {
         return nullptr;
     }
 
     auto const* fqdn = fqdnOpt->data();
     auto aggregatedTcpFlows = lookupAggregatedFlows(flowId, fqdn, srvDir);
-    auto tcpFlow = TcpFlow(ip, tcp, srvDir, aggregatedTcpFlows);
+    auto tcpFlow = TcpFlow(flowId, srvDir, aggregatedTcpFlows);
     spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), flowHash, fqdn);
     auto res = hashToTcpFlow.emplace(flowHash, tcpFlow);
     return &res.first->second;
@@ -106,15 +112,15 @@ auto TcpStatsCollector::lookupAggregatedFlows(FlowId const& flowId,
     }
     auto srvPort = flowId.getPort(srvDir);
     AggregatedTcpFlow* aggregatedFlow;
-    AggregatedTcpKey tcpKey = AggregatedTcpKey(fqdn, ipSrvInt,
-        srvPort);
+    // TODO Handle ipv6
+    auto tcpKey = AggregatedKey(fqdn, ipSrvInt, {}, srvPort);
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto* aggregatedMap = getAggregatedMap();
     auto it = aggregatedMap->find(tcpKey);
     if (it == aggregatedMap->end()) {
         aggregatedFlow = new AggregatedTcpFlow(flowId, fqdn, srvDir);
         aggregatedMap->emplace(tcpKey, aggregatedFlow);
-        spdlog::debug("Create aggregated tcp flow for {}", tcpKey.toString());
+        spdlog::debug("Create aggregated tcp flow for {}", flowId.toString());
     } else {
         aggregatedFlow = dynamic_cast<AggregatedTcpFlow*>(it->second);
     }
@@ -125,7 +131,8 @@ auto TcpStatsCollector::lookupAggregatedFlows(FlowId const& flowId,
 
 auto TcpStatsCollector::processPacket(Tins::Packet const& packet,
     FlowId const& flowId,
-    Tins::IP const& ip,
+    Tins::IP const* ip,
+    Tins::IPv6 const* ipv6,
     Tins::TCP const* tcp,
     Tins::UDP const*) -> void
 {
@@ -133,7 +140,7 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet,
         return;
     }
 
-    auto* tcpFlow = lookupTcpFlow(ip, *tcp, flowId);
+    auto* tcpFlow = lookupTcpFlow(*tcp, flowId);
     if (tcpFlow == nullptr) {
         return;
     }
@@ -146,7 +153,7 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet,
         subflow->updateFlow(packet, flowId, *tcp);
     }
 
-    tcpFlow->updateFlow(packet, direction, ip, *tcp);
+    tcpFlow->updateFlow(packet, direction, ip, ipv6, *tcp);
 }
 
 auto TcpStatsCollector::advanceTick(timeval now) -> void

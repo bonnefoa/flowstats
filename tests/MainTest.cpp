@@ -2,6 +2,7 @@
 #include "MainTest.hpp"
 #include "PktSource.hpp"
 #include <catch2/catch.hpp>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <sys/stat.h>
 
@@ -14,6 +15,10 @@ Tester::Tester(bool perIpAggr)
     , sslStatsCollector(conf, displayConf, &ipToFqdn)
     , tcpStatsCollector(conf, displayConf, &ipToFqdn)
 {
+    auto logger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    spdlog::default_logger()->sinks().push_back(logger);
+
+    spdlog::set_level(spdlog::level::debug);
     conf.setDisplayUnknownFqdn(true);
     conf.setPerIpAggr(perIpAggr);
     collectors.push_back(&dnsStatsCollector);
@@ -40,19 +45,24 @@ auto Tester::readPcap(std::string pcap, std::string bpf, bool advanceTick) -> in
 
         auto const* pdu = packet.pdu();
         auto const* ip = pdu->find_pdu<Tins::IP>();
-        if (ip == nullptr) {
+        auto const* ipv6 = pdu->find_pdu<Tins::IPv6>();
+        if (ip == nullptr && ipv6 == nullptr) {
             continue;
         }
-        auto const* tcp = ip->find_pdu<Tins::TCP>();
+        Tins::PDU const* ipPdu = ip;
+        if (ip == nullptr) {
+            ipPdu = ipv6;
+        }
+        auto const* tcp = ipPdu->find_pdu<Tins::TCP>();
         Tins::UDP const* udp = nullptr;
         if (tcp == nullptr) {
-            udp = ip->find_pdu<Tins::UDP>();
+            udp = ipPdu->find_pdu<Tins::UDP>();
         }
 
-        auto flowId = tcp ? FlowId(*ip, *tcp) : FlowId(*ip, *udp);
+        auto flowId = FlowId(ip, ipv6, tcp, udp);
         for (auto collector : collectors) {
             try {
-                collector->processPacket(packet, flowId, *ip, tcp, udp);
+                collector->processPacket(packet, flowId, ip, ipv6, tcp, udp);
             } catch (Tins::malformed_packet const&) {
             }
         }
