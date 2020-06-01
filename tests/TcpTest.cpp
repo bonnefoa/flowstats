@@ -43,7 +43,7 @@ TEST_CASE("Tcp simple", "[tcp]")
 
         auto flows = tcpStatsCollector.getTcpFlow();
         CHECK(flows.size() == 1);
-        CHECK(flows[0].getGap() == 0);
+        CHECK(flows.begin()->second.getGap() == 0);
 
         AggregatedKey totalKey = AggregatedKey::aggregatedIpv4TcpKey("Total", 0, 0);
         std::map<Field, std::string> totalValues;
@@ -111,7 +111,7 @@ TEST_CASE("https pcap", "[tcp]")
 
         auto flows = tcpStatsCollector.getTcpFlow();
         REQUIRE(flows.size() == 1);
-        CHECK(flows[0].getGap() == 0);
+        CHECK(flows.begin()->second.getGap() == 0);
     }
 }
 
@@ -353,7 +353,7 @@ TEST_CASE("Gap in capture", "[tcp]")
 
         auto flows = tcpStatsCollector.getTcpFlow();
         CHECK(flows.size() == 1);
-        CHECK(flows[0].getGap() == 0);
+        CHECK(flows.begin()->second.getGap() == 1);
     }
 }
 

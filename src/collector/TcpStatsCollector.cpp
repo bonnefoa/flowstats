@@ -71,9 +71,7 @@ auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId)
 auto TcpStatsCollector::lookupTcpFlow(Tins::TCP const& tcp,
     FlowId const& flowId) -> TcpFlow*
 {
-    std::hash<FlowId> hash_fn;
-    size_t flowHash = hash_fn(flowId);
-    auto it = hashToTcpFlow.find(flowHash);
+    auto it = hashToTcpFlow.find(flowId);
     if (it != hashToTcpFlow.end()) {
         return &it->second;
     }
@@ -97,8 +95,8 @@ auto TcpStatsCollector::lookupTcpFlow(Tins::TCP const& tcp,
     auto const* fqdn = fqdnOpt->data();
     auto aggregatedTcpFlows = lookupAggregatedFlows(flowId, fqdn, srvDir);
     auto tcpFlow = TcpFlow(flowId, srvDir, aggregatedTcpFlows);
-    spdlog::debug("Create tcp flow {}, flowhash {}, fqdn {}", flowId.toString(), flowHash, fqdn);
-    auto res = hashToTcpFlow.emplace(flowHash, tcpFlow);
+    spdlog::debug("Create tcp flow {}, fqdn {}", flowId.toString(), fqdn);
+    auto res = hashToTcpFlow.emplace(flowId, tcpFlow);
     return &res.first->second;
 }
 
@@ -161,7 +159,7 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
     if (now.tv_sec <= lastTick) {
         return;
     }
-    std::vector<size_t> toTimeout;
+    std::vector<FlowId> toTimeout;
     lastTick = now.tv_sec;
     spdlog::debug("Advance tick to {}", now.tv_sec);
     for (auto it : hashToTcpFlow) {

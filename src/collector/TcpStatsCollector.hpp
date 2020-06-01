@@ -29,7 +29,7 @@ public:
 
 private:
     typedef std::array<int, 65536> portArray;
-    std::map<size_t, TcpFlow> hashToTcpFlow;
+    std::unordered_map<FlowId, TcpFlow, std::hash<FlowId>> hashToTcpFlow;
     portArray srvPortsCounter = {};
 
     std::vector<std::pair<TcpFlow*, std::vector<AggregatedTcpFlow*>>> openingTcpFlow;

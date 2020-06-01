@@ -28,10 +28,10 @@ public:
     [[nodiscard]] auto getProtocol() const -> CollectorProtocol override { return SSL; };
     [[nodiscard]] auto toString() const -> std::string override { return "SslStatsCollector"; }
 
-    [[nodiscard]] auto getSslFlow() const -> std::map<uint32_t, SslFlow> { return hashToSslFlow; }
+    [[nodiscard]] auto getSslFlow() const { return hashToSslFlow; }
 
 private:
-    std::map<uint32_t, SslFlow> hashToSslFlow;
+    std::unordered_map<FlowId, SslFlow, std::hash<FlowId>> hashToSslFlow;
     [[nodiscard]] auto getSortFun(Field field) const -> sortFlowFun override;
     auto lookupSslFlow(FlowId const& flowId) -> SslFlow*;
     auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedSslFlow*>;

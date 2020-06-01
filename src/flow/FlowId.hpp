@@ -50,12 +50,46 @@ struct FlowId {
 
     [[nodiscard]] auto hash() const
     {
+        size_t ipHash = 0;
         if (network == +Network::IPV4) {
-            return std::hash<IPv4>()(ipv4[0]) + std::hash<IPv4>()(ipv4[1]) + std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1]);
+            ipHash = std::hash<IPv4>()(ipv4[0]) + std::hash<IPv4>()(ipv4[1]);
         } else {
-            return std::hash<IPv6>()(ipv6[0]) + std::hash<IPv6>()(ipv6[1]) + std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1]);
+            ipHash = std::hash<IPv6>()(ipv6[0]) + std::hash<IPv6>()(ipv6[1]);
         }
+        return ipHash
+            + std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1])
+            + std::hash<uint8_t>()(network)
+            + std::hash<uint8_t>()(transport);
     };
+
+    auto operator<(FlowId const& b) const -> bool
+    {
+        bool ipRes = false;
+        if (network == +Network::IPV4) {
+            ipRes = ipv4 < b.ipv4;
+        } else {
+            ipRes = ipv6 < b.ipv6;
+        }
+
+        return ipRes
+            && ports < b.ports
+            && network < b.network
+            && transport < b.transport;
+    }
+
+    auto operator==(FlowId const& b) const -> bool
+    {
+        bool ipRes = false;
+        if (network == +Network::IPV4) {
+            ipRes = ipv4 == b.ipv4;
+        } else {
+            ipRes = ipv6 == b.ipv6;
+        }
+        return ipRes
+            && ports == b.ports
+            && network == b.network
+            && transport == b.transport;
+    }
 
 private:
     union {
@@ -76,7 +110,6 @@ struct hash<flowstats::FlowId> {
     auto operator()(const flowstats::FlowId& flowId) const -> size_t
     {
         return flowId.hash();
-        //+ std::hash<std::underlying_type<flowstats::Direction>::type>()(flowId.direction);
     }
 };
 

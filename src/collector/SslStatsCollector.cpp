@@ -27,10 +27,7 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, Display
 
 auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow*
 {
-    std::hash<FlowId> hash_fn;
-    auto flowHash = hash_fn(flowId);
-
-    auto it = hashToSslFlow.find(flowHash);
+    auto it = hashToSslFlow.find(flowId);
     if (it != hashToSslFlow.end()) {
         return &it->second;
     }
@@ -45,7 +42,7 @@ auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow*
     auto aggregatedFlows = lookupAggregatedFlows(flowId, fqdn, FROM_SERVER);
     spdlog::debug("Create ssl flow {}", flowId.toString());
     auto sslFlow = SslFlow(flowId, fqdn, aggregatedFlows);
-    auto res = hashToSslFlow.insert({ flowHash, sslFlow });
+    auto res = hashToSslFlow.insert({ flowId, sslFlow });
     return &res.first->second;
 }
 
