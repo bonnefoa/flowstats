@@ -1,7 +1,6 @@
 #include "TcpFlow.hpp"
 #include "PduUtils.hpp"
 #include "Utils.hpp"
-#include <spdlog/spdlog.h>
 
 namespace flowstats {
 
@@ -20,7 +19,7 @@ auto TcpFlow::timeoutFlow() -> void
 auto TcpFlow::closeConnection() -> void
 {
     if (opened) {
-        spdlog::debug("Closing connection {}", getFlowId().toString());
+        SPDLOG_DEBUG("Closing connection {}", getFlowId().toString());
         for (auto& aggregatedFlow : aggregatedFlows) {
             aggregatedFlow->closeConnection();
         }
@@ -55,7 +54,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     int tcpPayloadSize = getTcpPayloadSize(ip, ipv6, tcp);
     lastPacketTime[direction] = tv;
     uint32_t nextSeq = std::max(seqNum[direction], nextSeqnum(tcp, tcpPayloadSize));
-    spdlog::debug("Update flow {}, nextSeq {}, ts {}ms, direction {}, tcp {}, payload {}",
+    SPDLOG_DEBUG("Update flow {}, nextSeq {}, ts {}ms, direction {}, tcp {}, payload {}",
         getFlowId().toString(), nextSeq, timevalInMs(tv), direction,
         tcpToString(tcp), tcpPayloadSize);
 
@@ -64,13 +63,13 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         synTime[direction] = tv;
         opening = true;
         closed = false;
-        spdlog::debug("Got syn for direction {}, srvPort {}, ts {}ms",
+        SPDLOG_DEBUG("Got syn for direction {}, srvPort {}, ts {}ms",
             directionToString(currentDirection), getSrvPort(), timevalInMs(tv));
     }
 
     if (!opened && flags & Tins::TCP::ACK && tcp.ack_seq() == seqNum[!direction]
         && synAcked[direction] == false) {
-        spdlog::debug("syn acked for direction {}", directionToString(currentDirection));
+        SPDLOG_DEBUG("syn acked for direction {}", directionToString(currentDirection));
         synAcked[direction] = true;
         if (synAcked[!direction]) {
             timeval start = synTime[direction];
@@ -78,7 +77,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
             uint32_t connectionTime = getTimevalDeltaMs(start, end);
             opened = true;
             opening = false;
-            spdlog::debug("Full tcp handshake, connection is now opened, ct {}", connectionTime);
+            SPDLOG_DEBUG("Full tcp handshake, connection is now opened, ct {}", connectionTime);
             for (auto& aggregatedFlow : aggregatedFlows) {
                 aggregatedFlow->openConnection(connectionTime);
             }
@@ -87,7 +86,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
 
     uint32_t ackNumber = tcp.ack_seq();
     if (seqNum[!direction] > 0 && ackNumber > seqNum[!direction]) {
-        spdlog::debug("Got a gap, ack {}, expected seqNum {}", ackNumber, seqNum[!direction]);
+        SPDLOG_DEBUG("Got a gap, ack {}, expected seqNum {}", ackNumber, seqNum[!direction]);
         gap++;
         requestSize = 0;
         lastPayloadTime = { 0, 0 };
@@ -100,7 +99,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     if (tcpPayloadSize > 0) {
         if (lastDirection != direction && direction == getSrvPos() && lastPayloadTime.tv_sec > 0) {
             uint32_t delta = getTimevalDeltaMs(lastPayloadTime, tv);
-            spdlog::debug("Change of direction to {}, srt {}, requestSize {}",
+            SPDLOG_DEBUG("Change of direction to {}, srt {}, requestSize {}",
                 directionToString(currentDirection),
                 delta, requestSize);
             for (auto& aggregatedFlow : aggregatedFlows) {
@@ -117,7 +116,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     }
 
     if (!tcp.has_flags(Tins::TCP::SYN) && !tcp.has_flags(Tins::TCP::RST) && !opened && !opening && seqNum[!direction] == ackNumber) {
-        spdlog::debug("Detected ongoing conversation");
+        SPDLOG_DEBUG("Detected ongoing conversation");
         opened = true;
         for (auto& aggregatedFlow : aggregatedFlows) {
             aggregatedFlow->ongoingConnection();
@@ -126,7 +125,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
 
     if (tcp.has_flags(Tins::TCP::FIN)) {
         uint32_t nextSeq = nextSeqnum(tcp, tcpPayloadSize);
-        spdlog::debug("Got fin for direction {}, ts {}ms, nextSeq {}, ack {}",
+        SPDLOG_DEBUG("Got fin for direction {}, ts {}ms, nextSeq {}, ack {}",
             directionToString(currentDirection), timevalInMs(tv), nextSeq, tcp.ack_seq());
         finSeqnum[direction] = nextSeq;
     }

@@ -1,7 +1,6 @@
 #include "SslStatsCollector.hpp"
 #include "SslProto.hpp"
 #include <fmt/format.h>
-#include <spdlog/spdlog.h>
 #include <tins/rawpdu.h>
 
 namespace flowstats {
@@ -40,7 +39,7 @@ auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow*
     auto const* fqdn = fqdnOpt->data();
     // TODO dectect server port
     auto aggregatedFlows = lookupAggregatedFlows(flowId, fqdn, FROM_SERVER);
-    spdlog::debug("Create ssl flow {}", flowId.toString());
+    SPDLOG_DEBUG("Create ssl flow {}", flowId.toString());
     auto sslFlow = SslFlow(flowId, fqdn, aggregatedFlows);
     auto res = hashToSslFlow.insert({ flowId, sslFlow });
     return &res.first->second;

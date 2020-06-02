@@ -1,11 +1,9 @@
 #include "DogFood.hpp"
 #include "Utils.hpp"
-#include <spdlog/spdlog.h>
 
 namespace DogFood {
 
-auto
-DefaultConfiguration() -> Configuration
+auto DefaultConfiguration() -> Configuration
 {
     return std::make_tuple(
         Mode::UDP,
@@ -14,21 +12,18 @@ DefaultConfiguration() -> Configuration
 }
 
 #if defined(_DOGFOOD_UDS_SUPPORT)
-auto
-UDS(const std::string& _path) -> Configuration
+auto UDS(const std::string& _path) -> Configuration
 {
     return std::make_tuple(Mode::UDS, _path, -1);
 }
 #endif
 
-auto
-UDP(const std::string& _host, const int _port) -> Configuration
+auto UDP(const std::string& _host, const int _port) -> Configuration
 {
     return std::make_tuple(Mode::UDP, _host, _port);
 }
 
-auto
-Configure(
+auto Configure(
     const Mode& _mode,
     const std::string& _host,
     const int _port) -> Configuration
@@ -36,33 +31,31 @@ Configure(
     return std::make_tuple(_mode, _host, _port);
 }
 
-auto
-Configure(const std::string& path) -> std::optional<Configuration>
+auto Configure(const std::string& path) -> std::optional<Configuration>
 {
     if (path.empty()) {
-        spdlog::info("No agent configuration found, no metrics will be send");
+        SPDLOG_INFO("No agent configuration found, no metrics will be send");
         return {};
     }
     if (path[0] == '/') {
 #if defined(_DOGFOOD_UDS_SUPPORT)
-        spdlog::info("Configuring agent with UDS path {}", path);
+        SPDLOG_INFO("Configuring agent with UDS path {}", path);
         return UDS(path);
 #else
-        spdlog::info("No UDS on this system, no metrics will be send");
+        SPDLOG_INFO("No UDS on this system, no metrics will be send");
         return {};
 #endif
     }
     std::vector<std::string> tokens = flowstats::split(path, ':');
     if (tokens.size() != 2) {
-        spdlog::info("Invalid datadog agent path {}", path);
+        SPDLOG_INFO("Invalid datadog agent path {}", path);
         return {};
     }
-    spdlog::info("Configuring agent with host {} and port {}", tokens[0], tokens[1]);
+    SPDLOG_INFO("Configuring agent with host {} and port {}", tokens[0], tokens[1]);
     return UDP(tokens[0], stoi(tokens[1]));
 }
 
-auto
-Tag(
+auto Tag(
     const std::string& key,
     const std::string& value = "") -> std::pair<std::string, std::string>
 {
@@ -98,19 +91,19 @@ inline auto ValidateTags(const std::string& _tag) -> bool
     // Verify the length
     if (_tag.length() == 0 || _tag.length() > 200) {
         return false;
-}
+    }
 
     ////////////////////////////////////////////////////////
     // Verify the first character is a letter
     if (!std::isalpha(_tag.at(0))) {
         return false;
-}
+    }
 
     ////////////////////////////////////////////////////////
     // Verify end is not a colon
     if (_tag.back() == ':') {
         return false;
-}
+    }
 
     ////////////////////////////////////////////////////////
     // Verify each character
@@ -119,7 +112,7 @@ inline auto ValidateTags(const std::string& _tag) -> bool
             continue;
         } else {
             return false;
-}
+        }
     }
 
     return true;
@@ -141,7 +134,7 @@ inline auto ExtractTags(const Tags& _tags) -> std::string
     // Check for the presence of tags
     if (_tags.size() > 0) {
         stream += "|#";
-}
+    }
 
     ////////////////////////////////////////////////////////
     // Tag buffer
@@ -165,13 +158,13 @@ inline auto ExtractTags(const Tags& _tags) -> std::string
             // If the 'Value' is not empty, append after a colon
             if (p.second.size() > 0) {
                 _tag += (":" + p.second);
-}
+            }
 
             ////////////////////////////////////////////////////
             // Validate the tag
             if (!ValidateTags(_tag)) {
                 continue;
-}
+            }
 
             ////////////////////////////////////////////////////
             // Append the tag and a comma for the next key-value
@@ -185,7 +178,7 @@ inline auto ExtractTags(const Tags& _tags) -> std::string
     //     conditions in loops.
     if (stream.size() > 0 && stream.back() == ',') {
         stream.pop_back();
-}
+    }
 
     return stream;
 }
@@ -211,13 +204,13 @@ inline auto ValidateMetricName(const std::string& _name) -> bool
     // Verify the length
     if (_name.length() == 0 || _name.length() > 200) {
         return false;
-}
+    }
 
     ////////////////////////////////////////////////////////
     // Verify the first character is a letter
     if (!std::isalpha(_name.at(0))) {
         return false;
-}
+    }
 
     ////////////////////////////////////////////////////////
     // Verify each character
@@ -226,7 +219,7 @@ inline auto ValidateMetricName(const std::string& _name) -> bool
             continue;
         } else {
             return false;
-}
+        }
     }
 
     return true;
@@ -279,7 +272,7 @@ inline auto EscapeEventText(const std::string& _text) -> std::string
             buffer.append("\\n");
         } else {
             buffer.push_back(c);
-}
+        }
     }
     return buffer;
 }
@@ -297,8 +290,7 @@ inline auto ValidatePayloadSize(const std::string& _payload) -> bool
 
 // Default to calling std::to_string
 template <typename ValueType>
-auto
-value_to_string(
+auto value_to_string(
     const ValueType& _value) -> std::string
 {
     return std::to_string(_value);
@@ -306,15 +298,13 @@ value_to_string(
 
 // Specialize std::string to identity
 template <>
-auto
-value_to_string<std::string>(
+auto value_to_string<std::string>(
     const std::string& _value) -> std::string
 {
     return _value;
 }
 
-auto
-Metric(
+auto Metric(
     const std::string& _name,
     const double _value,
     const Type _type,
@@ -330,7 +320,7 @@ Metric(
     // Validate the name
     if (!ValidateMetricName(_name)) {
         return "";
-}
+    }
 
     ////////////////////////////////////////////////////////////
     // Verify the rate
@@ -339,7 +329,7 @@ Metric(
     //
     if (!ValidateSampleRate(_rate)) {
         return "";
-}
+    }
 
     ////////////////////////////////////////////////////////////
     // Add the name and the numeric to the datagram
@@ -380,7 +370,7 @@ Metric(
     //
     if (_rate != 1.0) {
         _datagram += "|@" + std::to_string(_rate);
-}
+    }
 
     ////////////////////////////////////////////////////////////
     // Extract the tags string into the datagram if present
@@ -393,7 +383,7 @@ Metric(
     // Validate the payload size
     if (!ValidatePayloadSize(_datagram)) {
         return "";
-}
+    }
 
     return _datagram;
 }
@@ -419,7 +409,7 @@ auto Send(
     if (_mode == Mode::UDP) {
         if (!ValidatePort(_port)) {
             return false;
-}
+        }
 
         UDP_SEND_DATAGRAM(
             _datagram.data(),

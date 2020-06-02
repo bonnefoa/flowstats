@@ -4,7 +4,6 @@
 #include "PktSource.hpp"
 #include "SslStatsCollector.hpp"
 #include <catch2/catch.hpp>
-#include <spdlog/spdlog.h>
 
 using namespace flowstats;
 

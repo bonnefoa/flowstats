@@ -1,6 +1,5 @@
 #include "FlowFormatter.hpp"
 #include <fmt/format.h>
-#include <spdlog/spdlog.h>
 
 #include <utility>
 

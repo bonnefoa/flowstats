@@ -3,7 +3,6 @@
 #include "Collector.hpp"
 #include "TcpFlow.hpp"
 #include <fmt/format.h>
-#include <spdlog/spdlog.h>
 #include <string>
 
 namespace flowstats {
@@ -39,12 +38,12 @@ auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId)
         if (flags & Tins::TCP::ACK) {
             auto srvPort = flowId.getPort(direction);
             srvPortsCounter[srvPort]++;
-            spdlog::debug("Incrementing port {} as server port to {}", srvPort, srvPortsCounter[srvPort]);
+            SPDLOG_DEBUG("Incrementing port {} as server port to {}", srvPort, srvPortsCounter[srvPort]);
             return direction;
         } else {
             auto srvPort = flowId.getPort(!direction);
             srvPortsCounter[srvPort]++;
-            spdlog::debug("Incrementing port {} as server port to {}", srvPort, srvPortsCounter[srvPort]);
+            SPDLOG_DEBUG("Incrementing port {} as server port to {}", srvPort, srvPortsCounter[srvPort]);
             return static_cast<Direction>(!direction);
         }
     }
@@ -80,11 +79,11 @@ auto TcpStatsCollector::lookupTcpFlow(Tins::TCP const& tcp,
     std::optional<std::string> fqdnOpt = {};
     if (flowId.getNetwork() == +Network::IPV4) {
         auto ipSrv = flowId.getIp(srvDir);
-        spdlog::debug("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv);
+        SPDLOG_DEBUG("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv);
         fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
     } else {
         auto ipSrv = flowId.getIpv6(srvDir);
-        spdlog::debug("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv.to_string());
+        SPDLOG_DEBUG("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv.to_string());
         fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
     }
 
@@ -95,7 +94,7 @@ auto TcpStatsCollector::lookupTcpFlow(Tins::TCP const& tcp,
     auto const* fqdn = fqdnOpt->data();
     auto aggregatedTcpFlows = lookupAggregatedFlows(flowId, fqdn, srvDir);
     auto tcpFlow = TcpFlow(flowId, srvDir, aggregatedTcpFlows);
-    spdlog::debug("Create tcp flow {}, fqdn {}", flowId.toString(), fqdn);
+    SPDLOG_DEBUG("Create tcp flow {}, fqdn {}", flowId.toString(), fqdn);
     auto res = hashToTcpFlow.emplace(flowId, tcpFlow);
     return &res.first->second;
 }
@@ -118,7 +117,7 @@ auto TcpStatsCollector::lookupAggregatedFlows(FlowId const& flowId,
     if (it == aggregatedMap->end()) {
         aggregatedFlow = new AggregatedTcpFlow(flowId, fqdn, srvDir);
         aggregatedMap->emplace(tcpKey, aggregatedFlow);
-        spdlog::debug("Create aggregated tcp flow for {}", flowId.toString());
+        SPDLOG_DEBUG("Create aggregated tcp flow for {}", flowId.toString());
     } else {
         aggregatedFlow = dynamic_cast<AggregatedTcpFlow*>(it->second);
     }
@@ -161,11 +160,11 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
     }
     std::vector<FlowId> toTimeout;
     lastTick = now.tv_sec;
-    spdlog::debug("Advance tick to {}", now.tv_sec);
+    SPDLOG_DEBUG("Advance tick to {}", now.tv_sec);
     for (auto it : hashToTcpFlow) {
         TcpFlow& flow = it.second;
         auto lastPacketTime = flow.getLastPacketTime();
-        spdlog::debug("Check flow {} for timeouts, now {}, lastPacketTime {} {}",
+        SPDLOG_DEBUG("Check flow {} for timeouts, now {}, lastPacketTime {} {}",
             flow.getFlowId().toString(), now.tv_sec,
             lastPacketTime[0].tv_sec, lastPacketTime[1].tv_sec);
         if (lastPacketTime[FROM_CLIENT].tv_sec == 0
@@ -179,10 +178,10 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
             }
         }
         uint32_t maxDelta = std::max(deltas[0], deltas[1]);
-        spdlog::debug("flow.{}, maxDelta: {}", flow.getFlowId().toString(), maxDelta);
+        SPDLOG_DEBUG("flow.{}, maxDelta: {}", flow.getFlowId().toString(), maxDelta);
         auto timeoutFlow = getFlowstatsConfiguration().getTimeoutFlow();
         if (maxDelta > timeoutFlow) {
-            spdlog::debug("Timeout flow {}, now {}, maxDelta {} > {}",
+            SPDLOG_DEBUG("Timeout flow {}, now {}, maxDelta {} > {}",
                 flow.getFlowId().toString(), now.tv_sec, maxDelta, timeoutFlow);
             toTimeout.push_back(it.first);
             flow.timeoutFlow();

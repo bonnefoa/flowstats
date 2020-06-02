@@ -1,7 +1,6 @@
 #include "PktSource.hpp"
 #include "Utils.hpp"
 #include <cstdint>
-#include <spdlog/spdlog.h>
 #include <tins/ipv6.h>
 #include <tins/network_interface.h>
 #include <utility>
@@ -107,7 +106,7 @@ auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
         try {
             collector->processPacket(packet, flowId, ip, ipv6, tcp, udp);
         } catch (const Tins::malformed_packet&) {
-            spdlog::info("Malformed packet: {}", packet);
+            SPDLOG_INFO("Malformed packet: {}", packet);
         }
     }
     auto ts = packet.timestamp();
@@ -152,7 +151,7 @@ auto PktSource::analyzePcapFile()
  */
 auto PktSource::analyzeLiveTraffic() -> int
 {
-    spdlog::info("Start live traffic capture with filter {}",
+    SPDLOG_INFO("Start live traffic capture with filter {}",
         conf.getBpfFilter());
     liveDevice = getLiveDevice();
     if (liveDevice == nullptr) {
@@ -165,9 +164,9 @@ auto PktSource::analyzeLiveTraffic() -> int
         processPacketSource(packet);
     }
 
-    spdlog::info("Stop capture");
+    SPDLOG_INFO("Stop capture");
     liveDevice->stop_sniff();
-    spdlog::info("Stopping screen");
+    SPDLOG_INFO("Stopping screen");
     screen->StopDisplay();
     return 0;
 }

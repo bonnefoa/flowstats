@@ -1,5 +1,4 @@
 #include "DnsFlow.hpp"
-#include <spdlog/spdlog.h>
 
 namespace flowstats {
 
@@ -25,7 +24,7 @@ auto DnsFlow::processDnsResponse(Tins::Packet const& packet,
     truncated = dns.truncated();
     numberRecords = dns.answers_count();
     responseCode = dns.rcode();
-    spdlog::debug("Dns tid {}, {}, {} finished, {}", dns.id(),
+    SPDLOG_DEBUG("Dns tid {}, {}, {} finished, {}", dns.id(),
         getTransport()._to_string(), fqdn, numberRecords);
 }
 

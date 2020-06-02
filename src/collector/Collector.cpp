@@ -5,7 +5,6 @@
 #include <iostream>
 #include <iterator>
 #include <ostream>
-#include <spdlog/spdlog.h>
 #include <string>
 #include <vector>
 
@@ -19,7 +18,7 @@ void Collector::sendMetrics()
     }
     std::vector<std::string> metrics = getStatsdMetrics();
     for (auto& metric : metrics) {
-        spdlog::debug("Sending {}", metric);
+        SPDLOG_DEBUG("Sending {}", metric);
         DogFood::Send(metric, agentConf.value());
     }
 }
@@ -156,7 +155,7 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
     for (auto const& pair : aggregatedMap) {
         tempVector.push_back(pair.second);
     }
-    spdlog::info("Got {} {} flows", tempVector.size(), toString());
+    SPDLOG_INFO("Got {} {} flows", tempVector.size(), toString());
     // TODO Merge percentiles?
     auto sortFun = getSortFun(selectedSortField);
     std::sort(tempVector.begin(), tempVector.end(),

@@ -100,12 +100,12 @@ auto DnsStatsCollector::newDnsQuery(Tins::Packet const& packet, FlowId const& fl
 {
     auto queries = dns.queries();
     if (queries.size() == 0) {
-        spdlog::debug("No queries in {}", dns.id());
+        SPDLOG_DEBUG("No queries in {}", dns.id());
         return;
     }
     auto firstQuery = queries.at(0);
     if (firstQuery.dname().empty()) {
-        spdlog::debug("Empty query in dns tid {}", dns.id());
+        SPDLOG_DEBUG("Empty query in dns tid {}", dns.id());
         return;
     }
     DnsFlow flow(packet, flowId, dns);
@@ -132,7 +132,7 @@ auto DnsStatsCollector::addFlowToAggregation(DnsFlow const* flow) -> void
     auto it = aggregatedMap->find(key);
     AggregatedDnsFlow* aggregatedFlow;
     if (it == aggregatedMap->end()) {
-        spdlog::debug("Create new dns aggregation for {} {} {}", fqdn,
+        SPDLOG_DEBUG("Create new dns aggregation for {} {} {}", fqdn,
             dnsTypeToString(dnsType), flow->getTransport()._to_string());
         aggregatedFlow = new AggregatedDnsFlow(flow->getFlowId(), fqdn, dnsType);
         aggregatedMap->emplace(key, aggregatedFlow);
@@ -148,7 +148,7 @@ auto DnsStatsCollector::advanceTick(timeval now) -> void
     if (now.tv_sec <= lastTick) {
         return;
     }
-    spdlog::debug("Advancing dns tick to {}s", now.tv_sec);
+    SPDLOG_DEBUG("Advancing dns tick to {}s", now.tv_sec);
     lastTick = now.tv_sec;
 
     // Timeout ongoing dns queries
@@ -156,7 +156,7 @@ auto DnsStatsCollector::advanceTick(timeval now) -> void
     for (auto& pair : transactionIdToDnsFlow) {
         DnsFlow& flow = pair.second;
         time_t delta_time = now.tv_sec - flow.getStartTv().tv_sec;
-        spdlog::debug("Flow {}, delta {}, hasResponse {}", flow.getFqdn(),
+        SPDLOG_DEBUG("Flow {}, delta {}, hasResponse {}", flow.getFqdn(),
             delta_time, flow.getHasResponse());
         if (delta_time > 5) {
             addFlowToAggregation(&flow);

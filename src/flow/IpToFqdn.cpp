@@ -3,7 +3,6 @@
 #include <iostream>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <spdlog/spdlog.h>
 #include <sys/socket.h>
 
 namespace flowstats {
@@ -41,7 +40,7 @@ auto IpToFqdn::resolveDns(std::string const& domain) -> std::vector<std::string>
         void* ptr = &(reinterpret_cast<struct sockaddr_in*>(res->ai_addr))->sin_addr;
         inet_ntop(res->ai_family, ptr, ip, 20);
         ips.emplace_back(ip);
-        spdlog::debug("Resolved {} -> {}", domain, ip);
+        SPDLOG_DEBUG("Resolved {} -> {}", domain, ip);
         res = res->ai_next;
     }
     return ips;
@@ -64,11 +63,11 @@ auto IpToFqdn::updateFqdn(std::string fqdn,
 {
     const std::lock_guard<std::mutex> lock(mutex);
     for (auto const& ip : ips) {
-        spdlog::debug("Fqdn mapping {} -> {}", ip.to_string(), fqdn);
+        SPDLOG_DEBUG("Fqdn mapping {} -> {}", ip.to_string(), fqdn);
         ipToFqdn[ip] = fqdn;
     }
     for (auto const& ip : ipv6) {
-        spdlog::debug("Fqdn mapping {} -> {}", ip.to_string(), fqdn);
+        SPDLOG_DEBUG("Fqdn mapping {} -> {}", ip.to_string(), fqdn);
         ipv6ToFqdn[ip] = fqdn;
     }
 }

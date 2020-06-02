@@ -3,7 +3,6 @@
 #include "PktSource.hpp"
 #include <catch2/catch.hpp>
 #include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
 #include <sys/stat.h>
 
 using namespace flowstats;
@@ -67,7 +66,7 @@ auto Tester::readPcap(std::string pcap, std::string bpf, bool advanceTick) -> in
             }
         }
     }
-    spdlog::info("Processed {} packets", i);
+    SPDLOG_INFO("Processed {} packets", i);
 
     if (advanceTick) {
         for (auto collector : collectors) {

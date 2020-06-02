@@ -4,7 +4,6 @@
 #include "TcpStatsCollector.hpp"
 #include "Utils.hpp"
 #include <catch2/catch.hpp>
-#include <spdlog/spdlog.h>
 
 using namespace flowstats;
 

@@ -1,7 +1,6 @@
 #include "Screen.hpp"
 #include "Utils.hpp"
 #include <fmt/format.h>
-#include <spdlog/spdlog.h>
 #include <tins/dns.h>
 #include <tins/tcp.h>
 #include <utility>

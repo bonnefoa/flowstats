@@ -5,7 +5,6 @@
 #include "Flow.hpp"
 #include "Stats.hpp"
 #include <map>
-#include <spdlog/spdlog.h>
 
 namespace flowstats {
 

@@ -1,6 +1,5 @@
 #include "Flow.hpp"
 #include "Utils.hpp"
-#include <spdlog/spdlog.h>
 
 namespace flowstats {
 

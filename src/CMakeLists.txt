@@ -1,3 +1,9 @@
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+else()
+    add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
+endif()
+
 if(APPLE)
     list(APPEND ADDITIONAL_LIBRARIES "-framework SystemConfiguration -framework CoreFoundation")
 endif()

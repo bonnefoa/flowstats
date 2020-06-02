@@ -1,6 +1,5 @@
 #include "SslFlow.hpp"
 #include "SslProto.hpp"
-#include <spdlog/spdlog.h>
 #include <tins/rawpdu.h>
 
 namespace flowstats {
@@ -30,7 +29,7 @@ void SslFlow::processHandshake(Tins::Packet const& packet,
     }
 
     startHandshake = packetToTimeval(packet);
-    spdlog::debug("Start ssl connection at {}", timevalInMs(startHandshake));
+    SPDLOG_DEBUG("Start ssl connection at {}", timevalInMs(startHandshake));
 
     // Random
     if (cursor->skip(32) == false) {

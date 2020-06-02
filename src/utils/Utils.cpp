@@ -4,7 +4,6 @@
 #include <cstring>
 #include <iostream>
 #include <netdb.h>
-#include <spdlog/spdlog.h>
 #include <tins/pdu.h>
 
 namespace flowstats {
