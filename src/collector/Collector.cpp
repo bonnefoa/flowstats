@@ -149,8 +149,8 @@ auto Collector::outputStatus(int duration) -> CollectorOutput
 
 auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
 {
-    auto aggregatedMap = getAggregatedMap();
     std::vector<Flow const*> tempVector;
+    auto aggregatedMap = getAggregatedMap();
     tempVector.reserve(aggregatedMap.size());
     for (auto const& pair : aggregatedMap) {
         tempVector.push_back(pair.second);
@@ -163,11 +163,11 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
             if (left == nullptr || right == nullptr) {
                 return false;
             }
-            auto res = sortFun(left, right);
             if (reversedSort) {
-                return !res;
+                return sortFun(right, left);
+            } else {
+                return sortFun(left, right);
             }
-            return res;
         });
     return tempVector;
 }
