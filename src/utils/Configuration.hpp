@@ -24,7 +24,7 @@ auto displayTypeToString(enum DisplayType displayType) -> std::string;
 
 struct DisplayConfiguration {
     int protocolIndex = 0;
-    int maxResults = 15;
+    int maxResults = 1000;
     std::string filter;
     bool noCurses = false;
     bool pcapReplay = false;

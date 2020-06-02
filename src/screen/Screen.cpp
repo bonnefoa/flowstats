@@ -143,7 +143,6 @@ auto Screen::updateSortSelection() -> void
 auto Screen::updateStatus(std::optional<CaptureStat> captureStat) -> void
 {
     werase(statusWin);
-    //mvwprintw(statusWin, 0, 0, fmt::format("Freeze: {}, sort edit {}, last key {}, Filter {}, line {}, sortIndex {}, reversedSort {}\n", shouldFreeze, editSort, lastKey, displayConf->filter, selectedLine, protocolToSortIndex[displayConf->protocolIndex], reversedSort).c_str());
     waddstr(statusWin, fmt::format("Running time: {}s\n", lastTv.tv_sec - firstTv.tv_sec).c_str());
 
     if (captureStat.has_value()) {
