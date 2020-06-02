@@ -125,7 +125,7 @@ auto AggregatedDnsFlow::addAggregatedFlow(Flow const* flow) -> void
     queries += dnsFlow->queries;
     truncated += dnsFlow->truncated;
     records += dnsFlow->records;
-    timeouts += !dnsFlow->timeouts;
+    timeouts += dnsFlow->timeouts;
 
     for (auto it : dnsFlow->sourceIps) {
         sourceIps[it.first] += it.second;
