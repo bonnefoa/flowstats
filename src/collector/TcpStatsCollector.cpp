@@ -103,7 +103,7 @@ auto TcpStatsCollector::lookupAggregatedFlows(FlowId const& flowId,
     std::string const& fqdn,
     Direction srvDir) -> std::vector<AggregatedTcpFlow*>
 {
-    auto ipSrvInt = 0;
+    Tins::IPv4Address ipSrvInt = {};
     if (getFlowstatsConfiguration().getPerIpAggr()) {
         ipSrvInt = flowId.getIp(srvDir);
     }

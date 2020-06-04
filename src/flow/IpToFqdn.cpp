@@ -1,5 +1,6 @@
 #include "IpToFqdn.hpp"
 #include <arpa/inet.h>
+#include <fmt/ostream.h>
 #include <iostream>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -57,6 +58,15 @@ auto IpToFqdn::resolveDomains(const std::vector<std::string>& initialDomains,
     }
 }
 
+auto IpToFqdn::updateDnsCache() -> void
+{
+    for (auto i : ipToFqdn) {
+        fmt::print(ipv4CacheFile, "{} {}",
+            i.first,
+            i.second);
+    }
+}
+
 auto IpToFqdn::updateFqdn(std::string fqdn,
     std::vector<Tins::IPv4Address> const& ips,
     std::vector<Tins::IPv6Address> const& ipv6) -> void
@@ -72,11 +82,11 @@ auto IpToFqdn::updateFqdn(std::string fqdn,
     }
 }
 
-auto IpToFqdn::getFlowFqdn(uint32_t srvIp) -> std::optional<std::string>
+auto IpToFqdn::getFlowFqdn(Tins::IPv4Address ipv4) -> std::optional<std::string>
 {
     std::optional<std::string> fqdn;
     const std::lock_guard<std::mutex> lock(mutex);
-    auto it = ipToFqdn.find(srvIp);
+    auto it = ipToFqdn.find(ipv4);
     if (it == ipToFqdn.end()) {
         if (conf.getDisplayUnknownFqdn() == false) {
             return {};

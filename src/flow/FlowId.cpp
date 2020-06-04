@@ -57,7 +57,7 @@ FlowId::FlowId(FlowId&& flowId) noexcept
     transport = flowId.transport;
     network = flowId.network;
     direction = flowId.direction;
-    ipv6 = flowId.ipv6;
+    ip.ipv6 = flowId.ip.ipv6;
     ports = flowId.ports;
 }
 
@@ -69,7 +69,7 @@ auto FlowId::operator=(FlowId&& flowId) noexcept -> FlowId&
     transport = flowId.transport;
     network = flowId.network;
     direction = flowId.direction;
-    ipv6 = flowId.ipv6;
+    ip = flowId.ip;
     ports = flowId.ports;
     return *this;
 }
@@ -79,7 +79,7 @@ auto FlowId::operator=(FlowId const& flowId) noexcept -> FlowId&
     transport = flowId.transport;
     network = flowId.network;
     direction = flowId.direction;
-    ipv6 = flowId.ipv6;
+    ip = flowId.ip;
     ports[0] = flowId.ports[0];
     ports[1] = flowId.ports[1];
     return *this;
@@ -99,8 +99,8 @@ FlowId::FlowId(std::array<uint16_t, 2> pktPorts,
     if (pktPorts[0] < pktPorts[1]) {
         direction = FROM_SERVER;
     }
-    ipv4[0] = pktIps[0 + direction];
-    ipv4[1] = pktIps[1 - direction];
+    ip.ipv4[0] = pktIps[0 + direction];
+    ip.ipv4[1] = pktIps[1 - direction];
     ports[0] = pktPorts[0 + direction];
     ports[1] = pktPorts[1 - direction];
 }
@@ -114,8 +114,8 @@ FlowId::FlowId(std::array<uint16_t, 2> pktPorts,
     if (pktPorts[0] < pktPorts[1]) {
         direction = FROM_SERVER;
     }
-    ipv6[0] = pktIps[0 + direction];
-    ipv6[1] = pktIps[1 - direction];
+    ip.ipv6[0] = pktIps[0 + direction];
+    ip.ipv6[1] = pktIps[1 - direction];
     ports[0] = pktPorts[0 + direction];
     ports[1] = pktPorts[1 - direction];
 }
@@ -124,8 +124,8 @@ auto FlowId::toString() const -> std::string
 {
     if (network == +Network::IPV4) {
         return fmt::format("{}:{} -> {}:{}",
-            ipv4ToString(ipv4[direction]), ports[direction],
-            ipv4ToString(ipv4[!direction]), ports[!direction]);
+            ipv4ToString(ip.ipv4[direction]), ports[direction],
+            ipv4ToString(ip.ipv4[!direction]), ports[!direction]);
     }
     return "";
 }
