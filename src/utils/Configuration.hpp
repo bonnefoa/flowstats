@@ -27,6 +27,7 @@ struct DisplayConfiguration {
     int maxResults = 1000;
     std::string filter;
     bool noCurses = false;
+    bool noDisplay = false;
     bool pcapReplay = false;
 };
 

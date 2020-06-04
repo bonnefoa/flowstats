@@ -287,6 +287,9 @@ Screen::Screen(std::atomic_bool* shouldStop,
 
 auto Screen::refreshPads() -> void
 {
+    if (displayConf->noDisplay) {
+        return;
+    }
     wnoutrefresh(statusWin);
 
     int deltaValues = 0;

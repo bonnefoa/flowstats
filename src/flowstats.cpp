@@ -30,6 +30,7 @@ static struct option FlowStatsOptions[] = {
 
     { "ignore-unknown-fqdn", no_argument, nullptr, 'u' },
     { "no-curses", no_argument, nullptr, 'n' },
+    { "no-display", no_argument, nullptr, 'c' },
     { "verbose", no_argument, nullptr, 'v' },
     { "per-ip-aggr", no_argument, nullptr, 'w' },
     { "list-interfaces", no_argument, nullptr, 'l' },
@@ -73,7 +74,7 @@ auto main(int argc, char* argv[]) -> int
     int optionIndex = 0;
     int opt = 0;
 
-    while ((opt = getopt_long(argc, argv, "k:i:a:f:o:b:m:p:d:nuwhvl", FlowStatsOptions,
+    while ((opt = getopt_long(argc, argv, "k:i:a:f:o:b:m:p:d:cnuwhvl", FlowStatsOptions,
                 &optionIndex))
         != -1) {
         switch (opt) {
@@ -114,6 +115,9 @@ auto main(int argc, char* argv[]) -> int
             conf.setDisplayUnknownFqdn(true);
             break;
         case 'n':
+            displayConf.noDisplay = true;
+            break;
+        case 'c':
             displayConf.noCurses = true;
             break;
         case 'w':
