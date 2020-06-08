@@ -26,5 +26,9 @@ target_include_directories(flowlib PUBLIC fmt::fmt ${SPDLOG_INCLUDE_DIRS} ${PCAP
     ${CMAKE_CURRENT_SOURCE_DIR}/collector ${CMAKE_CURRENT_SOURCE_DIR}/pktsource ${CMAKE_CURRENT_SOURCE_DIR}/flow)
 
 # Executable
-add_executable(flowstats flowstats.cpp)
+add_executable(flowstats Flowstats.cpp)
 target_link_libraries(flowstats flowlib ${ADDITIONAL_EXECUTABLE_LIBRARIES})
+
+add_executable(flowreplay Flowreplay.cpp)
+target_link_libraries(flowreplay flowlib ${ADDITIONAL_EXECUTABLE_LIBRARIES})
+

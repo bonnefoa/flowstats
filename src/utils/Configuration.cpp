@@ -5,7 +5,7 @@
 
 namespace flowstats {
 
-FlowstatsConfiguration::FlowstatsConfiguration()
+static auto setupLog()
 {
     auto errLogger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     errLogger->set_level(spdlog::level::warn);
@@ -19,6 +19,16 @@ FlowstatsConfiguration::FlowstatsConfiguration()
 
     logger->set_level(spdlog::level::debug);
     spdlog::set_default_logger(logger);
+}
+
+FlowReplayConfiguration::FlowReplayConfiguration()
+{
+    setupLog();
+}
+
+FlowstatsConfiguration::FlowstatsConfiguration()
+{
+    setupLog();
 }
 
 auto displayTypeToString(enum DisplayType displayType) -> std::string

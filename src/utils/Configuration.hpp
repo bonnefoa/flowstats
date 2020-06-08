@@ -66,5 +66,27 @@ private:
     int timeoutFlow = 15;
 };
 
+class FlowReplayConfiguration {
+public:
+    FlowReplayConfiguration();
+    virtual ~FlowReplayConfiguration() = default;
+
+    auto setBpfFilter(std::string b) { bpfFilter = std::move(b); };
+    auto setPcapFileName(std::string p) { pcapFileName = std::move(p); };
+    auto setIp(std::string ipStr) { ip = ipStr; };
+    auto setDstPort(uint16_t inPort) { dstPort = inPort; };
+
+    [[nodiscard]] auto getPcapFileName() const -> std::string const& { return pcapFileName; };
+    [[nodiscard]] auto getBpfFilter() const -> std::string const& { return bpfFilter; };
+    [[nodiscard]] auto getDstPort() const -> uint16_t const& { return dstPort; };
+    [[nodiscard]] auto getIp() const -> std::string const& { return ip; };
+
+private:
+    uint16_t dstPort = 0;
+    std::string pcapFileName = "";
+    std::string bpfFilter = "";
+    std::string ip = {};
+};
+
 using DisplayPair = std::pair<DisplayType, std::vector<Field>>;
 } // namespace flowstats
