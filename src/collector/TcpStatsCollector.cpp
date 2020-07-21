@@ -179,7 +179,7 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
         }
         uint32_t maxDelta = std::max(deltas[0], deltas[1]);
         SPDLOG_DEBUG("flow.{}, maxDelta: {}", flow.getFlowId().toString(), maxDelta);
-        auto timeoutFlow = getFlowstatsConfiguration().getTimeoutFlow();
+        uint32_t timeoutFlow = getFlowstatsConfiguration().getTimeoutFlow();
         if (maxDelta > timeoutFlow) {
             SPDLOG_DEBUG("Timeout flow {}, now {}, maxDelta {} > {}",
                 flow.getFlowId().toString(), now.tv_sec, maxDelta, timeoutFlow);

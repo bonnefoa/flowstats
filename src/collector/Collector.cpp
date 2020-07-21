@@ -1,6 +1,7 @@
 #include "Collector.hpp"
 #include "FlowId.hpp"
 #include <arpa/inet.h>
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -182,6 +183,8 @@ auto collectorProtocolToString(CollectorProtocol proto) -> std::string
         ENUM_TEXT(TCP);
         ENUM_TEXT(SSL);
     }
+    assert("Invalid CollectorProtocol");
+    return "";
 }
 
 Collector::~Collector()
