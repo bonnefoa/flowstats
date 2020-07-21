@@ -93,7 +93,7 @@ auto Screen::updateValues() -> void
     werase(valueWin);
 
     numberElements = int(collectorOutput.getKeys().size() / 2);
-    for (int i = 0; i < collectorOutput.getKeys().size(); ++i) {
+    for (unsigned int i = 0; i < collectorOutput.getKeys().size(); ++i) {
         int line = i / 2;
         if (line == selectedLine) {
             wattron(keyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
@@ -161,7 +161,7 @@ auto Screen::updateStatus(std::optional<CaptureStat> captureStat) -> void
     waddstr(statusWin, currentCaptureStat.getRate(previousCaptureStat).c_str());
 
     waddstr(statusWin, fmt::format("{:<10} ", "Protocol:").c_str());
-    for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
+    for (unsigned int i = 0; i < ARRAY_SIZE(protocols); ++i) {
         auto proto = protocols[i];
         if (displayConf->protocolIndex == i) {
             wattron(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));

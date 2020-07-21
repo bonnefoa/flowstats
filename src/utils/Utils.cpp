@@ -103,7 +103,7 @@ auto getDomainToServerPort(const std::vector<std::string>& initialServerPorts) -
 
 static auto prettyFormatGeneric(int num, std::vector<std::string> suffixes) -> std::string
 {
-    int unit = 0;
+    unsigned int unit = 0;
     double currentCount = num;
     while (currentCount >= 1000 && unit < suffixes.size()) {
         unit++;
@@ -131,7 +131,7 @@ auto prettyFormatMs(int ms) -> std::string
 auto prettyFormatBytes(int bytes) -> std::string
 {
     std::vector<std::string> suffixes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
-    int unit = 0;
+    unsigned int unit = 0;
     double currentCount = bytes;
     while (currentCount >= 1024 && unit < suffixes.size()) {
         unit++;

@@ -23,7 +23,7 @@ enum DisplayType {
 auto displayTypeToString(enum DisplayType displayType) -> std::string;
 
 struct DisplayConfiguration {
-    int protocolIndex = 0;
+    unsigned int protocolIndex = 0;
     int maxResults = 1000;
     std::string filter;
     bool noCurses = false;
