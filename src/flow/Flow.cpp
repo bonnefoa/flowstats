@@ -18,7 +18,7 @@ auto Flow::addPacket(Tins::Packet const& packet,
 }
 
 auto Flow::fillValues(std::map<Field, std::string>* ptrValues,
-    Direction direction) const -> void
+    Direction direction, int duration) const -> void
 {
     auto& values = *ptrValues;
     values[Field::PKTS_RATE] = prettyFormatNumber(packets[direction]);

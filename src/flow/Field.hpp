@@ -27,6 +27,7 @@ BETTER_ENUM(Field, char,
     TOP_CLIENT_IPS,
     REQ,
     REQ_RATE,
+    REQ_AVG,
 
     SRT,
     SRT_RATE,

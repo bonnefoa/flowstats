@@ -20,7 +20,7 @@ struct AggregatedDnsFlow : Flow {
     auto resetFlow(bool resetTotal) -> void override;
     auto operator<(AggregatedDnsFlow const& b) { return queries < b.queries; }
     auto fillValues(std::map<Field, std::string>* values,
-        Direction direction) const -> void override;
+        Direction direction, int duration) const -> void override;
     auto addFlow(Flow const* flow) -> void override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
     auto mergePercentiles() -> void override { srts.merge(); }

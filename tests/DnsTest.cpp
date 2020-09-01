@@ -23,13 +23,13 @@ TEST_CASE("Dns queries timeout", "[dns]")
     auto firstKey = AggregatedKey::aggregatedDnsKey("test.com", Tins::DNS::A, Transport::UDP);
     auto firstFlow = aggregatedFlows->at(firstKey);
     std::map<Field, std::string> cltValues;
-    firstFlow->fillValues(&cltValues, FROM_CLIENT);
+    firstFlow->fillValues(&cltValues, FROM_CLIENT, 1);
     CHECK(cltValues[Field::REQ] == "1");
     CHECK(cltValues[Field::TIMEOUTS] == "0");
 
     auto thirdKey = AggregatedKey::aggregatedDnsKey("google.com", Tins::DNS::A, Transport::UDP);
     auto thirdFlow = aggregatedFlows->at(thirdKey);
-    thirdFlow->fillValues(&cltValues, FROM_CLIENT);
+    thirdFlow->fillValues(&cltValues, FROM_CLIENT, 1);
     CHECK(cltValues[Field::REQ] == "1");
     CHECK(cltValues[Field::TIMEOUTS] == "1");
 }
@@ -48,7 +48,7 @@ TEST_CASE("Dns rcrd/rsps", "[dns]")
         Tins::DNS::A, Transport::UDP);
     auto firstFlow = aggregatedFlows->at(udpKey);
     std::map<Field, std::string> cltValues;
-    firstFlow->fillValues(&cltValues, FROM_CLIENT);
+    firstFlow->fillValues(&cltValues, FROM_CLIENT, 1);
     CHECK(cltValues[Field::REQ] == "1");
     CHECK(cltValues[Field::RCRD_AVG] == "48");
 }

@@ -33,11 +33,15 @@ auto AggregatedDnsFlow::getTopClientIpsStr() const -> std::string
 }
 
 auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>* ptrValues,
-    Direction direction) const -> void
+    Direction direction, int duration) const -> void
 {
-    Flow::fillValues(ptrValues, direction);
+    Flow::fillValues(ptrValues, direction, duration);
     auto& values = *ptrValues;
     auto fqdn = getFqdn();
+    std::string reqAvg = "0";
+    if (duration > 0) {
+        reqAvg = prettyFormatNumber(totalQueries / duration);
+    }
     if (fqdn == "Total") {
         if (direction == FROM_SERVER) {
             return;
@@ -52,6 +56,7 @@ auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>* ptrValues,
         values[Field::TIMEOUTS] = std::to_string(totalTimeouts);
         values[Field::REQ] = prettyFormatNumber(totalQueries);
         values[Field::REQ_RATE] = prettyFormatNumber(queries);
+        values[Field::REQ_AVG] = reqAvg;
 
         values[Field::SRT] = prettyFormatNumber(totalSrt);
         values[Field::SRT_RATE] = prettyFormatNumber(numSrt);
@@ -75,6 +80,7 @@ auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>* ptrValues,
         values[Field::PORT] = std::to_string(getSrvPort());
         values[Field::REQ] = prettyFormatNumber(totalQueries);
         values[Field::REQ_RATE] = prettyFormatNumber(queries);
+        values[Field::REQ_AVG] = reqAvg;
         values[Field::TOP_CLIENT_IPS] = getTopClientIpsStr();
 
         values[Field::SRT] = prettyFormatNumber(totalSrt);

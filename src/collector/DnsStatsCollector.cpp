@@ -13,7 +13,7 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
 {
     getFlowFormatter().setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::PROTO, Field::TYPE, Field::DIR });
     setDisplayPairs({
-        DisplayPair(DisplayRequests, { Field::REQ, Field::REQ_RATE, Field::TIMEOUTS, Field::TIMEOUTS_RATE }),
+        DisplayPair(DisplayRequests, { Field::REQ, Field::REQ_RATE, Field::REQ_AVG, Field::TIMEOUTS, Field::TIMEOUTS_RATE }),
         DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::RCRD_AVG }),
         DisplayPair(DisplayClients, { Field::TOP_CLIENT_IPS }),
         DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),

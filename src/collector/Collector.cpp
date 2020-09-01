@@ -26,12 +26,12 @@ void Collector::sendMetrics()
 auto Collector::outputFlow(Flow const* flow,
     std::vector<std::string>* keyLines,
     std::vector<std::string>* valueLines,
-    int position) const -> void
+    int position, int duration) const -> void
 {
     for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
         auto direction = static_cast<Direction>(j);
         std::map<Field, std::string> values;
-        flow->fillValues(&values, direction);
+        flow->fillValues(&values, direction, duration);
         if (position == -1) {
             keyLines->push_back(flowFormatter.outputKey(values));
             valueLines->push_back(flowFormatter.outputValue(values));
@@ -44,7 +44,8 @@ auto Collector::outputFlow(Flow const* flow,
 
 auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
     std::vector<std::string>* keyLines,
-    std::vector<std::string>* valueLines)
+    std::vector<std::string>* valueLines,
+    int duration)
 {
     FlowFormatter flowFormatter = getFlowFormatter();
 
@@ -55,15 +56,17 @@ auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
 
     int i = 0;
     for (auto const* flow : aggregatedFlows) {
-        if (flow->getFqdn().find(displayConf.filter) == std::string::npos) {
-            continue;
+        if (!displayConf.filter.empty()) {
+            if (flow->getFqdn().find(displayConf.filter) == std::string::npos) {
+                continue;
+            }
         }
         totalFlow->addAggregatedFlow(flow);
         if (i++ <= displayConf.maxResults) {
-            outputFlow(flow, keyLines, valueLines, -1);
+            outputFlow(flow, keyLines, valueLines, -1, duration);
         }
     }
-    outputFlow(totalFlow, keyLines, valueLines, 0);
+    outputFlow(totalFlow, keyLines, valueLines, 0, duration);
 }
 
 auto Collector::fillSortFields() -> void
@@ -142,7 +145,7 @@ auto Collector::outputStatus(int duration) -> CollectorOutput
     const std::lock_guard<std::mutex> lock(dataMutex);
     mergePercentiles();
     std::vector<Flow const*> tempVector = getAggregatedFlows();
-    fillOutputs(tempVector, &keyLines, &valueLines);
+    fillOutputs(tempVector, &keyLines, &valueLines, duration);
     return CollectorOutput(toString(), keyLines, valueLines,
         pairHeaders.first, pairHeaders.second, duration);
 }

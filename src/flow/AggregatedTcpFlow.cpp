@@ -35,9 +35,9 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
 }
 
 auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>* ptrValues,
-    Direction direction) const -> void
+    Direction direction, int duration) const -> void
 {
-    Flow::fillValues(ptrValues, direction);
+    Flow::fillValues(ptrValues, direction, duration);
     auto& values = *ptrValues;
     values[Field::SYN] = std::to_string(syns[direction]);
     values[Field::SYNACK] = std::to_string(synacks[direction]);

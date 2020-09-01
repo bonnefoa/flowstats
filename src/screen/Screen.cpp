@@ -78,7 +78,7 @@ auto Screen::updateDisplay(timeval tv, bool updateOutput,
     }
 
     if (updateOutput) {
-        collectorOutput = activeCollector->outputStatus(tv.tv_sec);
+        collectorOutput = activeCollector->outputStatus(tv.tv_sec - firstTv.tv_sec);
     }
 
     updateHeaders();

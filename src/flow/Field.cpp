@@ -89,6 +89,8 @@ auto fieldToHeader(Field field) -> char const*
         return "Req";
     case Field::REQ_RATE:
         return "Req/s";
+    case Field::REQ_AVG:
+        return "ReqAvg";
     case Field::RST:
         return "RST";
     case Field::SRT:
