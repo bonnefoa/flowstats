@@ -256,7 +256,9 @@ Screen::Screen(std::atomic_bool* shouldStop,
     }
     initscr();
 
+    use_default_colors();
     start_color();
+
     init_pair(SELECTED_STATUS_COLOR, COLOR_BLACK, COLOR_WHITE);
     init_pair(SELECTED_LINE_COLOR, COLOR_BLACK, COLOR_CYAN);
 
