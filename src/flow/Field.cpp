@@ -32,6 +32,9 @@ auto fieldToSortable(Field field) -> bool
     switch (field) {
     case Field::DIR:
     case Field::TOP_CLIENT_IPS:
+    case Field::REQ_AVG:
+    case Field::PKTS_AVG:
+    case Field::BYTES_AVG:
         return false;
     default:
         return true;
