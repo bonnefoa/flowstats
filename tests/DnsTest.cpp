@@ -52,3 +52,15 @@ TEST_CASE("Dns rcrd/rsps", "[dns]")
     CHECK(cltValues[Field::REQ] == "1");
     CHECK(cltValues[Field::RCRD_AVG] == "48");
 }
+
+TEST_CASE("Dns tcp", "[dns]")
+{
+    spdlog::set_level(spdlog::level::debug);
+    auto tester = Tester();
+    auto& dnsStatsCollector = tester.getDnsStatsCollector();
+    tester.readPcap("dns_tcp.pcap");
+
+    auto aggregatedFlows = dnsStatsCollector.getAggregatedMap();
+    REQUIRE(aggregatedFlows->size() == 1);
+
+}

@@ -2,6 +2,7 @@
 #include "PduUtils.hpp"
 #include "PrintHelper.hpp"
 #include <tins/rawpdu.h>
+#include <tins/memory_helpers.h>
 
 namespace flowstats {
 
@@ -66,7 +67,19 @@ auto DnsStatsCollector::processPacket(Tins::Packet const& packet,
     if (rawPdu == nullptr) {
         return;
     }
-    auto dns = rawPdu->to<Tins::DNS>();
+    Tins::DNS dns;
+    if (tcp) {
+        auto const payload = rawPdu->payload();
+        Tins::Memory::InputMemoryStream stream(&payload[0], static_cast<uint32_t>(payload.size()));
+        auto tcpSize = stream.read_be<uint16_t>();
+        if (tcpSize != stream.size()) {
+            return;
+        }
+        SPDLOG_DEBUG("Found dns on tcp with size {}", tcpSize);
+        dns = Tins::DNS(stream.pointer(), static_cast<uint32_t>(stream.size()));
+    } else {
+        dns = rawPdu->to<Tins::DNS>();
+    }
 
     if (dns.type() == Tins::DNS::QUERY) {
         newDnsQuery(packet, flowId, dns);
