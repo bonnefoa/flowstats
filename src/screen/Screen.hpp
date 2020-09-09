@@ -28,7 +28,7 @@ public:
     auto StopDisplay() -> void;
     auto getCurrentChoice() -> std::string;
     auto updateDisplay(timeval tv, bool updateOutput,
-        std::optional<CaptureStat> captureStatus) -> void;
+        std::optional<CaptureStat> const& captureStatus) -> void;
 
     [[nodiscard]] auto getDisplayConf() const { return displayConf; };
 
@@ -40,7 +40,7 @@ private:
     auto refreshableAction(int c) -> bool;
     auto updateHeaders() -> void;
     auto updateValues() -> void;
-    auto updateStatus(std::optional<CaptureStat> captureStat) -> void;
+    auto updateStatus(std::optional<CaptureStat> const& captureStat) -> void;
     auto updateMenu() -> void;
     auto updateSortSelection() -> void;
 

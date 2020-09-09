@@ -57,7 +57,7 @@ std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
 
 auto Screen::updateDisplay(timeval tv, bool updateOutput,
-    std::optional<CaptureStat> captureStat) -> void
+    std::optional<CaptureStat> const& captureStat) -> void
 {
     if (displayConf->noCurses) {
         return;
@@ -142,7 +142,7 @@ auto Screen::updateSortSelection() -> void
     }
 }
 
-auto Screen::updateStatus(std::optional<CaptureStat> captureStat) -> void
+auto Screen::updateStatus(std::optional<CaptureStat> const& captureStat) -> void
 {
     werase(statusWin);
     waddstr(statusWin, fmt::format("Running time: {}s\n", lastTv.tv_sec - firstTv.tv_sec).c_str());
@@ -412,8 +412,8 @@ auto Screen::displayLoop() -> void
             if (displayConf->pcapReplay) {
                 continue;
             }
-            struct timeval currentTime;
-            gettimeofday(&currentTime, NULL);
+            struct timeval currentTime = {};
+            gettimeofday(&currentTime, nullptr);
             if (getTimevalDeltaMs(lastTv, currentTime) > 1000) {
                 updateDisplay(currentTime, true, {});
             }
