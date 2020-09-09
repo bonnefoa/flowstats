@@ -92,8 +92,10 @@ auto Screen::updateValues() -> void
     werase(keyWin);
     werase(valueWin);
 
-    numberElements = int(collectorOutput.getKeys().size() / 2);
-    for (int i = 0; i < collectorOutput.getKeys().size(); ++i) {
+
+    auto numKeys = collectorOutput.getKeys().size();
+    numberElements = int(numKeys / 2);
+    for (int i = 0; i < numKeys; ++i) {
         int line = i / 2;
         if (line == selectedLine) {
             wattron(keyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
