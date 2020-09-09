@@ -52,6 +52,8 @@ auto fieldToHeader(Field field) -> char const*
         return "Bytes";
     case Field::BYTES_RATE:
         return "Bytes/s";
+    case Field::BYTES_AVG:
+        return "BytesAvg";
     case Field::CLOSE:
         return "Close";
     case Field::CLOSE_RATE:
@@ -82,6 +84,8 @@ auto fieldToHeader(Field field) -> char const*
         return "Pkts";
     case Field::PKTS_RATE:
         return "Pkts/s";
+    case Field::PKTS_AVG:
+        return "Pkts Avg";
     case Field::PORT:
         return "Port";
     case Field::PROTO:

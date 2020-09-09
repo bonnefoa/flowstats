@@ -17,7 +17,7 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, Display
 
     setDisplayPairs({
         DisplayPair(DisplayConnections, { Field::CONN, Field::CONN_RATE, Field::CT_P95, Field::CT_P99 }),
-        DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
+        DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::PKTS_AVG, Field::BYTES, Field::BYTES_RATE, Field::BYTES_AVG }),
     });
     setTotalFlow(new AggregatedSslFlow());
     fillSortFields();

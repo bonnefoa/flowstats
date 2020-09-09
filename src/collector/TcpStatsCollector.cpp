@@ -23,7 +23,7 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
         DisplayPair(DisplayFlags, { Field::SYN, Field::SYN_RATE, Field::SYNACK, Field::SYNACK_RATE, Field::FIN, Field::FIN_RATE, Field::RST, Field::RST_RATE, Field::ZWIN, Field::ZWIN_RATE }),
         DisplayPair(DisplayConnections, { Field::ACTIVE_CONNECTIONS, Field::FAILED_CONNECTIONS, Field::CONN, Field::CONN_RATE, Field::CT_P95, Field::CT_P99, Field::CLOSE, Field::CLOSE_RATE }),
         DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::SRT_MAX, Field::DS_P95, Field::DS_P99, Field::DS_MAX }),
-        DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
+        DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::PKTS_AVG, Field::BYTES, Field::BYTES_RATE, Field::BYTES_AVG }),
     });
     setTotalFlow(new AggregatedTcpFlow());
     fillSortFields();

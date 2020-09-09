@@ -46,7 +46,9 @@ auto stringsToInts(std::vector<std::string> const& strInts) -> std::set<int>;
 template <std::size_t N>
 auto fmtVector(std::string const& format, std::vector<std::string> const& v) -> std::string;
 auto prettyFormatBytes(int bytes) -> std::string;
+auto prettyFormatBytesAverage(int bytes, int duration) -> std::string;
 auto prettyFormatNumber(int num) -> std::string;
+auto prettyFormatNumberAverage(int num, int duration) -> std::string;
 auto prettyFormatMs(int ms) -> std::string;
 
 auto getIpToFqdn(std::vector<std::string> const& initialDomains) -> std::map<uint32_t, std::string>;

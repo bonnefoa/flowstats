@@ -122,6 +122,14 @@ auto prettyFormatNumber(int num) -> std::string
     return prettyFormatGeneric(num, suffixes);
 }
 
+auto prettyFormatNumberAverage(int total, int duration) -> std::string
+{
+    if (duration == 0) {
+        return "0/s";
+    }
+    return prettyFormatNumber(total / duration);
+}
+
 auto prettyFormatMs(int ms) -> std::string
 {
     std::vector<std::string> suffixes = { "ms", "s" };
@@ -142,6 +150,14 @@ auto prettyFormatBytes(int bytes) -> std::string
     } else {
         return fmt::format("{:.1f} {}", currentCount, suffixes[unit]);
     }
+}
+
+auto prettyFormatBytesAverage(int bytes, int duration) -> std::string
+{
+    if (duration == 0) {
+        return "0";
+    }
+    return prettyFormatBytes(bytes / duration);
 }
 
 auto packetToTimeval(const Tins::Packet& packet) -> timeval

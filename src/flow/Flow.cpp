@@ -21,10 +21,14 @@ auto Flow::fillValues(std::map<Field, std::string>* ptrValues,
     Direction direction, int duration) const -> void
 {
     auto& values = *ptrValues;
-    values[Field::PKTS_RATE] = prettyFormatNumber(packets[direction]);
-    values[Field::BYTES_RATE] = prettyFormatBytes(bytes[direction]);
     values[Field::PKTS] = prettyFormatNumber(totalPackets[direction]);
+    values[Field::PKTS_RATE] = prettyFormatNumber(packets[direction]);
+    values[Field::PKTS_AVG] = prettyFormatNumberAverage(totalPackets[direction], duration);
+
     values[Field::BYTES] = prettyFormatBytes(totalBytes[direction]);
+    values[Field::BYTES_RATE] = prettyFormatBytes(bytes[direction]);
+    values[Field::BYTES_AVG] = prettyFormatBytesAverage(totalBytes[direction], duration);
+
     values[Field::DIR] = directionToString(static_cast<Direction>(direction));
 }
 
