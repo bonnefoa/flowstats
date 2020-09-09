@@ -22,7 +22,7 @@ struct AggregatedTcpFlow : Flow {
 
     auto operator<(AggregatedTcpFlow const& b) const -> bool
     {
-        return syns[0] < b.syns[0];
+        return totalSyns[0] < b.totalSyns[0];
     }
 
     auto updateFlow(Tins::Packet const& packet, FlowId const& flowId,
@@ -80,6 +80,13 @@ struct AggregatedTcpFlow : Flow {
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalSyns < bCast->totalSyns;
+    }
+
+    [[nodiscard]] static auto sortBySynRate(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
         return aCast->syns < bCast->syns;
     }
 
@@ -87,10 +94,24 @@ struct AggregatedTcpFlow : Flow {
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
-        return aCast->synacks < bCast->synacks;
+        return aCast->totalSynAcks < bCast->totalSynAcks;
+    }
+
+    [[nodiscard]] static auto sortBySynAckRate(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->synAcks < bCast->synAcks;
     }
 
     [[nodiscard]] static auto sortByZwin(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalZeroWins < bCast->totalZeroWins;
+    }
+
+    [[nodiscard]] static auto sortByZwinRate(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
@@ -101,10 +122,24 @@ struct AggregatedTcpFlow : Flow {
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalRsts < bCast->totalRsts;
+    }
+
+    [[nodiscard]] static auto sortByRstRate(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
         return aCast->rsts < bCast->rsts;
     }
 
     [[nodiscard]] static auto sortByFin(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalFins < bCast->totalFins;
+    }
+
+    [[nodiscard]] static auto sortByFinRate(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
@@ -218,10 +253,17 @@ struct AggregatedTcpFlow : Flow {
 
 private:
     std::array<int, 2> syns = {};
-    std::array<int, 2> synacks = {};
+    std::array<int, 2> synAcks = {};
     std::array<int, 2> fins = {};
     std::array<int, 2> rsts = {};
     std::array<int, 2> zeroWins = {};
+
+    std::array<int, 2> totalSyns = {};
+    std::array<int, 2> totalSynAcks = {};
+    std::array<int, 2> totalFins = {};
+    std::array<int, 2> totalRsts = {};
+    std::array<int, 2> totalZeroWins = {};
+
     std::array<uint32_t, 2> mtu = {};
 
     int closes = 0;

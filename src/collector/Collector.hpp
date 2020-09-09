@@ -50,7 +50,7 @@ public:
     typedef bool (*sortFlowFun)(Flow const*, Flow const*);
     [[nodiscard]] virtual auto getSortFun(Field field) const -> sortFlowFun;
 
-    [[nodiscard]] auto outputStatus(long duration) -> CollectorOutput;
+    [[nodiscard]] auto outputStatus(time_t duration) -> CollectorOutput;
 
     auto updateDisplayType(int displayIndex) -> void { flowFormatter.setDisplayValues(displayPairs[displayIndex].second); };
 

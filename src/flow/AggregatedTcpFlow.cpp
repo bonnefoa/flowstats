@@ -17,18 +17,23 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
     auto direction = flowId.getDirection();
     if (tcp.has_flags(Tins::TCP::RST)) {
         rsts[direction]++;
+        totalRsts[direction]++;
     }
 
     if (tcp.window() == 0 && !tcp.has_flags(Tins::TCP::RST)) {
         zeroWins[direction]++;
+        totalZeroWins[direction]++;
     }
 
     if (tcp.has_flags(Tins::TCP::SYN | Tins::TCP::ACK)) {
-        synacks[direction]++;
+        synAcks[direction]++;
+        totalSynAcks[direction]++;
     } else if (tcp.has_flags(Tins::TCP::SYN)) {
         syns[direction]++;
+        totalSyns[direction]++;
     } else if (tcp.has_flags(Tins::TCP::FIN)) {
         fins[direction]++;
+        totalFins[direction]++;
     }
     mtu[direction] = std::max(mtu[direction],
         packet.pdu()->advertised_size());
@@ -39,11 +44,19 @@ auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>* ptrValues,
 {
     Flow::fillValues(ptrValues, direction, duration);
     auto& values = *ptrValues;
-    values[Field::SYN] = std::to_string(syns[direction]);
-    values[Field::SYNACK] = std::to_string(synacks[direction]);
-    values[Field::FIN] = std::to_string(fins[direction]);
-    values[Field::ZWIN] = std::to_string(zeroWins[direction]);
-    values[Field::RST] = std::to_string(rsts[direction]);
+
+    values[Field::SYN_RATE] = std::to_string(syns[direction]);
+    values[Field::SYNACK_RATE] = std::to_string(synAcks[direction]);
+    values[Field::FIN_RATE] = std::to_string(fins[direction]);
+    values[Field::ZWIN_RATE] = std::to_string(zeroWins[direction]);
+    values[Field::RST_RATE] = std::to_string(rsts[direction]);
+
+    values[Field::SYN] = std::to_string(totalSyns[direction]);
+    values[Field::SYNACK] = std::to_string(totalSynAcks[direction]);
+    values[Field::FIN] = std::to_string(totalFins[direction]);
+    values[Field::ZWIN] = std::to_string(totalZeroWins[direction]);
+    values[Field::RST] = std::to_string(totalRsts[direction]);
+
     values[Field::MTU] = std::to_string(mtu[direction]);
 
     if (direction == FROM_CLIENT) {
@@ -82,6 +95,12 @@ auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
         fins[i] += tcpFlow->fins[i];
         rsts[i] += tcpFlow->rsts[i];
         zeroWins[i] += tcpFlow->zeroWins[i];
+
+        totalSyns[i] += tcpFlow->totalSyns[i];
+        totalFins[i] += tcpFlow->totalFins[i];
+        totalRsts[i] += tcpFlow->totalRsts[i];
+        totalZeroWins[i] += tcpFlow->totalZeroWins[i];
+
         mtu[i] = std::max(mtu[i], tcpFlow->mtu[i]);
     }
 
@@ -110,11 +129,18 @@ auto AggregatedTcpFlow::resetFlow(bool resetTotal) -> void
     numConnections = 0;
     numSrts = 0;
 
+    syns = {};
+    synAcks = {};
+    fins = {};
+    rsts = {};
+    zeroWins = {};
+
     if (resetTotal) {
-        syns = {};
-        fins = {};
-        rsts = {};
-        zeroWins = {};
+        totalSyns = {};
+        totalSynAcks = {};
+        totalFins = {};
+        totalRsts = {};
+        totalZeroWins = {};
         mtu = {};
 
         activeConnections = 0;

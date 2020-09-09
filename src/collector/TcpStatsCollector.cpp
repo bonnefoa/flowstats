@@ -20,7 +20,7 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
     }
 
     setDisplayPairs({
-        DisplayPair(DisplayFlags, { Field::SYN, Field::SYNACK, Field::FIN, Field::RST, Field::ZWIN }),
+        DisplayPair(DisplayFlags, { Field::SYN, Field::SYN_RATE, Field::SYNACK, Field::SYNACK_RATE, Field::FIN, Field::FIN_RATE, Field::RST, Field::RST_RATE, Field::ZWIN, Field::ZWIN_RATE }),
         DisplayPair(DisplayConnections, { Field::ACTIVE_CONNECTIONS, Field::FAILED_CONNECTIONS, Field::CONN, Field::CONN_RATE, Field::CT_P95, Field::CT_P99, Field::CLOSE, Field::CLOSE_RATE }),
         DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_P99, Field::SRT_MAX, Field::DS_P95, Field::DS_P99, Field::DS_MAX }),
         DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
@@ -187,7 +187,7 @@ auto TcpStatsCollector::advanceTick(timeval now) -> void
             flow.timeoutFlow();
         }
     }
-    for (auto i : toTimeout) {
+    for (auto& i : toTimeout) {
         hashToTcpFlow.erase(i);
     }
 }
@@ -209,14 +209,24 @@ auto TcpStatsCollector::getSortFun(Field field) const -> sortFlowFun
         return &AggregatedTcpFlow::sortByRequestRate;
     case Field::SYN:
         return &AggregatedTcpFlow::sortBySyn;
+    case Field::SYN_RATE:
+        return &AggregatedTcpFlow::sortBySynRate;
     case Field::SYNACK:
         return &AggregatedTcpFlow::sortBySynAck;
+    case Field::SYNACK_RATE:
+        return &AggregatedTcpFlow::sortBySynAckRate;
     case Field::ZWIN:
         return &AggregatedTcpFlow::sortByZwin;
+    case Field::ZWIN_RATE:
+        return &AggregatedTcpFlow::sortByZwinRate;
     case Field::RST:
         return &AggregatedTcpFlow::sortByRst;
+    case Field::RST_RATE:
+        return &AggregatedTcpFlow::sortByRstRate;
     case Field::FIN:
         return &AggregatedTcpFlow::sortByFin;
+    case Field::FIN_RATE:
+        return &AggregatedTcpFlow::sortByFinRate;
     case Field::ACTIVE_CONNECTIONS:
         return &AggregatedTcpFlow::sortByActiveConnections;
     case Field::FAILED_CONNECTIONS:

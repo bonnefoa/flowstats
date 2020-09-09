@@ -134,7 +134,7 @@ auto Collector::getStatsdMetrics() const -> std::vector<std::string>
     return res;
 }
 
-auto Collector::outputStatus(long duration) -> CollectorOutput
+auto Collector::outputStatus(time_t duration) -> CollectorOutput
 {
     std::vector<std::string> valueLines;
     std::vector<std::string> keyLines;

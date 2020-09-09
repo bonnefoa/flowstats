@@ -70,6 +70,8 @@ auto fieldToHeader(Field field) -> char const*
         return "Domain";
     case Field::FIN:
         return "FIN";
+    case Field::FIN_RATE:
+        return "FIN/s";
     case Field::FQDN:
         return "Fqdn";
     case Field::IP:
@@ -96,6 +98,8 @@ auto fieldToHeader(Field field) -> char const*
         return "ReqAvg";
     case Field::RST:
         return "RST";
+    case Field::RST_RATE:
+        return "RST/s";
     case Field::SRT:
         return "Srt";
     case Field::SRT_RATE:
@@ -116,8 +120,12 @@ auto fieldToHeader(Field field) -> char const*
 
     case Field::SYN:
         return "SYN";
+    case Field::SYN_RATE:
+        return "SYN/s";
     case Field::SYNACK:
         return "SYNACK";
+    case Field::SYNACK_RATE:
+        return "SYNACK/s";
     case Field::TIMEOUTS:
         return "Tmo";
     case Field::TIMEOUTS_RATE:
@@ -128,6 +136,8 @@ auto fieldToHeader(Field field) -> char const*
         return "Type";
     case Field::ZWIN:
         return "0win";
+    case Field::ZWIN_RATE:
+        return "0win/s";
     default:
         return "Unknown";
     }
