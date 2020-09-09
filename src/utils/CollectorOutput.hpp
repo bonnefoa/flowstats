@@ -23,10 +23,10 @@ struct CollectorOutput {
 
     auto print() const -> void;
 
-    [[nodiscard]] auto getKeys() const { return keys; };
-    [[nodiscard]] auto getKeyHeaders() const { return keyHeaders; };
-    [[nodiscard]] auto getValues() const { return values; };
-    [[nodiscard]] auto getValueHeaders() const { return valueHeaders; };
+    [[nodiscard]] auto& getKeys() const { return keys; };
+    [[nodiscard]] auto& getKeyHeaders() const { return keyHeaders; };
+    [[nodiscard]] auto& getValues() const { return values; };
+    [[nodiscard]] auto& getValueHeaders() const { return valueHeaders; };
 
 private:
     std::string name;
