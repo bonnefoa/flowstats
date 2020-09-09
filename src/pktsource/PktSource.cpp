@@ -124,10 +124,16 @@ auto PktSource::analyzePcapFile()
         return 1;
     }
 
+    int lastSecond = 0;
     for (auto packet : *reader) {
+        auto pktSecond = packet.timestamp().seconds();
         if (packet.timestamp().seconds() == 0) {
             break;
         }
+        if (lastSecond != pktSecond && shouldStop->load()) {
+            break;
+        }
+        lastSecond = pktSecond;
         processPacketSource(packet);
     }
     delete reader;
@@ -142,6 +148,7 @@ auto PktSource::analyzePcapFile()
     while (!shouldStop->load()) {
         sleep(1);
     }
+    screen->StopDisplay();
 
     return 0;
 }
