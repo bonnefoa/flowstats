@@ -25,7 +25,7 @@ public:
     auto advanceTick(timeval now) -> void override;
 
     [[nodiscard]] auto toString() const -> std::string override { return "DnsStatsCollector"; }
-    [[nodiscard]] auto getProtocol() const -> CollectorProtocol override { return DNS; };
+    [[nodiscard]] auto getProtocol() const -> CollectorProtocol override { return CollectorProtocol::DNS; };
 
 private:
     auto isDnsPort(uint16_t port) -> bool;

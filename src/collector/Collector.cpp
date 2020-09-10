@@ -175,18 +175,6 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
     return tempVector;
 }
 
-auto collectorProtocolToString(CollectorProtocol proto) -> std::string
-{
-#define ENUM_TEXT(p) \
-    case (p):        \
-        return #p;
-    switch (proto) {
-        ENUM_TEXT(DNS);
-        ENUM_TEXT(TCP);
-        ENUM_TEXT(SSL);
-    }
-}
-
 Collector::~Collector()
 {
     delete totalFlow;

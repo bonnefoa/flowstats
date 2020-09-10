@@ -22,7 +22,7 @@ public:
 
     auto advanceTick(timeval now) -> void override;
 
-    [[nodiscard]] auto getProtocol() const -> CollectorProtocol override { return TCP; };
+    [[nodiscard]] auto getProtocol() const -> CollectorProtocol override { return CollectorProtocol::TCP; };
     [[nodiscard]] auto toString() const -> std::string override { return "TcpStatsCollector"; }
 
     [[nodiscard]] auto getTcpFlow() const { return hashToTcpFlow; }

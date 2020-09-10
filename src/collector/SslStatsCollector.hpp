@@ -25,7 +25,7 @@ public:
         Tins::TCP const* tcp,
         Tins::UDP const* udp) -> void override;
 
-    [[nodiscard]] auto getProtocol() const -> CollectorProtocol override { return SSL; };
+    [[nodiscard]] auto getProtocol() const -> CollectorProtocol override { return CollectorProtocol::SSL; };
     [[nodiscard]] auto toString() const -> std::string override { return "SslStatsCollector"; }
 
     [[nodiscard]] auto getSslFlow() const { return hashToSslFlow; }

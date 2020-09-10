@@ -52,7 +52,7 @@
 namespace flowstats {
 
 int lastKey = 0;
-std::array<CollectorProtocol, 3> protocols = { DNS, TCP, SSL };
+std::array<CollectorProtocol, 3> protocols = { CollectorProtocol::DNS, CollectorProtocol::TCP, CollectorProtocol::SSL };
 std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
 
@@ -168,7 +168,7 @@ auto Screen::updateStatus(std::optional<CaptureStat> const& captureStat) -> void
         if (displayConf->protocolIndex == i) {
             wattron(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }
-        waddstr(statusWin, fmt::format("{}: {:<10} ", i + 1, collectorProtocolToString(proto)).c_str());
+        waddstr(statusWin, fmt::format("{}: {:<10} ", i + 1, proto._to_string()).c_str());
         if (displayConf->protocolIndex == i) {
             wattroff(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }

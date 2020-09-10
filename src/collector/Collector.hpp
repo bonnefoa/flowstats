@@ -14,12 +14,10 @@
 
 namespace flowstats {
 
-enum CollectorProtocol {
+BETTER_ENUM(CollectorProtocol, char,
     TCP,
     DNS,
-    SSL,
-};
-auto collectorProtocolToString(CollectorProtocol proto) -> std::string;
+    SSL);
 
 class Collector {
 public:
