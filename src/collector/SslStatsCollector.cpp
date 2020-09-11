@@ -9,10 +9,11 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, Display
     : Collector { conf, displayConf }
     , ipToFqdn(ipToFqdn)
 {
+    auto& flowFormatter = getFlowFormatter();
     if (conf.getPerIpAggr()) {
-        setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::DIR });
+        flowFormatter.setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::DIR });
     } else {
-        setDisplayKeys({ Field::FQDN, Field::PORT, Field::DIR });
+        flowFormatter.setDisplayKeys({ Field::FQDN, Field::PORT, Field::DIR });
     }
 
     setDisplayPairs({

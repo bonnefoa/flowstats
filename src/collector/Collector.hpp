@@ -83,7 +83,6 @@ protected:
     [[nodiscard]] auto getDisplayConf() const -> DisplayConfiguration const& { return displayConf; };
     [[nodiscard]] auto getFlowstatsConfiguration() const -> FlowstatsConfiguration const& { return conf; };
 
-    auto setDisplayKeys(std::vector<Field> const& keys) -> void { getFlowFormatter().setDisplayKeys(keys); };
     auto setDisplayPairs(std::vector<DisplayPair> pairs) -> void { displayPairs = std::move(pairs); };
     auto fillSortFields() -> void;
     auto setTotalFlow(Flow* flow) -> void { totalFlow = flow; };

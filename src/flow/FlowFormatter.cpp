@@ -34,21 +34,13 @@ auto FlowFormatter::outputBody(std::map<Field,
     std::string> const& values) const -> std::string
 {
     fmt::memory_buffer bodyBuf;
-    for (auto const& field : displayKeys) {
+    for (auto const& field : displayFields) {
         auto it = values.find(field);
-        if (it == values.end()) {
-            fmt::format_to(bodyBuf, "{:<{}.{}} ", "", fieldToSize[field], fieldToSize[field]);
-        } else {
-            fmt::format_to(bodyBuf, "{:<{}.{}} ", it->second, fieldToSize[field], fieldToSize[field]);
+        std::string content = "";
+        if (it != values.end()) {
+            content = it->second;
         }
-    }
-    for (auto const& field : displayValues) {
-        auto it = values.find(field);
-        if (it == values.end()) {
-            fmt::format_to(bodyBuf, "{:<{}.{}} ", "", fieldToSize[field], fieldToSize[field]);
-        } else {
-            fmt::format_to(bodyBuf, "{:<{}.{}} ", it->second, fieldToSize[field], fieldToSize[field]);
-        }
+        fmt::format_to(bodyBuf, "{:<{}.{}} ", content, fieldToSize[field], fieldToSize[field]);
     }
 
     return to_string(bodyBuf);
@@ -57,10 +49,7 @@ auto FlowFormatter::outputBody(std::map<Field,
 auto FlowFormatter::outputHeaders() const -> std::string
 {
     fmt::memory_buffer headersBuf;
-    for (auto const& field : displayKeys) {
-        fmt::format_to(headersBuf, "{:<{}.{}} ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
-    }
-    for (auto const& field : displayValues) {
+    for (auto const& field : displayFields) {
         fmt::format_to(headersBuf, "{:<{}.{}} ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
     }
     return to_string(headersBuf);

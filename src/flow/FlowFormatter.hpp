@@ -19,11 +19,15 @@ struct FlowFormatter {
 
     [[nodiscard]] auto getDisplayKeys() const { return displayKeys; };
     auto setDisplayKeys(std::vector<Field> const& keys) { displayKeys = keys; };
-    auto setDisplayValues(std::vector<Field> const& values) { displayValues = values; };
+    auto setDisplayValues(std::vector<Field> const& values) {
+        displayFields = displayKeys;
+        displayFields.insert(displayFields.end(), values.begin(), values.end());
+    };
 
 private:
     std::vector<Field> displayKeys;
-    std::vector<Field> displayValues;
+    // Combine Keys and values in in a single vector
+    std::vector<Field> displayFields;
     std::vector<int>   fieldToSize;
 };
 

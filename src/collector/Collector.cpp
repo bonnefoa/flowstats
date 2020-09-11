@@ -44,7 +44,6 @@ auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
     int duration)
 {
     totalFlow->resetFlow(true);
-
     bodyLines->resize(2);
 
     int i = 0;
