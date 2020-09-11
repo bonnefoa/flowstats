@@ -23,16 +23,12 @@
 #define KEY_NUM(n) (KEY_0 + (n))
 
 // Sizes
+#define DEFAULT_COLUMNS 200
+
 #define STATUS_LINES 5
-#define STATUS_COLUMNS 120
-
 #define HEADER_LINES 1
-
 #define BODY_LINES 300
-#define BODY_COLUMNS 189
-
 #define MENU_LINES 1
-#define MENU_COLUMNS 120
 
 #define SORT_LINES 300
 #define SORT_TEXT_COLUMNS 19
@@ -97,7 +93,7 @@ auto Screen::updateBody() -> void
             wattron(bodyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
         }
         mvwprintw(bodyWin, i, 0,
-            fmt::format("{:<" STR(BODY_COLUMNS) "}",
+            fmt::format("{:<" STR(DEFAULT_COLUMNS) "}",
                 values[i].c_str())
                 .c_str());
         if (line == selectedLine) {
@@ -186,7 +182,7 @@ auto Screen::updateHeaders() -> void
     werase(headerWin);
 
     wattron(headerWin, COLOR_PAIR(KEY_HEADER_COLOR));
-    waddstr(headerWin, fmt::format("{:<" STR(BODY_COLUMNS) "}", collectorOutput.getHeaders()).c_str());
+    waddstr(headerWin, fmt::format("{:<" STR(DEFAULT_COLUMNS) "}", collectorOutput.getHeaders()).c_str());
     wattroff(headerWin, COLOR_PAIR(KEY_HEADER_COLOR));
 }
 
@@ -261,13 +257,13 @@ Screen::Screen(std::atomic_bool* shouldStop,
     set_escdelay(25);
     timeout(100);
 
-    headerWin = newpad(HEADER_LINES + STATUS_LINES, BODY_COLUMNS);
-    bodyWin = newpad(BODY_LINES, BODY_COLUMNS);
+    headerWin = newpad(HEADER_LINES + STATUS_LINES, DEFAULT_COLUMNS);
+    bodyWin = newpad(BODY_LINES, DEFAULT_COLUMNS);
 
-    statusWin = newwin(STATUS_LINES, STATUS_COLUMNS, 0, 0);
+    statusWin = newwin(STATUS_LINES, DEFAULT_COLUMNS, 0, 0);
     sortSelectionWin = newwin(SORT_LINES, SORT_COLUMNS,
         STATUS_LINES, 0);
-    menuWin = newwin(MENU_LINES, MENU_COLUMNS, LINES - 1, 0);
+    menuWin = newwin(MENU_LINES, DEFAULT_COLUMNS, LINES - 1, 0);
 
     activeCollector = getActiveCollector();
 }
@@ -285,15 +281,16 @@ auto Screen::refreshPads() -> void
         wnoutrefresh(sortSelectionWin);
     }
 
+    int displayedColumn = std::min(DEFAULT_COLUMNS - deltaValues, COLS - 1);
     pnoutrefresh(headerWin,
         0, 0,
         STATUS_LINES, deltaValues,
-        STATUS_LINES + HEADER_LINES, BODY_COLUMNS + deltaValues);
+        STATUS_LINES + HEADER_LINES, displayedColumn);
 
     pnoutrefresh(bodyWin,
         verticalScroll, 0,
         STATUS_LINES + HEADER_LINES, deltaValues,
-        LINES - (HEADER_LINES + MENU_LINES), BODY_COLUMNS + deltaValues);
+        LINES - (HEADER_LINES + MENU_LINES), displayedColumn);
 
     wnoutrefresh(menuWin);
     doupdate();
