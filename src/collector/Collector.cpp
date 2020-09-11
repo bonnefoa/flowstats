@@ -47,8 +47,6 @@ auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
     std::vector<std::string>* valueLines,
     int duration)
 {
-    FlowFormatter flowFormatter = getFlowFormatter();
-
     totalFlow->resetFlow(true);
 
     keyLines->resize(2);

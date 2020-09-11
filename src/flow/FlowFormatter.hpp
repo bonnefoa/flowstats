@@ -11,7 +11,7 @@ namespace flowstats {
 
 struct FlowFormatter {
 
-    FlowFormatter() = default;
+    FlowFormatter();
     virtual ~FlowFormatter() = default;
 
     [[nodiscard]] auto outputKey(std::map<Field, std::string> const& values) const -> std::string;
@@ -25,6 +25,7 @@ struct FlowFormatter {
 private:
     std::vector<Field> displayKeys;
     std::vector<Field> displayValues;
+    std::vector<int>   fieldToSize;
 };
 
 } // namespace flowstats
