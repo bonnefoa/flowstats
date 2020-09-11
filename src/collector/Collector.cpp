@@ -44,9 +44,7 @@ auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
     int duration)
 {
     totalFlow->resetFlow(true);
-    bodyLines->resize(2);
 
-    int i = 0;
     for (auto const* flow : aggregatedFlows) {
         if (!displayConf.filter.empty()) {
             if (flow->getFqdn().find(displayConf.filter) == std::string::npos) {
@@ -54,11 +52,17 @@ auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
             }
         }
         totalFlow->addAggregatedFlow(flow);
-        if (i++ <= displayConf.maxResults) {
-            outputFlow(flow, bodyLines, -1, duration);
-        }
     }
-    outputFlow(totalFlow, bodyLines, 0, duration);
+
+    outputFlow(totalFlow, bodyLines, -1, duration);
+    int i = 0;
+    for (auto const* flow : aggregatedFlows) {
+        if (i++ > displayConf.maxResults) {
+            break;
+        }
+        outputFlow(flow, bodyLines, -1, duration);
+    }
+
 }
 
 auto Collector::fillSortFields() -> void
