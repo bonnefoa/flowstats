@@ -39,16 +39,13 @@ private:
 
     auto refreshableAction(int c) -> bool;
     auto updateHeaders() -> void;
-    auto updateValues() -> void;
+    auto updateBody() -> void;
     auto updateStatus(std::optional<CaptureStat> const& captureStat) -> void;
     auto updateMenu() -> void;
     auto updateSortSelection() -> void;
 
-    WINDOW* keyWin = nullptr;
-    WINDOW* valueWin = nullptr;
-
-    WINDOW* keyHeaderWin = nullptr;
-    WINDOW* valueHeaderWin = nullptr;
+    WINDOW* headerWin = nullptr;
+    WINDOW* bodyWin = nullptr;
 
     WINDOW* statusWin = nullptr;
     WINDOW* menuWin = nullptr;

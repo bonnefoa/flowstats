@@ -30,50 +30,40 @@ FlowFormatter::FlowFormatter() {
     fieldToSize[Field::PROTO] = 5;
 }
 
-auto FlowFormatter::outputKey(std::map<Field,
+auto FlowFormatter::outputBody(std::map<Field,
     std::string> const& values) const -> std::string
 {
-    fmt::memory_buffer keyBuf;
+    fmt::memory_buffer bodyBuf;
     for (auto const& field : displayKeys) {
         auto it = values.find(field);
         if (it == values.end()) {
-            fmt::format_to(keyBuf, "{:<{}.{}} ", "", fieldToSize[field], fieldToSize[field]);
+            fmt::format_to(bodyBuf, "{:<{}.{}} ", "", fieldToSize[field], fieldToSize[field]);
         } else {
-            fmt::format_to(keyBuf, "{:<{}.{}} ", it->second, fieldToSize[field], fieldToSize[field]);
+            fmt::format_to(bodyBuf, "{:<{}.{}} ", it->second, fieldToSize[field], fieldToSize[field]);
         }
     }
-    return to_string(keyBuf);
-}
-
-auto FlowFormatter::outputValue(std::map<Field,
-    std::string> const& values) const -> std::string
-{
-    fmt::memory_buffer valueBuf;
     for (auto const& field : displayValues) {
         auto it = values.find(field);
         if (it == values.end()) {
-            fmt::format_to(valueBuf, "{:<{}.{}} ", "", fieldToSize[field], fieldToSize[field]);
+            fmt::format_to(bodyBuf, "{:<{}.{}} ", "", fieldToSize[field], fieldToSize[field]);
         } else {
-            fmt::format_to(valueBuf, "{:<{}.{}} ", it->second, fieldToSize[field], fieldToSize[field]);
+            fmt::format_to(bodyBuf, "{:<{}.{}} ", it->second, fieldToSize[field], fieldToSize[field]);
         }
     }
-    return to_string(valueBuf);
+
+    return to_string(bodyBuf);
 }
 
-auto FlowFormatter::outputHeaders() const -> std::pair<std::string, std::string>
+auto FlowFormatter::outputHeaders() const -> std::string
 {
-    fmt::memory_buffer keyBuf;
+    fmt::memory_buffer headersBuf;
     for (auto const& field : displayKeys) {
-        fmt::format_to(keyBuf, "{:<{}.{}} ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
+        fmt::format_to(headersBuf, "{:<{}.{}} ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
     }
-    auto keyHeaders = to_string(keyBuf);
-
-    fmt::memory_buffer valueBuf;
     for (auto const& field : displayValues) {
-        fmt::format_to(valueBuf, "{:<{}.{}} ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
+        fmt::format_to(headersBuf, "{:<{}.{}} ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
     }
-    auto valueHeaders = to_string(valueBuf);
-    return std::pair(keyHeaders, valueHeaders);
+    return to_string(headersBuf);
 }
 
 } // namespace flowstats

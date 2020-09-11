@@ -9,29 +9,21 @@ struct CollectorOutput {
 
     CollectorOutput() = default;
     CollectorOutput(std::string name,
-        std::vector<std::string> keys,
-        std::vector<std::string> values,
-        std::string keyHeaders,
-        std::string valueHeaders)
+        std::string headers,
+        std::vector<std::string> values)
         : name(std::move(name))
-        , keys(std::move(keys))
+        , headers(std::move(headers))
         , values(std::move(values))
-        , keyHeaders(std::move(keyHeaders))
-        , valueHeaders(std::move(valueHeaders))
         {};
 
     auto print() const -> void;
 
-    [[nodiscard]] auto& getKeys() const { return keys; };
-    [[nodiscard]] auto& getKeyHeaders() const { return keyHeaders; };
+    [[nodiscard]] auto& getHeaders() const { return headers; };
     [[nodiscard]] auto& getValues() const { return values; };
-    [[nodiscard]] auto& getValueHeaders() const { return valueHeaders; };
 
 private:
     std::string name;
-    std::vector<std::string> keys;
+    std::string headers;
     std::vector<std::string> values;
-    std::string keyHeaders;
-    std::string valueHeaders;
 };
 } // namespace flowstats

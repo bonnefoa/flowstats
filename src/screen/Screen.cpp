@@ -28,11 +28,8 @@
 
 #define HEADER_LINES 1
 
-#define KEY_LINES 300
-#define KEY_COLUMNS 89
-
-#define VALUE_LINES 300
-#define VALUE_COLUMNS 100
+#define BODY_LINES 300
+#define BODY_COLUMNS 189
 
 #define MENU_LINES 1
 #define MENU_COLUMNS 120
@@ -82,36 +79,29 @@ auto Screen::updateDisplay(timeval tv, bool updateOutput,
     }
 
     updateHeaders();
-    updateValues();
+    updateBody();
 
     refreshPads();
 }
 
-auto Screen::updateValues() -> void
+auto Screen::updateBody() -> void
 {
-    werase(keyWin);
-    werase(valueWin);
+    werase(bodyWin);
 
-
-    auto numKeys = collectorOutput.getKeys().size();
+    auto& values = collectorOutput.getValues();
+    auto numKeys = values.size();
     numberElements = int(numKeys / 2);
     for (int i = 0; i < numKeys; ++i) {
         int line = i / 2;
         if (line == selectedLine) {
-            wattron(keyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
-            wattron(valueWin, COLOR_PAIR(SELECTED_LINE_COLOR));
+            wattron(bodyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
         }
-        mvwprintw(keyWin, i, 0,
-            fmt::format("{:<" STR(KEY_COLUMNS) "}",
-                collectorOutput.getKeys()[i].c_str())
-                .c_str());
-        mvwprintw(valueWin, i, 0,
-            fmt::format("{:<" STR(VALUE_COLUMNS) "}",
-                collectorOutput.getValues()[i].c_str())
+        mvwprintw(bodyWin, i, 0,
+            fmt::format("{:<" STR(BODY_COLUMNS) "}",
+                values[i].c_str())
                 .c_str());
         if (line == selectedLine) {
-            wattroff(keyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
-            wattroff(valueWin, COLOR_PAIR(SELECTED_LINE_COLOR));
+            wattroff(bodyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
         }
     }
 }
@@ -193,16 +183,11 @@ auto Screen::updateStatus(std::optional<CaptureStat> const& captureStat) -> void
 
 auto Screen::updateHeaders() -> void
 {
-    werase(keyHeaderWin);
-    werase(valueHeaderWin);
+    werase(headerWin);
 
-    wattron(keyHeaderWin, COLOR_PAIR(KEY_HEADER_COLOR));
-    waddstr(keyHeaderWin, fmt::format("{:<" STR(KEY_COLUMNS) "}", collectorOutput.getKeyHeaders()).c_str());
-    wattroff(keyHeaderWin, COLOR_PAIR(KEY_HEADER_COLOR));
-
-    wattron(valueHeaderWin, COLOR_PAIR(VALUE_HEADER_COLOR));
-    waddstr(valueHeaderWin, fmt::format("{:<" STR(VALUE_COLUMNS) "}", collectorOutput.getValueHeaders()).c_str());
-    wattroff(valueHeaderWin, COLOR_PAIR(VALUE_HEADER_COLOR));
+    wattron(headerWin, COLOR_PAIR(KEY_HEADER_COLOR));
+    waddstr(headerWin, fmt::format("{:<" STR(BODY_COLUMNS) "}", collectorOutput.getHeaders()).c_str());
+    wattroff(headerWin, COLOR_PAIR(KEY_HEADER_COLOR));
 }
 
 auto Screen::updateMenu() -> void
@@ -276,10 +261,8 @@ Screen::Screen(std::atomic_bool* shouldStop,
     set_escdelay(25);
     timeout(100);
 
-    keyWin = newpad(KEY_LINES, KEY_COLUMNS);
-    valueWin = newpad(VALUE_LINES, VALUE_COLUMNS);
-    keyHeaderWin = newpad(HEADER_LINES + STATUS_LINES, KEY_COLUMNS);
-    valueHeaderWin = newpad(HEADER_LINES + STATUS_LINES, VALUE_COLUMNS);
+    headerWin = newpad(HEADER_LINES + STATUS_LINES, BODY_COLUMNS);
+    bodyWin = newpad(BODY_LINES, BODY_COLUMNS);
 
     statusWin = newwin(STATUS_LINES, STATUS_COLUMNS, 0, 0);
     sortSelectionWin = newwin(SORT_LINES, SORT_COLUMNS,
@@ -302,25 +285,15 @@ auto Screen::refreshPads() -> void
         wnoutrefresh(sortSelectionWin);
     }
 
-    pnoutrefresh(keyHeaderWin,
+    pnoutrefresh(headerWin,
         0, 0,
         STATUS_LINES, deltaValues,
-        STATUS_LINES + HEADER_LINES, KEY_COLUMNS + deltaValues);
+        STATUS_LINES + HEADER_LINES, BODY_COLUMNS + deltaValues);
 
-    pnoutrefresh(keyWin,
+    pnoutrefresh(bodyWin,
         verticalScroll, 0,
         STATUS_LINES + HEADER_LINES, deltaValues,
-        LINES - (HEADER_LINES + MENU_LINES), KEY_COLUMNS + deltaValues);
-
-    pnoutrefresh(valueHeaderWin,
-        0, 0,
-        STATUS_LINES, KEY_COLUMNS + deltaValues,
-        STATUS_LINES + HEADER_LINES, COLS - deltaValues - 1);
-
-    pnoutrefresh(valueWin,
-        verticalScroll, 0,
-        STATUS_LINES + HEADER_LINES, KEY_COLUMNS + deltaValues,
-        LINES - (HEADER_LINES + MENU_LINES), COLS - deltaValues - 1);
+        LINES - (HEADER_LINES + MENU_LINES), BODY_COLUMNS + deltaValues);
 
     wnoutrefresh(menuWin);
     doupdate();
@@ -481,11 +454,9 @@ auto Screen::StopDisplay() -> void
 
 Screen::~Screen()
 {
-    delwin(keyWin);
-    delwin(valueWin);
-    delwin(keyHeaderWin);
+    delwin(headerWin);
+    delwin(bodyWin);
     delwin(sortSelectionWin);
-    delwin(valueHeaderWin);
     delwin(statusWin);
     delwin(menuWin);
 }

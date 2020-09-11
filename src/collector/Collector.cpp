@@ -24,8 +24,7 @@ void Collector::sendMetrics()
 }
 
 auto Collector::outputFlow(Flow const* flow,
-    std::vector<std::string>* keyLines,
-    std::vector<std::string>* valueLines,
+    std::vector<std::string>* bodyLines,
     int position, int duration) const -> void
 {
     for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
@@ -33,24 +32,20 @@ auto Collector::outputFlow(Flow const* flow,
         std::map<Field, std::string> values;
         flow->fillValues(&values, direction, duration);
         if (position == -1) {
-            keyLines->push_back(flowFormatter.outputKey(values));
-            valueLines->push_back(flowFormatter.outputValue(values));
+            bodyLines->push_back(flowFormatter.outputBody(values));
         } else {
-            keyLines->at(position) = flowFormatter.outputKey(values);
-            valueLines->at(position++) = flowFormatter.outputValue(values);
+            bodyLines->at(position++) = flowFormatter.outputBody(values);
         }
     }
 }
 
 auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
-    std::vector<std::string>* keyLines,
-    std::vector<std::string>* valueLines,
+    std::vector<std::string>* bodyLines,
     int duration)
 {
     totalFlow->resetFlow(true);
 
-    keyLines->resize(2);
-    valueLines->resize(2);
+    bodyLines->resize(2);
 
     int i = 0;
     for (auto const* flow : aggregatedFlows) {
@@ -61,10 +56,10 @@ auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
         }
         totalFlow->addAggregatedFlow(flow);
         if (i++ <= displayConf.maxResults) {
-            outputFlow(flow, keyLines, valueLines, -1, duration);
+            outputFlow(flow, bodyLines, -1, duration);
         }
     }
-    outputFlow(totalFlow, keyLines, valueLines, 0, duration);
+    outputFlow(totalFlow, bodyLines, 0, duration);
 }
 
 auto Collector::fillSortFields() -> void
@@ -134,18 +129,16 @@ auto Collector::getStatsdMetrics() const -> std::vector<std::string>
 
 auto Collector::outputStatus(time_t duration) -> CollectorOutput
 {
-    std::vector<std::string> valueLines;
-    std::vector<std::string> keyLines;
+    std::vector<std::string> bodyLines;
 
     FlowFormatter flowFormatter = getFlowFormatter();
-    auto pairHeaders = flowFormatter.outputHeaders();
+    auto headers = flowFormatter.outputHeaders();
 
     const std::lock_guard<std::mutex> lock(dataMutex);
     mergePercentiles();
     std::vector<Flow const*> tempVector = getAggregatedFlows();
-    fillOutputs(tempVector, &keyLines, &valueLines, duration);
-    return CollectorOutput(toString(), keyLines, valueLines,
-        pairHeaders.first, pairHeaders.second);
+    fillOutputs(tempVector, &bodyLines, duration);
+    return CollectorOutput(toString(), headers, bodyLines);
 }
 
 auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
