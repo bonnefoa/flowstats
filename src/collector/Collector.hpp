@@ -69,13 +69,7 @@ public:
     [[nodiscard]] auto getAggregatedFlows() const -> std::vector<Flow const*>;
 
 protected:
-    auto fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
-        std::vector<std::string>* bodyLines,
-        int duration);
-
-    auto outputFlow(Flow const* flow,
-        std::vector<std::string>* bodyLines,
-        int position, int duration) const -> void;
+    auto buildTotalFlow(std::vector<Flow const*> const& aggregatedFlows) -> void;
 
     [[nodiscard]] auto getDataMutex() -> std::mutex* { return &dataMutex; };
     [[nodiscard]] auto getFlowFormatter() -> FlowFormatter& { return flowFormatter; };

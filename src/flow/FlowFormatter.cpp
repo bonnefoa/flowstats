@@ -7,7 +7,8 @@
 
 namespace flowstats {
 
-FlowFormatter::FlowFormatter() {
+FlowFormatter::FlowFormatter()
+{
     fieldToSize.resize(Field::_size());
     for (size_t i = 0; i < Field::_size(); ++i) {
         fieldToSize[i] = 8;
@@ -53,6 +54,28 @@ auto FlowFormatter::outputHeaders() const -> std::string
         fmt::format_to(headersBuf, "{:<{}.{}} ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
     }
     return to_string(headersBuf);
+}
+
+auto FlowFormatter::outputFlow(Flow const* totalFlow,
+    std::vector<Flow const*> const& aggregatedFlows,
+    int duration, int maxResult) const -> std::vector<std::string>
+{
+    std::vector<std::string> res;
+    for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
+        auto direction = static_cast<Direction>(j);
+        std::map<Field, std::string> values;
+        totalFlow->fillValues(&values, direction, duration);
+        res.push_back(outputBody(values));
+    }
+    for (auto const* flow : aggregatedFlows) {
+        for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
+            auto direction = static_cast<Direction>(j);
+            std::map<Field, std::string> values;
+            flow->fillValues(&values, direction, duration);
+            res.push_back(outputBody(values));
+        }
+    }
+    return res;
 }
 
 } // namespace flowstats

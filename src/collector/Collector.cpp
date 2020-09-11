@@ -23,28 +23,9 @@ void Collector::sendMetrics()
     }
 }
 
-auto Collector::outputFlow(Flow const* flow,
-    std::vector<std::string>* bodyLines,
-    int position, int duration) const -> void
-{
-    for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
-        auto direction = static_cast<Direction>(j);
-        std::map<Field, std::string> values;
-        flow->fillValues(&values, direction, duration);
-        if (position == -1) {
-            bodyLines->push_back(flowFormatter.outputBody(values));
-        } else {
-            bodyLines->at(position++) = flowFormatter.outputBody(values);
-        }
-    }
-}
-
-auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
-    std::vector<std::string>* bodyLines,
-    int duration)
+auto Collector::buildTotalFlow(std::vector<Flow const*> const& aggregatedFlows) -> void
 {
     totalFlow->resetFlow(true);
-
     for (auto const* flow : aggregatedFlows) {
         if (!displayConf.filter.empty()) {
             if (flow->getFqdn().find(displayConf.filter) == std::string::npos) {
@@ -53,16 +34,6 @@ auto Collector::fillOutputs(std::vector<Flow const*> const& aggregatedFlows,
         }
         totalFlow->addAggregatedFlow(flow);
     }
-
-    outputFlow(totalFlow, bodyLines, -1, duration);
-    int i = 0;
-    for (auto const* flow : aggregatedFlows) {
-        if (i++ > displayConf.maxResults) {
-            break;
-        }
-        outputFlow(flow, bodyLines, -1, duration);
-    }
-
 }
 
 auto Collector::fillSortFields() -> void
@@ -132,15 +103,16 @@ auto Collector::getStatsdMetrics() const -> std::vector<std::string>
 
 auto Collector::outputStatus(time_t duration) -> CollectorOutput
 {
-    std::vector<std::string> bodyLines;
-
     FlowFormatter flowFormatter = getFlowFormatter();
     auto headers = flowFormatter.outputHeaders();
 
     const std::lock_guard<std::mutex> lock(dataMutex);
     mergePercentiles();
-    std::vector<Flow const*> tempVector = getAggregatedFlows();
-    fillOutputs(tempVector, &bodyLines, duration);
+    std::vector<Flow const*> aggregatedFlows = getAggregatedFlows();
+
+    buildTotalFlow(aggregatedFlows);
+    auto bodyLines = flowFormatter.outputFlow(totalFlow,
+            aggregatedFlows, duration, displayConf.maxResults);
     return CollectorOutput(toString(), headers, bodyLines);
 }
 

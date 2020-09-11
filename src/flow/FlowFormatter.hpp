@@ -2,6 +2,7 @@
 
 #include "Configuration.hpp"
 #include "Field.hpp"
+#include "Flow.hpp"
 #include "Utils.hpp"
 #include <map>
 #include <string>
@@ -19,16 +20,21 @@ struct FlowFormatter {
 
     [[nodiscard]] auto getDisplayKeys() const { return displayKeys; };
     auto setDisplayKeys(std::vector<Field> const& keys) { displayKeys = keys; };
-    auto setDisplayValues(std::vector<Field> const& values) {
+    auto setDisplayValues(std::vector<Field> const& values)
+    {
         displayFields = displayKeys;
         displayFields.insert(displayFields.end(), values.begin(), values.end());
     };
+
+    auto outputFlow(Flow const* totalFlow,
+        std::vector<Flow const*> const& aggregatedFlows,
+        int duration, int maxResult) const -> std::vector<std::string>;
 
 private:
     std::vector<Field> displayKeys;
     // Combine Keys and values in in a single vector
     std::vector<Field> displayFields;
-    std::vector<int>   fieldToSize;
+    std::vector<int> fieldToSize;
 };
 
 } // namespace flowstats
