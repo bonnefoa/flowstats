@@ -147,7 +147,7 @@ auto Collector::outputStatus(time_t duration) -> CollectorOutput
     std::vector<Flow const*> tempVector = getAggregatedFlows();
     fillOutputs(tempVector, &keyLines, &valueLines, duration);
     return CollectorOutput(toString(), keyLines, valueLines,
-        pairHeaders.first, pairHeaders.second, duration);
+        pairHeaders.first, pairHeaders.second);
 }
 
 auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>

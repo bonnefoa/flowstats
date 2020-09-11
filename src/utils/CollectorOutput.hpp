@@ -12,14 +12,13 @@ struct CollectorOutput {
         std::vector<std::string> keys,
         std::vector<std::string> values,
         std::string keyHeaders,
-        std::string valueHeaders,
-        int delta)
+        std::string valueHeaders)
         : name(std::move(name))
         , keys(std::move(keys))
         , values(std::move(values))
         , keyHeaders(std::move(keyHeaders))
         , valueHeaders(std::move(valueHeaders))
-        , delta(delta) {};
+        {};
 
     auto print() const -> void;
 
@@ -34,6 +33,5 @@ private:
     std::vector<std::string> values;
     std::string keyHeaders;
     std::string valueHeaders;
-    int delta = 0;
 };
 } // namespace flowstats
