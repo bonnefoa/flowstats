@@ -24,15 +24,15 @@
 
 // Sizes
 #define DEFAULT_COLUMNS 200
+#define SORT_TEXT_COLUMNS 19
+#define SORT_COLUMNS 20
 
 #define STATUS_LINES 5
 #define HEADER_LINES 1
 #define BODY_LINES 300
-#define MENU_LINES 1
+#define BOTTOM_LINES 1
 
 #define SORT_LINES 300
-#define SORT_TEXT_COLUMNS 19
-#define SORT_COLUMNS 20
 
 // Colors
 #define SELECTED_STATUS_COLOR 1
@@ -188,31 +188,36 @@ auto Screen::updateHeaders() -> void
 
 auto Screen::updateMenu() -> void
 {
-    werase(menuWin);
+    werase(bottomWin);
 
-    if (editFilter || editSort) {
-        waddstr(menuWin, "Enter: ");
-        wattron(menuWin, COLOR_PAIR(MENU_COLOR));
-        waddstr(menuWin, fmt::format("{:<6}", "Done").c_str());
-        wattroff(menuWin, COLOR_PAIR(MENU_COLOR));
+    if (editMode == FILTER || editMode == SORT) {
+        waddstr(bottomWin, "Enter: ");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<6}", "Done").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
 
-        waddstr(menuWin, "Esc: ");
-        wattron(menuWin, COLOR_PAIR(MENU_COLOR));
-        waddstr(menuWin, fmt::format("{:<6}", "Clear").c_str());
-        wattroff(menuWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, "Esc: ");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<6}", "Clear").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
 
-        waddstr(menuWin, " ");
+        waddstr(bottomWin, " ");
     } else {
-        waddstr(menuWin, "F4 ");
-        wattron(menuWin, COLOR_PAIR(MENU_COLOR));
-        waddstr(menuWin, fmt::format("{:<6}", "Filter").c_str());
-        wattroff(menuWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, "F4 ");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<8}", "Filter").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
+
+        waddstr(bottomWin, "r ");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<8}", "Resize").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
     }
 
-    if (editFilter) {
-        wattron(menuWin, COLOR_PAIR(MENU_COLOR));
-        waddstr(menuWin, fmt::format("Filter: {}", displayConf->filter).c_str());
-        wattroff(menuWin, COLOR_PAIR(MENU_COLOR));
+    if (editMode == FILTER) {
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("Filter: {}", displayConf->filter).c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
     }
 }
 
@@ -263,9 +268,23 @@ Screen::Screen(std::atomic_bool* shouldStop,
     statusWin = newwin(STATUS_LINES, DEFAULT_COLUMNS, 0, 0);
     sortSelectionWin = newwin(SORT_LINES, SORT_COLUMNS,
         STATUS_LINES, 0);
-    menuWin = newwin(MENU_LINES, DEFAULT_COLUMNS, LINES - 1, 0);
+    bottomWin = newwin(BOTTOM_LINES, DEFAULT_COLUMNS, LINES - 1, 0);
 
     activeCollector = getActiveCollector();
+}
+
+auto Screen::isEsc(char c) -> bool
+{
+    if (c != KEY_ESC) {
+        return false;
+    }
+    nodelay(stdscr, true);
+    c = getch();
+    nodelay(stdscr, false);
+    if (c == -1) {
+        return true;
+    }
+    return false;
 }
 
 auto Screen::refreshPads() -> void
@@ -276,7 +295,7 @@ auto Screen::refreshPads() -> void
     wnoutrefresh(statusWin);
 
     int deltaValues = 0;
-    if (editSort) {
+    if (editMode == SORT) {
         deltaValues = SORT_COLUMNS;
         wnoutrefresh(sortSelectionWin);
     }
@@ -290,27 +309,22 @@ auto Screen::refreshPads() -> void
     pnoutrefresh(bodyWin,
         verticalScroll, 0,
         STATUS_LINES + HEADER_LINES, deltaValues,
-        LINES - (HEADER_LINES + MENU_LINES), displayedColumn);
+        LINES - (HEADER_LINES + BOTTOM_LINES), displayedColumn);
 
-    wnoutrefresh(menuWin);
+    wnoutrefresh(bottomWin);
     doupdate();
 }
 
 auto Screen::refreshableAction(int c) -> bool
 {
-    if (editFilter) {
-        if (c == KEY_ESC) {
-            nodelay(stdscr, true);
-            c = getch();
-            nodelay(stdscr, false);
-            if (c == -1) {
-                displayConf->filter = "";
-                editFilter = false;
-            }
+    if (editMode == FILTER) {
+        if (isEsc(c)) {
+            displayConf->filter = "";
+            editMode = NONE;
         } else if (c == CTRL('u')) {
             displayConf->filter = "";
         } else if (c == KEY_VALID) {
-            editFilter = false;
+            editMode = NONE;
         } else if (c == KEY_BACKSPACE && displayConf->filter.size() > 0) {
             displayConf->filter.pop_back();
         } else if (isprint(c)) {
@@ -321,7 +335,7 @@ auto Screen::refreshableAction(int c) -> bool
         return true;
     }
 
-    if (editSort) {
+    if (editMode == SORT) {
         if (c == KEY_UP) {
             protocolToSortIndex[displayConf->protocolIndex] = std::max(
                 protocolToSortIndex[displayConf->protocolIndex] - 1, 0);
@@ -333,8 +347,11 @@ auto Screen::refreshableAction(int c) -> bool
                 static_cast<int>(activeCollector->getSortFields().size()) - 1);
             activeCollector->updateSort(protocolToSortIndex[displayConf->protocolIndex], reversedSort);
             return true;
+        } else if (isEsc(c)) {
+            editMode = NONE;
+            return true;
         } else if (c == KEY_VALID) {
-            editSort = false;
+            editMode = NONE;
             return true;
         }
     }
@@ -344,7 +361,10 @@ auto Screen::refreshableAction(int c) -> bool
         activeCollector = getActiveCollector();
         return true;
     } else if (c == KEY_F(4)) {
-        editFilter = true;
+        editMode = FILTER;
+        return true;
+    } else if (c == KEY_R) {
+        editMode = RESIZE;
         return true;
     } else if (c == KEY_LEFT) {
         protocolToDisplayIndex[displayConf->protocolIndex] = std::max(
@@ -358,12 +378,12 @@ auto Screen::refreshableAction(int c) -> bool
         activeCollector->updateDisplayType(protocolToDisplayIndex[displayConf->protocolIndex]);
         return true;
     } else if (c == KEY_SUP) {
-        editSort = true;
+        editMode = SORT;
         reversedSort = false;
         activeCollector->updateSort(protocolToSortIndex[displayConf->protocolIndex], reversedSort);
         return true;
     } else if (c == KEY_INF) {
-        editSort = true;
+        editMode = SORT;
         reversedSort = true;
         activeCollector->updateSort(protocolToSortIndex[displayConf->protocolIndex], reversedSort);
         return true;
@@ -400,7 +420,7 @@ auto Screen::displayLoop() -> void
             continue;
         }
 
-        maxElements = (LINES - (STATUS_LINES + HEADER_LINES + MENU_LINES)) / 2 - 1;
+        maxElements = (LINES - (STATUS_LINES + HEADER_LINES + BOTTOM_LINES)) / 2 - 1;
         switch (c) {
         case KEY_LETTER_F:
             shouldFreeze = !shouldFreeze;
@@ -455,7 +475,7 @@ Screen::~Screen()
     delwin(bodyWin);
     delwin(sortSelectionWin);
     delwin(statusWin);
-    delwin(menuWin);
+    delwin(bottomWin);
 }
 
 } // namespace flowstats

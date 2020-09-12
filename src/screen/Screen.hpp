@@ -44,11 +44,13 @@ private:
     auto updateMenu() -> void;
     auto updateSortSelection() -> void;
 
+    auto isEsc(char c) -> bool;
+
     WINDOW* headerWin = nullptr;
     WINDOW* bodyWin = nullptr;
 
     WINDOW* statusWin = nullptr;
-    WINDOW* menuWin = nullptr;
+    WINDOW* bottomWin = nullptr;
 
     WINDOW* sortSelectionWin = nullptr;
 
@@ -72,7 +74,12 @@ private:
     CaptureStat currentCaptureStat;
     CaptureStat previousCaptureStat;
 
-    bool editFilter = false;
+    enum editMode {
+        NONE,
+        FILTER,
+        RESIZE,
+        SORT
+    } editMode;
     bool editSort = false;
     bool reversedSort = false;
 
