@@ -27,11 +27,6 @@ auto Collector::buildTotalFlow(std::vector<Flow const*> const& aggregatedFlows) 
 {
     totalFlow->resetFlow(true);
     for (auto const* flow : aggregatedFlows) {
-        if (!displayConf.filter.empty()) {
-            if (flow->getFqdn().find(displayConf.filter) == std::string::npos) {
-                continue;
-            }
-        }
         totalFlow->addAggregatedFlow(flow);
     }
 }
@@ -122,8 +117,16 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
     auto aggregatedMap = getAggregatedMap();
     tempVector.reserve(aggregatedMap.size());
     for (auto const& pair : aggregatedMap) {
+        auto flow = pair.second;
+        if (!displayConf.filter.empty()) {
+            if (flow->getFqdn().find(displayConf.filter) == std::string::npos) {
+                continue;
+            }
+        }
         tempVector.push_back(pair.second);
     }
+
+
     SPDLOG_INFO("Got {} {} flows", tempVector.size(), toString());
     // TODO Merge percentiles?
     auto sortFun = getSortFun(selectedSortField);
