@@ -79,7 +79,7 @@ private:
         FILTER,
         RESIZE,
         SORT
-    } editMode;
+    } editMode = NONE;
     bool editSort = false;
     bool reversedSort = false;
 

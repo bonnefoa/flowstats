@@ -131,7 +131,7 @@ auto Screen::updateSortSelection() -> void
 auto Screen::updateStatus(std::optional<CaptureStat> const& captureStat) -> void
 {
     werase(statusWin);
-    waddstr(statusWin, fmt::format("Running time: {}s\n", lastTv.tv_sec - firstTv.tv_sec).c_str());
+    waddstr(statusWin, fmt::format("Running time: {}s, Filter: \"{}\"\n", lastTv.tv_sec - firstTv.tv_sec, displayConf->filter).c_str());
 
     if (captureStat.has_value()) {
         stagingCaptureStat = captureStat.value();
@@ -262,6 +262,15 @@ Screen::Screen(std::atomic_bool* shouldStop,
     set_escdelay(25);
     timeout(100);
 
+    define_key("\033OP", KEY_F(1));
+    define_key("\033OQ", KEY_F(2));
+    define_key("\033OR", KEY_F(3));
+    define_key("\033OS", KEY_F(4));
+    define_key("\033[11~", KEY_F(1));
+    define_key("\033[12~", KEY_F(2));
+    define_key("\033[13~", KEY_F(3));
+    define_key("\033[14~", KEY_F(4));
+
     headerWin = newpad(HEADER_LINES + STATUS_LINES, DEFAULT_COLUMNS);
     bodyWin = newpad(BODY_LINES, DEFAULT_COLUMNS);
 
@@ -279,9 +288,9 @@ auto Screen::isEsc(char c) -> bool
         return false;
     }
     nodelay(stdscr, true);
-    c = getch();
+    int tempC = getch();
     nodelay(stdscr, false);
-    if (c == -1) {
+    if (tempC == -1) {
         return true;
     }
     return false;
@@ -347,10 +356,7 @@ auto Screen::refreshableAction(int c) -> bool
                 static_cast<int>(activeCollector->getSortFields().size()) - 1);
             activeCollector->updateSort(protocolToSortIndex[displayConf->protocolIndex], reversedSort);
             return true;
-        } else if (isEsc(c)) {
-            editMode = NONE;
-            return true;
-        } else if (c == KEY_VALID) {
+        } else if (c == KEY_VALID || isEsc(c)) {
             editMode = NONE;
             return true;
         }
