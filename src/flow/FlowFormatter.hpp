@@ -10,15 +10,17 @@
 
 namespace flowstats {
 
-struct FlowFormatter {
+class FlowFormatter {
 
+public:
     FlowFormatter();
     virtual ~FlowFormatter() = default;
 
     [[nodiscard]] auto outputBody(std::map<Field, std::string> const& values) const -> std::string;
     [[nodiscard]] auto outputHeaders() const -> std::string;
 
-    [[nodiscard]] auto getDisplayKeys() const { return displayKeys; };
+    [[nodiscard]] auto getDisplayFields() const& { return displayFields; };
+    [[nodiscard]] auto getFieldToSize() const& { return fieldToSize; };
     auto setDisplayKeys(std::vector<Field> const& keys) { displayKeys = keys; };
     auto setDisplayValues(std::vector<Field> const& values)
     {
@@ -29,6 +31,8 @@ struct FlowFormatter {
     auto outputFlow(Flow const* totalFlow,
         std::vector<Flow const*> const& aggregatedFlows,
         int duration, int maxResult) const -> std::vector<std::string>;
+
+    auto updateFieldSize(int fieldIndex, int delta) -> void;
 
 private:
     std::vector<Field> displayKeys;

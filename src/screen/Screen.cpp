@@ -18,14 +18,15 @@
 #define KEY_R 114
 #define KEY_S 115
 #define KEY_VALID '\n'
+#define KEY_PLUS 43
+#define KEY_MINUS 45
 
 #define KEY_0 48
 #define KEY_NUM(n) (KEY_0 + (n))
 
 // Sizes
 #define DEFAULT_COLUMNS 200
-#define SORT_TEXT_COLUMNS 19
-#define SORT_COLUMNS 20
+#define LEFT_WIN_COLUMNS 20
 
 #define STATUS_LINES 5
 #define HEADER_LINES 1
@@ -48,6 +49,7 @@ int lastKey = 0;
 std::array<CollectorProtocol, 3> protocols = { CollectorProtocol::DNS, CollectorProtocol::TCP, CollectorProtocol::SSL };
 std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
+int selectedResizeField = 0;
 
 auto Screen::updateDisplay(timeval tv, bool updateOutput,
     std::optional<CaptureStat> const& captureStat) -> void
@@ -63,6 +65,7 @@ auto Screen::updateDisplay(timeval tv, bool updateOutput,
     const std::lock_guard<std::mutex> lock(screenMutex);
     updateStatus(captureStat);
     updateSortSelection();
+    updateResizeWin();
     updateMenu();
 
     if (shouldFreeze == true) {
@@ -102,29 +105,59 @@ auto Screen::updateBody() -> void
     }
 }
 
-auto Screen::updateSortSelection() -> void
+auto Screen::updateResizeWin() -> void
 {
-    if (editSort == false) {
+    if (editMode != RESIZE) {
         return;
     }
-    werase(sortSelectionWin);
-    wattron(sortSelectionWin, COLOR_PAIR(KEY_HEADER_COLOR));
-    waddstr(sortSelectionWin, fmt::format("{:<" STR(SORT_TEXT_COLUMNS) "}", "Sort by").c_str());
-    wattroff(sortSelectionWin, COLOR_PAIR(KEY_HEADER_COLOR));
-    waddstr(sortSelectionWin, " ");
+    werase(leftWin);
+    wattron(leftWin, COLOR_PAIR(KEY_HEADER_COLOR));
+    waddstr(leftWin, fmt::format("{:<{}}", "Field Size", LEFT_WIN_COLUMNS - 1).c_str());
+    wattroff(leftWin, COLOR_PAIR(KEY_HEADER_COLOR));
+    waddstr(leftWin, " ");
+
+    auto flowFormatter = activeCollector->getFlowFormatter();
+    auto displayFields = flowFormatter.getDisplayFields();
+    auto fieldToSize = flowFormatter.getFieldToSize();
+    int i = 0;
+    for (auto field : displayFields) {
+        if (i == selectedResizeField) {
+            wattron(leftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+        }
+        waddstr(leftWin, fmt::format("{:<10} {:>{}}", fieldToHeader(field), fieldToSize[field], LEFT_WIN_COLUMNS - 12).c_str());
+        if (i == selectedResizeField) {
+            wattroff(leftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+        }
+        i++;
+        waddstr(leftWin, "\n");
+    }
+
+
+}
+
+auto Screen::updateSortSelection() -> void
+{
+    if (editMode != SORT) {
+        return;
+    }
+    werase(leftWin);
+    wattron(leftWin, COLOR_PAIR(KEY_HEADER_COLOR));
+    waddstr(leftWin, fmt::format("{:<{}}", "Sort by", LEFT_WIN_COLUMNS - 1).c_str());
+    wattroff(leftWin, COLOR_PAIR(KEY_HEADER_COLOR));
+    waddstr(leftWin, " ");
 
     int i = 0;
     int displayIndex = protocolToSortIndex[displayConf->protocolIndex];
     for (const auto& sortField : activeCollector->getSortFields()) {
         if (i == displayIndex) {
-            wattron(sortSelectionWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+            wattron(leftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
-        waddstr(sortSelectionWin, fmt::format("{:<" STR(SORT_TEXT_COLUMNS) "}", fieldToHeader(sortField)).c_str());
+        waddstr(leftWin, fmt::format("{:<{}}", fieldToHeader(sortField), LEFT_WIN_COLUMNS - 1).c_str());
         if (i == displayIndex) {
-            wattroff(sortSelectionWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+            wattroff(leftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
         i++;
-        waddstr(sortSelectionWin, "\n");
+        waddstr(leftWin, "\n");
     }
 }
 
@@ -190,7 +223,7 @@ auto Screen::updateMenu() -> void
 {
     werase(bottomWin);
 
-    if (editMode == FILTER || editMode == SORT) {
+    if (editMode == FILTER || editMode == SORT || editMode == RESIZE) {
         waddstr(bottomWin, "Enter: ");
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
         waddstr(bottomWin, fmt::format("{:<6}", "Done").c_str());
@@ -208,7 +241,7 @@ auto Screen::updateMenu() -> void
         waddstr(bottomWin, fmt::format("{:<8}", "Filter").c_str());
         wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
 
-        waddstr(bottomWin, "r ");
+        waddstr(bottomWin, "R ");
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
         waddstr(bottomWin, fmt::format("{:<8}", "Resize").c_str());
         wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
@@ -275,8 +308,7 @@ Screen::Screen(std::atomic_bool* shouldStop,
     bodyWin = newpad(BODY_LINES, DEFAULT_COLUMNS);
 
     statusWin = newwin(STATUS_LINES, DEFAULT_COLUMNS, 0, 0);
-    sortSelectionWin = newwin(SORT_LINES, SORT_COLUMNS,
-        STATUS_LINES, 0);
+    leftWin = newwin(SORT_LINES, LEFT_WIN_COLUMNS, STATUS_LINES, 0);
     bottomWin = newwin(BOTTOM_LINES, DEFAULT_COLUMNS, LINES - 1, 0);
 
     activeCollector = getActiveCollector();
@@ -304,9 +336,9 @@ auto Screen::refreshPads() -> void
     wnoutrefresh(statusWin);
 
     int deltaValues = 0;
-    if (editMode == SORT) {
-        deltaValues = SORT_COLUMNS;
-        wnoutrefresh(sortSelectionWin);
+    if (editMode == SORT || editMode == RESIZE) {
+        deltaValues = LEFT_WIN_COLUMNS;
+        wnoutrefresh(leftWin);
     }
 
     int displayedColumn = std::min(DEFAULT_COLUMNS - deltaValues, COLS - 1);
@@ -326,14 +358,17 @@ auto Screen::refreshPads() -> void
 
 auto Screen::refreshableAction(int c) -> bool
 {
+    if (c == KEY_VALID) {
+        editMode = NONE;
+        return true;
+    }
+
     if (editMode == FILTER) {
         if (isEsc(c)) {
             displayConf->filter = "";
             editMode = NONE;
         } else if (c == CTRL('u')) {
             displayConf->filter = "";
-        } else if (c == KEY_VALID) {
-            editMode = NONE;
         } else if (c == KEY_BACKSPACE && displayConf->filter.size() > 0) {
             displayConf->filter.pop_back();
         } else if (isprint(c)) {
@@ -342,6 +377,27 @@ auto Screen::refreshableAction(int c) -> bool
             return false;
         }
         return true;
+    }
+
+    if (editMode == RESIZE) {
+        auto flowFormatter = activeCollector->getFlowFormatterPtr();
+        if (c == KEY_DOWN) {
+            int numFields = flowFormatter->getDisplayFields().size();
+            selectedResizeField = std::min(selectedResizeField + 1, numFields - 1);
+            return true;
+        } else if (c == KEY_UP) {
+            selectedResizeField = std::max(selectedResizeField - 1, 0);
+            return true;
+        } else if (c == KEY_PLUS) {
+            flowFormatter->updateFieldSize(selectedResizeField, 1);
+            return true;
+        } else if (c == KEY_MINUS) {
+            flowFormatter->updateFieldSize(selectedResizeField, -1);
+            return true;
+        } else if (isEsc(c)) {
+            editMode = NONE;
+        }
+        return false;
     }
 
     if (editMode == SORT) {
@@ -356,7 +412,7 @@ auto Screen::refreshableAction(int c) -> bool
                 static_cast<int>(activeCollector->getSortFields().size()) - 1);
             activeCollector->updateSort(protocolToSortIndex[displayConf->protocolIndex], reversedSort);
             return true;
-        } else if (c == KEY_VALID || isEsc(c)) {
+        } else if (isEsc(c)) {
             editMode = NONE;
             return true;
         }
@@ -479,7 +535,7 @@ Screen::~Screen()
 {
     delwin(headerWin);
     delwin(bodyWin);
-    delwin(sortSelectionWin);
+    delwin(leftWin);
     delwin(statusWin);
     delwin(bottomWin);
 }

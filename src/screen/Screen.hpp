@@ -43,6 +43,7 @@ private:
     auto updateStatus(std::optional<CaptureStat> const& captureStat) -> void;
     auto updateMenu() -> void;
     auto updateSortSelection() -> void;
+    auto updateResizeWin() -> void;
 
     auto isEsc(char c) -> bool;
 
@@ -52,7 +53,7 @@ private:
     WINDOW* statusWin = nullptr;
     WINDOW* bottomWin = nullptr;
 
-    WINDOW* sortSelectionWin = nullptr;
+    WINDOW* leftWin = nullptr;
 
     int maxElements = 0;
     int numberElements = 0;
@@ -80,7 +81,6 @@ private:
         RESIZE,
         SORT
     } editMode = NONE;
-    bool editSort = false;
     bool reversedSort = false;
 
     std::mutex screenMutex;

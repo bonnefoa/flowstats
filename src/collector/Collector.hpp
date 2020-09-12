@@ -68,12 +68,14 @@ public:
     [[nodiscard]] auto getAggregatedMap() { return &aggregatedMap; }
     [[nodiscard]] auto getAggregatedFlows() const -> std::vector<Flow const*>;
 
+    [[nodiscard]] auto getFlowFormatterPtr() -> FlowFormatter* { return &flowFormatter; };
+    [[nodiscard]] auto getFlowFormatter() -> FlowFormatter& { return flowFormatter; };
+    [[nodiscard]] auto getFlowFormatter() const -> FlowFormatter const& { return flowFormatter; };
+
 protected:
     auto buildTotalFlow(std::vector<Flow const*> const& aggregatedFlows) -> void;
 
     [[nodiscard]] auto getDataMutex() -> std::mutex* { return &dataMutex; };
-    [[nodiscard]] auto getFlowFormatter() -> FlowFormatter& { return flowFormatter; };
-    [[nodiscard]] auto getFlowFormatter() const -> FlowFormatter const& { return flowFormatter; };
     [[nodiscard]] auto getDisplayConf() const -> DisplayConfiguration const& { return displayConf; };
     [[nodiscard]] auto getFlowstatsConfiguration() const -> FlowstatsConfiguration const& { return conf; };
 

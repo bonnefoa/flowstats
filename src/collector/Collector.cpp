@@ -33,17 +33,10 @@ auto Collector::buildTotalFlow(std::vector<Flow const*> const& aggregatedFlows) 
 
 auto Collector::fillSortFields() -> void
 {
-    auto const& displayKeys = flowFormatter.getDisplayKeys();
-    for (auto const& keyField : displayKeys) {
-        if (fieldToSortable(keyField)) {
-            sortFields.push_back(keyField);
-        }
-    }
-    for (auto const& pair : displayPairs) {
-        for (auto const& valueField : pair.second) {
-            if (fieldToSortable(valueField)) {
-                sortFields.push_back(valueField);
-            }
+    auto const& fields = flowFormatter.getDisplayFields();
+    for (auto const& field : fields) {
+        if (fieldToSortable(field)) {
+            sortFields.push_back(field);
         }
     }
 }
@@ -98,7 +91,7 @@ auto Collector::getStatsdMetrics() const -> std::vector<std::string>
 
 auto Collector::outputStatus(time_t duration) -> CollectorOutput
 {
-    FlowFormatter flowFormatter = getFlowFormatter();
+    auto flowFormatter = getFlowFormatter();
     auto headers = flowFormatter.outputHeaders();
 
     const std::lock_guard<std::mutex> lock(dataMutex);

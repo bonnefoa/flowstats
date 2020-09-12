@@ -78,4 +78,10 @@ auto FlowFormatter::outputFlow(Flow const* totalFlow,
     return res;
 }
 
+auto FlowFormatter::updateFieldSize(int fieldIndex, int delta) -> void {
+    auto field = displayFields[fieldIndex];
+    auto& fieldSize = fieldToSize[field];
+    fieldSize = std::max(fieldSize + delta, 0);
+}
+
 } // namespace flowstats
