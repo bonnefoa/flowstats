@@ -118,7 +118,7 @@ auto Screen::updateResizeWin() -> void
 
     auto flowFormatter = activeCollector->getFlowFormatter();
     auto displayFields = flowFormatter.getDisplayFields();
-    auto fieldToSize = flowFormatter.getFieldToSize();
+    auto fieldToSize = displayConf->getFieldToSize();
     int i = 0;
     for (auto field : displayFields) {
         if (i == selectedResizeField) {
@@ -389,10 +389,12 @@ auto Screen::refreshableAction(int c) -> bool
             selectedResizeField = std::max(selectedResizeField - 1, 0);
             return true;
         } else if (c == KEY_PLUS) {
-            flowFormatter->updateFieldSize(selectedResizeField, 1);
+            auto field = flowFormatter->getDisplayFields()[selectedResizeField];
+            displayConf->updateFieldSize(field, 1);
             return true;
         } else if (c == KEY_MINUS) {
-            flowFormatter->updateFieldSize(selectedResizeField, -1);
+            auto field = flowFormatter->getDisplayFields()[selectedResizeField];
+            displayConf->updateFieldSize(field, -1);
             return true;
         } else if (isEsc(c)) {
             editMode = NONE;

@@ -93,7 +93,7 @@ auto Collector::getStatsdMetrics() const -> std::vector<std::string>
 auto Collector::outputStatus(time_t duration) -> CollectorOutput
 {
     auto flowFormatter = getFlowFormatter();
-    auto headers = flowFormatter.outputHeaders();
+    auto headers = flowFormatter.outputHeaders(displayConf);
 
     const std::lock_guard<std::mutex> lock(dataMutex);
     mergePercentiles();
@@ -101,7 +101,7 @@ auto Collector::outputStatus(time_t duration) -> CollectorOutput
 
     buildTotalFlow(aggregatedFlows);
     auto bodyLines = flowFormatter.outputFlow(totalFlow,
-            aggregatedFlows, duration, displayConf.maxResults);
+            aggregatedFlows, duration, displayConf);
     return CollectorOutput(toString(), headers, bodyLines);
 }
 

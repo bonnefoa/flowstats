@@ -29,6 +29,7 @@ auto timevalInMs(timeval tv) -> uint32_t;
 enum Direction {
     FROM_CLIENT,
     FROM_SERVER,
+    MERGED,
 };
 
 auto directionToString(enum Direction direction) -> std::string;

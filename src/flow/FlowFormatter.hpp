@@ -16,11 +16,11 @@ public:
     FlowFormatter();
     virtual ~FlowFormatter() = default;
 
-    [[nodiscard]] auto outputBody(Flow const* flow, Direction direction, int duration) const -> std::string;
-    [[nodiscard]] auto outputHeaders() const -> std::string;
+    auto outputBody(Flow const* flow, std::vector<std::string>* accumulator,
+            int duration, DisplayConfiguration const& displayConf) const -> void;
+    [[nodiscard]] auto outputHeaders(DisplayConfiguration const& displayConf) const -> std::string;
 
     [[nodiscard]] auto getDisplayFields() const& { return displayFields; };
-    [[nodiscard]] auto getFieldToSize() const& { return fieldToSize; };
     auto setDisplayKeys(std::vector<Field> const& keys) { displayKeys = keys; };
     auto setDisplayValues(std::vector<Field> const& values)
     {
@@ -30,15 +30,12 @@ public:
 
     auto outputFlow(Flow const* totalFlow,
         std::vector<Flow const*> const& aggregatedFlows,
-        int duration, int maxResult) const -> std::vector<std::string>;
-
-    auto updateFieldSize(int fieldIndex, int delta) -> void;
+        int duration, DisplayConfiguration const& displayConf) const -> std::vector<std::string>;
 
 private:
     std::vector<Field> displayKeys;
     // Combine Keys and values in in a single vector
     std::vector<Field> displayFields;
-    std::vector<int> fieldToSize;
 };
 
 } // namespace flowstats

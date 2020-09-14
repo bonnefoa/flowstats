@@ -9,42 +9,34 @@ namespace flowstats {
 
 FlowFormatter::FlowFormatter()
 {
-    fieldToSize.resize(Field::_size());
-    for (size_t i = 0; i < Field::_size(); ++i) {
-        fieldToSize[i] = 8;
-    }
-    fieldToSize[Field::FQDN] = 42;
-
-    fieldToSize[Field::TRUNC] = 6;
-    fieldToSize[Field::TYPE] = 6;
-    fieldToSize[Field::DIR] = 6;
-
-    fieldToSize[Field::DOMAIN] = 34;
-
-    fieldToSize[Field::BYTES] = 10;
-
-    fieldToSize[Field::TOP_CLIENT_IPS] = 60;
-
-    fieldToSize[Field::IP] = 16;
-
-    fieldToSize[Field::PORT] = 5;
-    fieldToSize[Field::PROTO] = 5;
 }
 
-auto FlowFormatter::outputBody(Flow const* flow, Direction direction, int duration) const -> std::string
+auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accumulator, int duration,
+        DisplayConfiguration const& displayConf) const -> void
 {
-    fmt::memory_buffer bodyBuf;
+    fmt::memory_buffer clientBuf;
+    fmt::memory_buffer serverBuf;
+
     for (auto const& field : displayFields) {
-        std::string content = flow->getFieldStr(field, direction, duration);
-        fmt::format_to(bodyBuf, "{:<{}.{}} ", content, fieldToSize[field], fieldToSize[field]);
+        std::string clientContent = flow->getFieldStr(field, FROM_CLIENT, duration);
+        std::string serverContent = flow->getFieldStr(field, FROM_SERVER, duration);
+        auto fieldSize = displayConf.getFieldToSize()[field];
+
+        fmt::format_to(clientBuf, "{:<{}.{}} ", clientContent, fieldSize, fieldSize);
+
+        if (serverContent == "" && clientContent.size() > fieldSize) {
+            fmt::format_to(serverBuf, "{:<{}.{}} ", clientContent.substr(fieldSize), fieldSize, fieldSize);
+        }
     }
 
-    return to_string(bodyBuf);
+    accumulator->push_back(to_string(clientBuf));
+    accumulator->push_back(to_string(serverBuf));
 }
 
-auto FlowFormatter::outputHeaders() const -> std::string
+auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const -> std::string
 {
     fmt::memory_buffer headersBuf;
+    auto fieldToSize = displayConf.getFieldToSize();
     for (auto const& field : displayFields) {
         fmt::format_to(headersBuf, "{:<{}.{}} ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
     }
@@ -53,27 +45,18 @@ auto FlowFormatter::outputHeaders() const -> std::string
 
 auto FlowFormatter::outputFlow(Flow const* totalFlow,
     std::vector<Flow const*> const& aggregatedFlows,
-    int duration, int maxResult) const -> std::vector<std::string>
+    int duration, DisplayConfiguration const& displayConf) const -> std::vector<std::string>
 {
     std::vector<std::string> res;
-    for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
-        auto direction = static_cast<Direction>(j);
-        res.push_back(outputBody(totalFlow, direction, duration));
-    }
+    outputBody(totalFlow, &res, duration, displayConf);
+    int i = 0;
     for (auto const* flow : aggregatedFlows) {
-        for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
-            auto direction = static_cast<Direction>(j);
-            res.push_back(outputBody(flow, direction, duration));
-        }
+        if (i++ > displayConf.maxResults) {
+            break;
+        };
+        outputBody(flow, &res, duration, displayConf);
     }
     return res;
-}
-
-auto FlowFormatter::updateFieldSize(int fieldIndex, int delta) -> void
-{
-    auto field = displayFields[fieldIndex];
-    auto& fieldSize = fieldToSize[field];
-    fieldSize = std::max(fieldSize + delta, 0);
 }
 
 } // namespace flowstats
