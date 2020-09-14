@@ -39,50 +39,53 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
         packet.pdu()->advertised_size());
 }
 
-auto AggregatedTcpFlow::fillValues(std::map<Field, std::string>* ptrValues,
-    Direction direction, int duration) const -> void
+auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
 {
-    Flow::fillValues(ptrValues, direction, duration);
-    auto& values = *ptrValues;
+    switch (field) {
+        case Field::SYN_RATE: return std::to_string(syns[direction]);
+        case Field::SYNACK_RATE: return std::to_string(synAcks[direction]);
+        case Field::FIN_RATE: return std::to_string(fins[direction]);
+        case Field::ZWIN_RATE: return std::to_string(zeroWins[direction]);
+        case Field::RST_RATE: return std::to_string(rsts[direction]);
 
-    values[Field::SYN_RATE] = std::to_string(syns[direction]);
-    values[Field::SYNACK_RATE] = std::to_string(synAcks[direction]);
-    values[Field::FIN_RATE] = std::to_string(fins[direction]);
-    values[Field::ZWIN_RATE] = std::to_string(zeroWins[direction]);
-    values[Field::RST_RATE] = std::to_string(rsts[direction]);
+        case Field::SYN: return std::to_string(totalSyns[direction]);
+        case Field::SYNACK: return std::to_string(totalSynAcks[direction]);
+        case Field::FIN: return std::to_string(totalFins[direction]);
+        case Field::ZWIN: return std::to_string(totalZeroWins[direction]);
+        case Field::RST: return std::to_string(totalRsts[direction]);
 
-    values[Field::SYN] = std::to_string(totalSyns[direction]);
-    values[Field::SYNACK] = std::to_string(totalSynAcks[direction]);
-    values[Field::FIN] = std::to_string(totalFins[direction]);
-    values[Field::ZWIN] = std::to_string(totalZeroWins[direction]);
-    values[Field::RST] = std::to_string(totalRsts[direction]);
-
-    values[Field::MTU] = std::to_string(mtu[direction]);
+        case Field::MTU: return std::to_string(mtu[direction]);
+        default: break;
+    }
 
     if (direction == FROM_CLIENT) {
-        values[Field::ACTIVE_CONNECTIONS] = std::to_string(activeConnections);
-        values[Field::FAILED_CONNECTIONS] = std::to_string(failedConnections);
-        values[Field::CLOSE] = std::to_string(totalCloses);
-        values[Field::CONN] = prettyFormatNumber(totalConnections);
-        values[Field::CT_P95] = connections.getPercentileStr(0.95);
-        values[Field::CT_P99] = connections.getPercentileStr(0.99);
+        switch (field) {
+            case Field::ACTIVE_CONNECTIONS: return std::to_string(activeConnections);
+            case Field::FAILED_CONNECTIONS: return std::to_string(failedConnections);
+            case Field::CLOSE: return std::to_string(totalCloses);
+            case Field::CONN: return prettyFormatNumber(totalConnections);
+            case Field::CT_P95: return connections.getPercentileStr(0.95);
+            case Field::CT_P99: return connections.getPercentileStr(0.99);
 
-        values[Field::SRT] = prettyFormatNumber(totalSrts);
-        values[Field::SRT_P95] = srts.getPercentileStr(0.95);
-        values[Field::SRT_P99] = srts.getPercentileStr(0.99);
+            case Field::SRT: return prettyFormatNumber(totalSrts);
+            case Field::SRT_P95: return srts.getPercentileStr(0.95);
+            case Field::SRT_P99: return srts.getPercentileStr(0.99);
 
-        values[Field::DS_P95] = prettyFormatBytes(requestSizes.getPercentile(0.95));
-        values[Field::DS_P99] = prettyFormatBytes(requestSizes.getPercentile(0.99));
-        values[Field::DS_MAX] = prettyFormatBytes(requestSizes.getPercentile(1));
+            case Field::DS_P95: return prettyFormatBytes(requestSizes.getPercentile(0.95));
+            case Field::DS_P99: return prettyFormatBytes(requestSizes.getPercentile(0.99));
+            case Field::DS_MAX: return prettyFormatBytes(requestSizes.getPercentile(1));
 
-        values[Field::FQDN] = getFqdn();
-        values[Field::IP] = getSrvIp();
-        values[Field::PORT] = std::to_string(getSrvPort());
+            case Field::FQDN: return getFqdn();
+            case Field::IP: return getSrvIp();
+            case Field::PORT: return std::to_string(getSrvPort());
 
-        values[Field::CONN_RATE] = std::to_string(numConnections);
-        values[Field::CLOSE_RATE] = std::to_string(closes);
-        values[Field::SRT_RATE] = prettyFormatNumber(numSrts);
+            case Field::CONN_RATE: return std::to_string(numConnections);
+            case Field::CLOSE_RATE: return std::to_string(closes);
+            case Field::SRT_RATE: return prettyFormatNumber(numSrts);
+            default: break;
+        }
     }
+    return Flow::getFieldStr(field, direction, duration);
 }
 
 auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void

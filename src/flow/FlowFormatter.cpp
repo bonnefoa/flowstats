@@ -31,16 +31,11 @@ FlowFormatter::FlowFormatter()
     fieldToSize[Field::PROTO] = 5;
 }
 
-auto FlowFormatter::outputBody(std::map<Field,
-    std::string> const& values) const -> std::string
+auto FlowFormatter::outputBody(Flow const* flow, Direction direction, int duration) const -> std::string
 {
     fmt::memory_buffer bodyBuf;
     for (auto const& field : displayFields) {
-        auto it = values.find(field);
-        std::string content = "";
-        if (it != values.end()) {
-            content = it->second;
-        }
+        std::string content = flow->getFieldStr(field, direction, duration);
         fmt::format_to(bodyBuf, "{:<{}.{}} ", content, fieldToSize[field], fieldToSize[field]);
     }
 
@@ -63,22 +58,19 @@ auto FlowFormatter::outputFlow(Flow const* totalFlow,
     std::vector<std::string> res;
     for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
         auto direction = static_cast<Direction>(j);
-        std::map<Field, std::string> values;
-        totalFlow->fillValues(&values, direction, duration);
-        res.push_back(outputBody(values));
+        res.push_back(outputBody(totalFlow, direction, duration));
     }
     for (auto const* flow : aggregatedFlows) {
         for (int j = FROM_CLIENT; j <= FROM_SERVER; ++j) {
             auto direction = static_cast<Direction>(j);
-            std::map<Field, std::string> values;
-            flow->fillValues(&values, direction, duration);
-            res.push_back(outputBody(values));
+            res.push_back(outputBody(flow, direction, duration));
         }
     }
     return res;
 }
 
-auto FlowFormatter::updateFieldSize(int fieldIndex, int delta) -> void {
+auto FlowFormatter::updateFieldSize(int fieldIndex, int delta) -> void
+{
     auto field = displayFields[fieldIndex];
     auto& fieldSize = fieldToSize[field];
     fieldSize = std::max(fieldSize + delta, 0);

@@ -42,8 +42,7 @@ public:
     virtual auto addFlow(Flow const* flow) -> void;
     virtual auto addAggregatedFlow(Flow const* flow) -> void;
     virtual auto resetFlow(bool resetTotal) -> void;
-    virtual auto fillValues(std::map<Field, std::string>* map,
-        Direction direction, int duration) const -> void;
+    [[nodiscard]] virtual auto getFieldStr(Field field, Direction direction, int duration) const -> std::string;
     virtual auto mergePercentiles() -> void {};
     [[nodiscard]] virtual auto getStatsdMetrics() const -> std::vector<std::string> { return {}; };
 

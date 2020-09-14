@@ -17,19 +17,26 @@ auto Flow::addPacket(Tins::Packet const& packet,
     end = tv;
 }
 
-auto Flow::fillValues(std::map<Field, std::string>* ptrValues,
-    Direction direction, int duration) const -> void
+auto Flow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
 {
-    auto& values = *ptrValues;
-    values[Field::PKTS] = prettyFormatNumber(totalPackets[direction]);
-    values[Field::PKTS_RATE] = prettyFormatNumber(packets[direction]);
-    values[Field::PKTS_AVG] = prettyFormatNumberAverage(totalPackets[direction], duration);
-
-    values[Field::BYTES] = prettyFormatBytes(totalBytes[direction]);
-    values[Field::BYTES_RATE] = prettyFormatBytes(bytes[direction]);
-    values[Field::BYTES_AVG] = prettyFormatBytesAverage(totalBytes[direction], duration);
-
-    values[Field::DIR] = directionToString(static_cast<Direction>(direction));
+    switch (field) {
+    case Field::PKTS:
+        return prettyFormatNumber(totalPackets[direction]);
+    case Field::PKTS_RATE:
+        return prettyFormatNumber(packets[direction]);
+    case Field::PKTS_AVG:
+        return prettyFormatNumberAverage(totalPackets[direction], duration);
+    case Field::BYTES:
+        return prettyFormatBytes(totalBytes[direction]);
+    case Field::BYTES_RATE:
+        return prettyFormatBytes(bytes[direction]);
+    case Field::BYTES_AVG:
+        return prettyFormatBytesAverage(totalBytes[direction], duration);
+    case Field::DIR:
+        return directionToString(static_cast<Direction>(direction));
+    default:
+        return "";
+    }
 }
 
 auto Flow::addFlow(Flow const* flow) -> void

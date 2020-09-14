@@ -29,8 +29,8 @@ struct AggregatedTcpFlow : Flow {
         Tins::TCP const& tcpLayer) -> void;
 
     auto resetFlow(bool resetTotal) -> void override;
-    auto fillValues(std::map<Field, std::string>* map,
-        Direction direction, int duration) const -> void override;
+
+    auto getFieldStr(Field field, Direction direction, int duration) const -> std::string override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
 
     auto mergePercentiles() -> void override;

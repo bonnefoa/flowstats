@@ -16,7 +16,7 @@ public:
     FlowFormatter();
     virtual ~FlowFormatter() = default;
 
-    [[nodiscard]] auto outputBody(std::map<Field, std::string> const& values) const -> std::string;
+    [[nodiscard]] auto outputBody(Flow const* flow, Direction direction, int duration) const -> std::string;
     [[nodiscard]] auto outputHeaders() const -> std::string;
 
     [[nodiscard]] auto getDisplayFields() const& { return displayFields; };

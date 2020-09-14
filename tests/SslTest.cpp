@@ -21,17 +21,11 @@ TEST_CASE("Ssl connection time", "[ssl]")
     auto flow = ipFlows[key];
     REQUIRE(flow != nullptr);
 
-    std::map<Field, std::string> cltValues;
-    flow->fillValues(&cltValues, FROM_CLIENT, 1);
-
-    std::map<Field, std::string> srvValues;
-    flow->fillValues(&srvValues, FROM_SERVER, 1);
-
-    CHECK(cltValues[Field::DOMAIN] == "google.com");
-    CHECK(cltValues[Field::PKTS] == "8");
-    CHECK(srvValues[Field::PKTS] == "7");
-    CHECK(cltValues[Field::CONN] == "1");
-    CHECK(cltValues[Field::CT_P95] == "38ms");
+    CHECK(flow->getFieldStr(Field::DOMAIN, FROM_CLIENT, 1) == "google.com");
+    CHECK(flow->getFieldStr(Field::PKTS, FROM_CLIENT, 1) == "8");
+    CHECK(flow->getFieldStr(Field::PKTS, FROM_SERVER, 1) == "7");
+    CHECK(flow->getFieldStr(Field::CONN, FROM_CLIENT, 1) == "1");
+    CHECK(flow->getFieldStr(Field::CT_P95, FROM_CLIENT, 1) == "38ms");
 }
 
 TEST_CASE("Ssl port detection", "[ssl]")

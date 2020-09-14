@@ -32,71 +32,47 @@ auto AggregatedDnsFlow::getTopClientIpsStr() const -> std::string
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
 
-auto AggregatedDnsFlow::fillValues(std::map<Field, std::string>* ptrValues,
-    Direction direction, int duration) const -> void
+auto AggregatedDnsFlow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
 {
-    Flow::fillValues(ptrValues, direction, duration);
-    auto& values = *ptrValues;
     auto fqdn = getFqdn();
-    std::string reqAvg = "0";
-    if (duration > 0) {
-        reqAvg = prettyFormatNumber(totalQueries / duration);
-    }
     if (fqdn == "Total") {
         if (direction == FROM_SERVER) {
-            return;
+            return "";
         }
-        values[Field::FQDN] = fqdn;
-        values[Field::IP] = "-";
-        values[Field::PORT] = "-";
-        values[Field::PROTO] = "-";
-        values[Field::TYPE] = "-";
-
-        values[Field::TIMEOUTS_RATE] = std::to_string(timeouts);
-        values[Field::TIMEOUTS] = std::to_string(totalTimeouts);
-        values[Field::REQ] = prettyFormatNumber(totalQueries);
-        values[Field::REQ_RATE] = prettyFormatNumber(queries);
-        values[Field::REQ_AVG] = reqAvg;
-
-        values[Field::SRT] = prettyFormatNumber(totalSrt);
-        values[Field::SRT_RATE] = prettyFormatNumber(numSrt);
-        values[Field::SRT_P95] = srts.getPercentileStr(0.95);
-        values[Field::SRT_P99] = srts.getPercentileStr(0.99);
-
-        values[Field::TRUNC] = std::to_string(totalTruncated);
-        values[Field::RCRD_AVG] = "-";
-
-        values[Field::TOP_CLIENT_IPS] = getTopClientIpsStr();
-        return;
+        switch (field) {
+            case Field::IP: return "-";
+            case Field::PORT: return "-";
+            case Field::PROTO: return "-";
+            case Field::TYPE: return "-";
+            case Field::RCRD_AVG: return "-";
+            default: break;
+        }
     }
 
     if (direction == FROM_CLIENT) {
-        values[Field::FQDN] = fqdn;
-        values[Field::PROTO] = getTransport()._to_string();
-        values[Field::TYPE] = dnsTypeToString(dnsType);
-        values[Field::IP] = getSrvIp();
-        values[Field::TIMEOUTS_RATE] = std::to_string(timeouts);
-        values[Field::TIMEOUTS] = std::to_string(totalTimeouts);
-        values[Field::PORT] = std::to_string(getSrvPort());
-        values[Field::REQ] = prettyFormatNumber(totalQueries);
-        values[Field::REQ_RATE] = prettyFormatNumber(queries);
-        values[Field::REQ_AVG] = reqAvg;
-        values[Field::TOP_CLIENT_IPS] = getTopClientIpsStr();
-
-        values[Field::SRT] = prettyFormatNumber(totalSrt);
-        values[Field::SRT_RATE] = prettyFormatNumber(numSrt);
-        values[Field::SRT_P95] = srts.getPercentileStr(0.95);
-        values[Field::SRT_P99] = srts.getPercentileStr(0.99);
-
-        values[Field::TRUNC] = std::to_string(totalTruncated);
-        if (totalQueries > 0) {
-            values[Field::RCRD_AVG] = std::to_string(totalRecords / totalQueries);
-        }
-    } else {
-        if (fqdn.size() > FQDN_SIZE) {
-            values[Field::FQDN] = fqdn.substr(FQDN_SIZE);
+        switch (field) {
+            case Field::FQDN: return getFqdn();
+            case Field::PROTO: return getTransport()._to_string();
+            case Field::TYPE: return dnsTypeToString(dnsType);
+            case Field::IP: return getSrvIp();
+            case Field::TIMEOUTS_RATE: return std::to_string(timeouts);
+            case Field::TIMEOUTS: return std::to_string(totalTimeouts);
+            case Field::PORT: return std::to_string(getSrvPort());
+            case Field::REQ: return prettyFormatNumber(totalQueries);
+            case Field::REQ_RATE: return prettyFormatNumber(queries);
+            case Field::REQ_AVG: return prettyFormatNumberAverage(totalQueries, duration);
+            case Field::TOP_CLIENT_IPS: return getTopClientIpsStr();
+            case Field::SRT: return prettyFormatNumber(totalSrt);
+            case Field::SRT_RATE: return prettyFormatNumber(numSrt);
+            case Field::SRT_P95: return srts.getPercentileStr(0.95);
+            case Field::SRT_P99: return srts.getPercentileStr(0.99);
+            case Field::TRUNC: return std::to_string(totalTruncated);
+            case Field::RCRD_AVG: return prettyFormatNumberAverage(totalRecords, totalQueries);
+            default:
+                break;
         }
     }
+    return Flow::getFieldStr(field, direction, duration);
 }
 
 auto AggregatedDnsFlow::addFlow(Flow const* flow) -> void

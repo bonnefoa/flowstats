@@ -2,23 +2,23 @@
 
 namespace flowstats {
 
-auto AggregatedSslFlow::fillValues(std::map<Field, std::string>* ptrValues,
-    Direction direction, int duration) const -> void
+auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
 {
-    Flow::fillValues(ptrValues, direction, duration);
-
     if (direction == FROM_CLIENT) {
-        auto& values = *ptrValues;
-        values[Field::FQDN] = getFqdn();
-        values[Field::IP] = getSrvIp();
-        values[Field::PORT] = std::to_string(getSrvPort());
-        values[Field::DOMAIN] = domain;
+        switch (field) {
+            case Field::FQDN: return getFqdn();
+            case Field::IP: return getSrvIp();
+            case Field::PORT: return std::to_string(getSrvPort());
+            case Field::DOMAIN: return domain;
 
-        values[Field::CONN] = prettyFormatNumber(totalConnections);
-        values[Field::CONN_RATE] = prettyFormatNumber(numConnections);
-        values[Field::CT_P95] = connections.getPercentileStr(0.95);
-        values[Field::CT_P99] = connections.getPercentileStr(0.99);
+            case Field::CONN: return prettyFormatNumber(totalConnections);
+            case Field::CONN_RATE: return prettyFormatNumber(numConnections);
+            case Field::CT_P95: return connections.getPercentileStr(0.95);
+            case Field::CT_P99: return connections.getPercentileStr(0.99);
+            default: break;
+        }
     }
+    return Flow::getFieldStr(field, direction, duration);
 }
 
 void AggregatedSslFlow::resetFlow(bool resetTotal)

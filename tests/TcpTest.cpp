@@ -25,20 +25,16 @@ TEST_CASE("Tcp simple", "[tcp]")
         REQUIRE(it != aggregatedMap.end());
 
         auto aggregatedFlow = it->second;
-        std::map<Field, std::string> cltValues;
-        aggregatedFlow->fillValues(&cltValues, FROM_CLIENT, 1);
-        std::map<Field, std::string> srvValues;
-        aggregatedFlow->fillValues(&srvValues, FROM_SERVER, 1);
 
-        CHECK(cltValues[Field::SYN] == "1");
-        CHECK(cltValues[Field::FIN] == "1");
-        CHECK(cltValues[Field::CLOSE] == "1");
-        CHECK(cltValues[Field::ACTIVE_CONNECTIONS] == "0");
-        CHECK(cltValues[Field::CONN] == "1");
-        CHECK(cltValues[Field::CONN_RATE] == "1");
-        CHECK(cltValues[Field::CT_P99] == "50ms");
-        CHECK(cltValues[Field::MTU] == "140");
-        CHECK(srvValues[Field::MTU] == "594");
+        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1) == "0");
+        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::CONN_RATE, FROM_CLIENT, 1) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::CT_P99, FROM_CLIENT, 1) == "50ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::MTU, FROM_CLIENT, 1) == "140");
+        CHECK(aggregatedFlow->getFieldStr(Field::MTU, FROM_SERVER, 1) == "594");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         CHECK(flows.size() == 1);
@@ -46,8 +42,7 @@ TEST_CASE("Tcp simple", "[tcp]")
 
         AggregatedKey totalKey = AggregatedKey::aggregatedIpv4TcpKey("Total", 0, 0);
         std::map<Field, std::string> totalValues;
-        aggregatedFlow->fillValues(&totalValues, FROM_CLIENT, 1);
-        CHECK(totalValues[Field::SYN] == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1) == "1");
     }
 }
 
@@ -98,15 +93,12 @@ TEST_CASE("https pcap", "[tcp]")
         REQUIRE(aggregatedMap.size() == 1);
         auto aggregatedFlow = aggregatedMap[tcpKey];
 
-        std::map<Field, std::string> cltValues;
-        aggregatedFlow->fillValues(&cltValues, FROM_CLIENT, 1);
-
-        CHECK(cltValues[Field::SYN] == "1");
-        CHECK(cltValues[Field::FIN] == "1");
-        CHECK(cltValues[Field::CLOSE] == "1");
-        CHECK(cltValues[Field::ACTIVE_CONNECTIONS] == "0");
-        CHECK(cltValues[Field::CONN] == "1");
-        CHECK(cltValues[Field::CT_P99] == "1ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1)== "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1)== "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1)== "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1)== "0");
+        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1)== "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::CT_P99, FROM_CLIENT, 1)== "1ms");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         REQUIRE(flows.size() == 1);
@@ -127,16 +119,13 @@ TEST_CASE("Tcp reused port", "[tcp]")
         REQUIRE(aggregatedMap.size() == 1);
         auto aggregatedFlow = aggregatedMap[tcpKey];
 
-        std::map<Field, std::string> cltValues;
-        aggregatedFlow->fillValues(&cltValues, FROM_CLIENT, 1);
-
-        CHECK(cltValues[Field::SYN] == "6");
-        CHECK(cltValues[Field::FIN] == "5");
-        CHECK(cltValues[Field::CLOSE] == "5");
-        CHECK(cltValues[Field::ACTIVE_CONNECTIONS] == "0");
-        CHECK(cltValues[Field::CONN] == "5");
-        CHECK(cltValues[Field::CT_P99] == "0ms");
-        CHECK(cltValues[Field::SRT_P99] == "0ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1) == "6");
+        CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1) == "5");
+        CHECK(aggregatedFlow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1) == "5");
+        CHECK(aggregatedFlow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1) == "0");
+        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1) == "5");
+        CHECK(aggregatedFlow->getFieldStr(Field::CT_P99, FROM_CLIENT, 1) == "0ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "0ms");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         REQUIRE(flows.size() == 0);
@@ -157,12 +146,9 @@ TEST_CASE("Ssl stream ack + srt", "[tcp]")
 
         auto aggregatedFlow = aggregatedMap[tcpKey];
 
-        std::map<Field, std::string> cltValues;
-        aggregatedFlow->fillValues(&cltValues, FROM_CLIENT, 1);
-
-        REQUIRE(cltValues[Field::SRT] == "2");
-        REQUIRE(cltValues[Field::SRT_P99] == "2ms");
-        REQUIRE(cltValues[Field::SRT_P95] == "2ms");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "2");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "2ms");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P95, FROM_CLIENT, 1) == "2ms");
     }
 }
 
@@ -179,12 +165,9 @@ TEST_CASE("Ssl stream multiple srts", "[tcp]")
         REQUIRE(aggregatedMap.size() == 1);
         auto aggregatedFlow = aggregatedMap[tcpKey];
 
-        std::map<Field, std::string> cltValues;
-        aggregatedFlow->fillValues(&cltValues, FROM_CLIENT, 1);
-
-        REQUIRE(cltValues[Field::SRT] == "11");
-        REQUIRE(cltValues[Field::SRT_P99] == "9ms");
-        REQUIRE(cltValues[Field::SRT_P95] == "3ms");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "11");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "9ms");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P95, FROM_CLIENT, 1) == "3ms");
     }
 }
 
@@ -202,12 +185,9 @@ TEST_CASE("Tcp double", "[tcp]")
         REQUIRE(aggregatedMap.size() == 1);
         auto aggregatedFlow = aggregatedMap[tcpKey];
 
-        std::map<Field, std::string> cltValues;
-        aggregatedFlow->fillValues(&cltValues, FROM_CLIENT, 1);
-
-        CHECK(cltValues[Field::SRT] == "2");
-        CHECK(cltValues[Field::SRT_P99] == "499ms");
-        CHECK(cltValues[Field::SRT_P95] == "499ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "2");
+        CHECK(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "499ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::SRT_P95, FROM_CLIENT, 1) == "499ms");
     }
 }
 
@@ -225,13 +205,10 @@ TEST_CASE("Tcp 0 win", "[tcp]")
 
         auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", Tins::IPv4Address("127.0.0.1"), 443);
         auto flow = ipFlows[tcpKey];
-
-        std::map<Field, std::string> srvValues;
-        flow->fillValues(&srvValues, FROM_SERVER, 1);
         REQUIRE(flow != nullptr);
 
-        CHECK(srvValues[Field::ZWIN] == "3");
-        CHECK(srvValues[Field::RST] == "1");
+        CHECK(flow->getFieldStr(Field::ZWIN, FROM_SERVER, 1) == "3");
+        CHECK(flow->getFieldStr(Field::RST, FROM_SERVER, 1) == "1");
     }
 }
 
@@ -255,11 +232,8 @@ TEST_CASE("Tcp rst", "[tcp]")
         auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("whatever", ip, 3834);
         auto flow = ipFlows[tcpKey];
 
-        std::map<Field, std::string> cltValues;
-        flow->fillValues(&cltValues, FROM_CLIENT, 1);
-
-        CHECK(cltValues[Field::RST] == "2");
-        CHECK(cltValues[Field::CLOSE] == "1");
+        CHECK(flow->getFieldStr(Field::RST, FROM_CLIENT, 1) == "2");
+        CHECK(flow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1) == "1");
     }
 }
 
@@ -298,10 +272,7 @@ TEST_CASE("Request size", "[tcp]")
         auto flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        std::map<Field, std::string> cltValues;
-        flow->fillValues(&cltValues, FROM_CLIENT, 1);
-
-        REQUIRE(cltValues[Field::DS_MAX] == "183.5 KB");
+        REQUIRE(flow->getFieldStr(Field::DS_MAX, FROM_CLIENT, 1) == "183.5 KB");
     }
 }
 
@@ -321,10 +292,7 @@ TEST_CASE("Srv port detection", "[tcp]")
         auto flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        std::map<Field, std::string> cltValues;
-        flow->fillValues(&cltValues, FROM_CLIENT, 1);
-
-        REQUIRE(cltValues[Field::ACTIVE_CONNECTIONS] == "3");
+        REQUIRE(flow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1) == "3");
     }
 }
 
@@ -344,11 +312,8 @@ TEST_CASE("Gap in capture", "[tcp]")
         auto flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        std::map<Field, std::string> cltValues;
-        flow->fillValues(&cltValues, FROM_CLIENT, 1);
-
-        CHECK(cltValues[Field::SRT] == "1");
-        CHECK(cltValues[Field::SRT_P99] == "26ms");
+        CHECK(flow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "1");
+        CHECK(flow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "26ms");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         CHECK(flows.size() == 1);
@@ -371,13 +336,8 @@ TEST_CASE("Mtu is correctly computed", "[tcp]")
         auto flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        std::map<Field, std::string> cltValues;
-        flow->fillValues(&cltValues, FROM_CLIENT, 1);
-        std::map<Field, std::string> srvValues;
-        flow->fillValues(&srvValues, FROM_SERVER, 1);
-
-        CHECK(cltValues[Field::MTU] == "15346");
-        CHECK(srvValues[Field::MTU] == "413");
+        CHECK(flow->getFieldStr(Field::MTU, FROM_CLIENT, 1) == "15346");
+        CHECK(flow->getFieldStr(Field::MTU, FROM_SERVER, 1) == "413");
     }
 }
 
@@ -407,12 +367,7 @@ TEST_CASE("Ipv6", "[tcp]")
         auto flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        std::map<Field, std::string> cltValues;
-        flow->fillValues(&cltValues, FROM_CLIENT, 1);
-        std::map<Field, std::string> srvValues;
-        flow->fillValues(&srvValues, FROM_SERVER, 1);
-
-        CHECK(cltValues[Field::BYTES] == "609 B");
-        CHECK(srvValues[Field::BYTES] == "886 B");
+        CHECK(flow->getFieldStr(Field::BYTES, FROM_CLIENT, 1) == "609 B");
+        CHECK(flow->getFieldStr(Field::BYTES, FROM_SERVER, 1) == "886 B");
     }
 }
