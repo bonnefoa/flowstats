@@ -1,5 +1,7 @@
 # Flowstats
 
+[![Build Status](https://travis-ci.org/bonnefoa/flowstats.svg?branch=master)](https://travis-ci.org/bonnefoa/flowstats)
+
 ## Download Latest Release
 
 ```
