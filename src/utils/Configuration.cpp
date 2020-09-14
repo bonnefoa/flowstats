@@ -5,30 +5,20 @@
 
 namespace flowstats {
 
-static auto setupLog()
+LogConfiguration::LogConfiguration()
 {
-    auto errLogger = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    errLogger->set_level(spdlog::level::warn);
-    errLogger->set_pattern("[multi_sink_example] [%^%l%$] %v");
+    auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    consoleSink->set_level(spdlog::level::warn);
+    consoleSink->set_pattern("[multi_sink_example] [%^%l%$] %v");
 
     auto fileLogger = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/multisink.txt", true);
     fileLogger->set_level(spdlog::level::trace);
 
-    std::initializer_list<spdlog::sink_ptr> sinks = { errLogger, fileLogger };
-    auto logger = std::make_shared<spdlog::logger>("multi_sink", sinks);
+    std::initializer_list<spdlog::sink_ptr> sinks = { consoleSink, fileLogger };
+    logger = std::make_shared<spdlog::logger>("multi_sink", sinks);
 
-    logger->set_level(spdlog::level::debug);
+    logger->set_level(spdlog::level::info);
     spdlog::set_default_logger(logger);
-}
-
-FlowReplayConfiguration::FlowReplayConfiguration()
-{
-    setupLog();
-}
-
-FlowstatsConfiguration::FlowstatsConfiguration()
-{
-    setupLog();
 }
 
 auto displayTypeToString(enum DisplayType displayType) -> std::string

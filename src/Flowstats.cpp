@@ -105,7 +105,7 @@ auto main(int argc, char* argv[]) -> int
             initialDomains = flowstats::split(optarg, ',');
             break;
         case 'v':
-            spdlog::set_level(spdlog::level::debug);
+            conf.setLogDebug();
             break;
         case 'h':
             printUsage();

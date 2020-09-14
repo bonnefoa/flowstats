@@ -31,9 +31,21 @@ struct DisplayConfiguration {
     bool pcapReplay = false;
 };
 
-class FlowstatsConfiguration {
+class LogConfiguration {
 public:
-    FlowstatsConfiguration();
+    LogConfiguration();
+    virtual ~LogConfiguration() = default;
+
+    auto setupLog();
+    auto setLogDebug() { logger->set_level(spdlog::level::debug); };
+
+protected:
+    std::shared_ptr<spdlog::logger> logger;
+};
+
+class FlowstatsConfiguration : public LogConfiguration {
+public:
+    FlowstatsConfiguration() = default;
     virtual ~FlowstatsConfiguration() = default;
 
     [[nodiscard]] auto getInterfaceName() const -> std::string const& { return iface; };
@@ -66,9 +78,9 @@ private:
     int timeoutFlow = 15;
 };
 
-class FlowReplayConfiguration {
+class FlowReplayConfiguration : public LogConfiguration {
 public:
-    FlowReplayConfiguration();
+    FlowReplayConfiguration() = default;
     virtual ~FlowReplayConfiguration() = default;
 
     auto setBpfFilter(std::string b) { bpfFilter = std::move(b); };
