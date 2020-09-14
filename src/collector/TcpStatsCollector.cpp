@@ -27,8 +27,8 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
         DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::PKTS_AVG, Field::BYTES, Field::BYTES_RATE, Field::BYTES_AVG }),
     });
     setTotalFlow(new AggregatedTcpFlow());
-    fillSortFields();
     updateDisplayType(0);
+    fillSortFields();
 };
 
 auto TcpStatsCollector::detectServer(Tins::TCP const& tcp, FlowId const& flowId) -> Direction

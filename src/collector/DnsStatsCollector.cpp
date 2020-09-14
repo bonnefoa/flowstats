@@ -20,8 +20,8 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
         DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::PKTS_AVG, Field::BYTES, Field::BYTES_RATE, Field::BYTES_AVG }),
     });
     setTotalFlow(new AggregatedDnsFlow());
-    fillSortFields();
     updateDisplayType(0);
+    fillSortFields();
 };
 
 auto DnsStatsCollector::isDnsPort(uint16_t port) -> bool

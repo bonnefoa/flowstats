@@ -34,6 +34,7 @@ auto Collector::buildTotalFlow(std::vector<Flow const*> const& aggregatedFlows) 
 auto Collector::fillSortFields() -> void
 {
     auto const& fields = flowFormatter.getDisplayFields();
+    assert(fields.size() > 0);
     for (auto const& field : fields) {
         if (fieldToSortable(field)) {
             sortFields.push_back(field);

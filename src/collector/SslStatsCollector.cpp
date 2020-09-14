@@ -21,8 +21,8 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, Display
         DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::PKTS_AVG, Field::BYTES, Field::BYTES_RATE, Field::BYTES_AVG }),
     });
     setTotalFlow(new AggregatedSslFlow());
-    fillSortFields();
     updateDisplayType(0);
+    fillSortFields();
 };
 
 auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow*
