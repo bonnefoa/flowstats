@@ -101,7 +101,7 @@ auto getDomainToServerPort(const std::vector<std::string>& initialServerPorts) -
     return res;
 }
 
-static auto prettyFormatGeneric(int num, std::vector<std::string> suffixes) -> std::string
+static auto prettyFormatGeneric(int num, std::vector<std::string> const& suffixes) -> std::string
 {
     int unit = 0;
     double currentCount = num;
@@ -118,8 +118,7 @@ static auto prettyFormatGeneric(int num, std::vector<std::string> suffixes) -> s
 
 auto prettyFormatNumber(int num) -> std::string
 {
-    std::vector<std::string> suffixes = { "", "K" };
-    return prettyFormatGeneric(num, suffixes);
+    return prettyFormatGeneric(num, { "", "K" });
 }
 
 auto prettyFormatNumberAverage(int total, int duration) -> std::string
@@ -132,8 +131,7 @@ auto prettyFormatNumberAverage(int total, int duration) -> std::string
 
 auto prettyFormatMs(int ms) -> std::string
 {
-    std::vector<std::string> suffixes = { "ms", "s" };
-    return prettyFormatGeneric(ms, suffixes);
+    return prettyFormatGeneric(ms, { "ms", "s" });
 }
 
 auto prettyFormatBytes(int bytes) -> std::string
