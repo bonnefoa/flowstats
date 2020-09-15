@@ -31,7 +31,7 @@
 
 #define STATUS_LINES 5
 #define HEADER_LINES 1
-#define BODY_LINES 300
+#define BODY_LINES 30000
 #define BOTTOM_LINES 1
 
 #define SORT_LINES 300
@@ -166,7 +166,8 @@ auto Screen::updateSortSelection() -> void
 auto Screen::updateStatus(std::optional<CaptureStat> const& captureStat) -> void
 {
     werase(statusWin);
-    waddstr(statusWin, fmt::format("Running time: {}s, Filter: \"{}\"\n", lastTv.tv_sec - firstTv.tv_sec, displayConf->getFilter()).c_str());
+    waddstr(statusWin, fmt::format("Running time: {}s, Filter: \"{}\", selected line {}\n", lastTv.tv_sec - firstTv.tv_sec,
+                displayConf->getFilter(), selectedLine).c_str());
 
     if (captureStat.has_value()) {
         stagingCaptureStat = captureStat.value();
