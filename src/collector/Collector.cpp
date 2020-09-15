@@ -112,8 +112,9 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
     tempVector.reserve(aggregatedMap.size());
     for (auto const& pair : aggregatedMap) {
         auto flow = pair.second;
-        if (!displayConf.filter.empty()) {
-            if (flow->getFqdn().find(displayConf.filter) == std::string::npos) {
+        auto filter = displayConf.getFilter();
+        if (!filter.empty()) {
+            if (flow->getFqdn().find(filter) == std::string::npos) {
                 continue;
             }
         }

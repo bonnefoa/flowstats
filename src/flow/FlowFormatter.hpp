@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Configuration.hpp"
+#include "DisplayConfiguration.hpp"
 #include "Field.hpp"
 #include "Flow.hpp"
 #include "Utils.hpp"
@@ -13,7 +14,7 @@ namespace flowstats {
 class FlowFormatter {
 
 public:
-    FlowFormatter();
+    FlowFormatter() = default;
     virtual ~FlowFormatter() = default;
 
     auto outputBody(Flow const* flow, std::vector<std::string>* accumulator,

@@ -21,15 +21,17 @@ class Screen {
 public:
     Screen(std::atomic_bool* shouldStop,
         DisplayConfiguration* displayConf,
+        bool noCurses, bool noDisplay, bool pcapReplay,
         std::vector<Collector*> collectors);
     virtual ~Screen();
 
     auto StartDisplay() -> int;
     auto StopDisplay() -> void;
-    auto getCurrentChoice() -> std::string;
     auto updateDisplay(timeval tv, bool updateOutput,
         std::optional<CaptureStat> const& captureStatus) -> void;
 
+    [[nodiscard]] auto getCurrentChoice() -> std::string;
+    [[nodiscard]] auto getNoCurses() const { return noCurses; };
     [[nodiscard]] auto getDisplayConf() const { return displayConf; };
 
 private:
@@ -59,13 +61,19 @@ private:
     int numberElements = 0;
     int selectedLine = 0;
     int verticalScroll = 0;
+    int selectedProtocolIndex = 0;
 
-    std::thread screenThread;
     std::atomic_bool* shouldStop;
     bool shouldFreeze = false;
+
+    DisplayConfiguration* displayConf;
+    bool noCurses = false;
+    bool noDisplay = false;
+    bool pcapReplay = false;
+
+    std::thread screenThread;
     timeval lastTv = {};
     timeval firstTv = {};
-    DisplayConfiguration* displayConf;
     std::vector<Collector*> collectors;
     Collector* activeCollector;
     CollectorOutput collectorOutput;

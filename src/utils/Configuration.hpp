@@ -22,26 +22,6 @@ enum DisplayType {
 
 auto displayTypeToString(enum DisplayType displayType) -> std::string;
 
-class DisplayConfiguration {
-public:
-    DisplayConfiguration();
-    int protocolIndex = 0;
-    bool mergeDirection = false;
-    int maxResults = 1000;
-    std::string filter;
-
-    bool noCurses = false;
-    bool noDisplay = false;
-    bool pcapReplay = false;
-
-    [[nodiscard]] auto getFieldToSize() const& { return fieldToSize; };
-    auto updateFieldSize(Field field, int delta) -> void;
-
-private:
-    std::vector<int> fieldToSize;
-
-};
-
 class LogConfiguration {
 public:
     LogConfiguration();

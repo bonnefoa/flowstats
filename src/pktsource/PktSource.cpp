@@ -141,7 +141,7 @@ auto PktSource::analyzePcapFile()
     for (auto* collector : collectors) {
         collector->resetMetrics();
     }
-    if (screen->getDisplayConf()->noCurses) {
+    if (screen->getNoCurses()) {
         return 0;
     }
 

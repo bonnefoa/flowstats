@@ -1,18 +1,11 @@
 #include "FlowFormatter.hpp"
 #include <fmt/format.h>
-
-#include <utility>
-
 #include <utility>
 
 namespace flowstats {
 
-FlowFormatter::FlowFormatter()
-{
-}
-
 auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accumulator, int duration,
-        DisplayConfiguration const& displayConf) const -> void
+    DisplayConfiguration const& displayConf) const -> void
 {
     fmt::memory_buffer clientBuf;
     fmt::memory_buffer serverBuf;
@@ -51,7 +44,7 @@ auto FlowFormatter::outputFlow(Flow const* totalFlow,
     outputBody(totalFlow, &res, duration, displayConf);
     int i = 0;
     for (auto const* flow : aggregatedFlows) {
-        if (i++ > displayConf.maxResults) {
+        if (i++ > displayConf.getMaxResults()) {
             break;
         };
         outputBody(flow, &res, duration, displayConf);

@@ -73,6 +73,9 @@ auto main(int argc, char* argv[]) -> int
 
     int optionIndex = 0;
     int opt = 0;
+    bool noDisplay = false;
+    bool noCurses = false;
+    bool pcapReplay = false;
 
     while ((opt = getopt_long(argc, argv, "k:i:a:f:o:b:m:p:d:cnuwhvl", FlowStatsOptions,
                 &optionIndex))
@@ -90,7 +93,7 @@ auto main(int argc, char* argv[]) -> int
             agentAddr = optarg;
             break;
         case 'm':
-            displayConf.maxResults = atoi(optarg);
+            displayConf.setMaxResults(atoi(optarg));
             break;
         case 'f':
             conf.setPcapFileName(optarg);
@@ -115,10 +118,10 @@ auto main(int argc, char* argv[]) -> int
             conf.setDisplayUnknownFqdn(true);
             break;
         case 'n':
-            displayConf.noDisplay = true;
+            noDisplay = true;
             break;
         case 'c':
-            displayConf.noCurses = true;
+            noCurses = true;
             break;
         case 'w':
             conf.setPerIpAggr(true);
@@ -137,6 +140,7 @@ auto main(int argc, char* argv[]) -> int
     }
 
     conf.setAgentConf(DogFood::Configure(agentAddr));
+    pcapReplay = conf.getPcapFileName() != "";
     std::vector<flowstats::Collector*> collectors;
     conf.setDomainToServerPort(flowstats::getDomainToServerPort(initialServerPorts));
 
@@ -150,11 +154,11 @@ auto main(int argc, char* argv[]) -> int
         new flowstats::TcpStatsCollector(conf, displayConf, &ipToFqdn));
 
     std::atomic_bool shouldStop = false;
-    flowstats::Screen screen(&shouldStop, &displayConf, collectors);
+    flowstats::Screen screen(&shouldStop, &displayConf,
+            noCurses, noDisplay, pcapReplay, collectors);
     flowstats::PktSource pktSource(&screen, conf, collectors, &shouldStop);
     screen.StartDisplay();
-    if (conf.getPcapFileName() != "") {
-        displayConf.pcapReplay = true;
+    if (pcapReplay) {
         pktSource.analyzePcapFile();
     } else {
         std::vector<Tins::IPv4Address> localIps = pktSource.getLocalIps();
