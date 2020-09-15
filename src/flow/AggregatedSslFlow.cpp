@@ -4,7 +4,7 @@ namespace flowstats {
 
 auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
 {
-    if (direction == FROM_CLIENT) {
+    if (direction == FROM_CLIENT || direction == MERGED) {
         switch (field) {
             case Field::FQDN: return getFqdn();
             case Field::IP: return getSrvIp();

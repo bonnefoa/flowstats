@@ -13,6 +13,7 @@
 #define KEY_SUP 62
 #define KEY_B 98
 #define KEY_LETTER_F 102
+#define KEY_M 109
 #define KEY_P 112
 #define KEY_Q 113
 #define KEY_R 114
@@ -89,9 +90,10 @@ auto Screen::updateBody() -> void
 
     auto& values = collectorOutput.getValues();
     auto numKeys = values.size();
-    numberElements = int(numKeys / 2);
+    int coefficient = displayConf->getMergeDirection() ? 1 : 2;
+    numberElements = int(numKeys / coefficient);
     for (int i = 0; i < numKeys; ++i) {
-        int line = i / 2;
+        int line = i / coefficient;
         if (line == selectedLine) {
             wattron(bodyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
         }
@@ -245,6 +247,11 @@ auto Screen::updateMenu() -> void
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
         waddstr(bottomWin, fmt::format("{:<8}", "Resize").c_str());
         wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
+
+        waddstr(bottomWin, "M ");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<10}", "Merge C/S").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
     }
 
     if (editMode == FILTER) {
@@ -394,11 +401,11 @@ auto Screen::refreshableAction(int c) -> bool
             return true;
         } else if (c == KEY_PLUS) {
             auto field = flowFormatter->getDisplayFields()[selectedResizeField];
-            displayConf->updateFieldSize(field, 1);
+            displayConf->updateFieldSize(field, 2);
             return true;
         } else if (c == KEY_MINUS) {
             auto field = flowFormatter->getDisplayFields()[selectedResizeField];
-            displayConf->updateFieldSize(field, -1);
+            displayConf->updateFieldSize(field, -2);
             return true;
         } else if (isEsc(c)) {
             editMode = NONE;
@@ -433,6 +440,9 @@ auto Screen::refreshableAction(int c) -> bool
         return true;
     } else if (c == KEY_R) {
         editMode = RESIZE;
+        return true;
+    } else if (c == KEY_M) {
+        displayConf->toggleMergedDirection();
         return true;
     } else if (c == KEY_LEFT) {
         protocolToDisplayIndex[selectedProtocolIndex] = std::max(
@@ -488,7 +498,8 @@ auto Screen::displayLoop() -> void
             continue;
         }
 
-        maxElements = (LINES - (STATUS_LINES + HEADER_LINES + BOTTOM_LINES)) / 2 - 1;
+        int coefficient = displayConf->getMergeDirection() ? 1 : 2;
+        maxElements = (LINES - (STATUS_LINES + HEADER_LINES + BOTTOM_LINES)) / coefficient - 1;
         switch (c) {
         case KEY_LETTER_F:
             shouldFreeze = !shouldFreeze;
@@ -510,10 +521,10 @@ auto Screen::displayLoop() -> void
             selectedLine = std::min(selectedLine, numberElements - 1);
             break;
         }
-        if (selectedLine * 2 < verticalScroll) {
-            verticalScroll = selectedLine * 2;
-        } else if (selectedLine * 2 > (maxElements * 2 + verticalScroll)) {
-            verticalScroll += selectedLine * 2 - (maxElements * 2 + verticalScroll);
+        if (selectedLine * coefficient < verticalScroll) {
+            verticalScroll = selectedLine * coefficient;
+        } else if (selectedLine * coefficient > (maxElements * coefficient + verticalScroll)) {
+            verticalScroll += selectedLine * coefficient - (maxElements * coefficient + verticalScroll);
         }
         updateDisplay(lastTv, false, {});
     }

@@ -19,6 +19,24 @@ auto Flow::addPacket(Tins::Packet const& packet,
 
 auto Flow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
 {
+    if (direction == MERGED) {
+        switch (field) {
+            case Field::PKTS:
+                return prettyFormatNumber(totalPackets[FROM_CLIENT] + totalPackets[FROM_SERVER]);
+            case Field::PKTS_RATE:
+                return prettyFormatNumber(packets[FROM_CLIENT] + packets[FROM_SERVER]);
+            case Field::PKTS_AVG:
+                return prettyFormatNumberAverage(totalPackets[FROM_CLIENT] + totalPackets[FROM_SERVER], duration);
+            case Field::BYTES:
+                return prettyFormatBytes(totalBytes[FROM_CLIENT] + totalBytes[FROM_SERVER]);
+            case Field::BYTES_RATE:
+                return prettyFormatBytes(bytes[FROM_CLIENT] + bytes[FROM_SERVER]);
+            case Field::BYTES_AVG:
+                return prettyFormatBytesAverage(totalBytes[FROM_CLIENT] + totalBytes[FROM_SERVER], duration);
+            default:
+                return "";
+        }
+    }
     switch (field) {
     case Field::PKTS:
         return prettyFormatNumber(totalPackets[direction]);

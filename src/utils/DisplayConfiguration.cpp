@@ -26,6 +26,17 @@ DisplayConfiguration::DisplayConfiguration()
     fieldToSize[Field::PROTO] = 5;
 }
 
+auto DisplayConfiguration::isFieldHidden(Field field) const -> bool
+{
+    if (mergeDirection) {
+        switch (field) {
+            case Field::DIR: return true;
+            default: return false;
+        }
+    }
+    return false;
+}
+
 auto DisplayConfiguration::updateFieldSize(Field field, int delta) -> void
 {
     auto& fieldSize = fieldToSize[field];

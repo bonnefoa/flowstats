@@ -4,13 +4,28 @@
 
 namespace flowstats {
 
-auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accumulator, int duration,
-    DisplayConfiguration const& displayConf) const -> void
+auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accumulator,
+    int duration, DisplayConfiguration const& displayConf) const -> void
 {
+    if (displayConf.getMergeDirection()) {
+        fmt::memory_buffer mergedBuf;
+        for (auto const& field : displayFields) {
+            if (displayConf.isFieldHidden(field)) {
+                continue;
+            }
+            auto fieldSize = displayConf.getFieldToSize()[field];
+            fmt::format_to(mergedBuf, "{:<{}.{}} ", flow->getFieldStr(field, MERGED, duration), fieldSize, fieldSize);
+        }
+        accumulator->push_back(to_string(mergedBuf));
+        return;
+    }
+
     fmt::memory_buffer clientBuf;
     fmt::memory_buffer serverBuf;
-
     for (auto const& field : displayFields) {
+        if (displayConf.isFieldHidden(field)) {
+            continue;
+        }
         std::string clientContent = flow->getFieldStr(field, FROM_CLIENT, duration);
         std::string serverContent = flow->getFieldStr(field, FROM_SERVER, duration);
         auto fieldSize = displayConf.getFieldToSize()[field];
@@ -31,6 +46,9 @@ auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const
     fmt::memory_buffer headersBuf;
     auto fieldToSize = displayConf.getFieldToSize();
     for (auto const& field : displayFields) {
+        if (displayConf.isFieldHidden(field)) {
+            continue;
+        }
         fmt::format_to(headersBuf, "{:<{}.{}} ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
     }
     return to_string(headersBuf);

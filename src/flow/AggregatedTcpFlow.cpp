@@ -58,7 +58,7 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
         default: break;
     }
 
-    if (direction == FROM_CLIENT) {
+    if (direction == FROM_CLIENT || direction == MERGED) {
         switch (field) {
             case Field::ACTIVE_CONNECTIONS: return std::to_string(activeConnections);
             case Field::FAILED_CONNECTIONS: return std::to_string(failedConnections);
