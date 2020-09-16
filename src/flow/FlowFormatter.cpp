@@ -34,6 +34,8 @@ auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accum
 
         if (serverContent == "" && clientContent.size() > fieldSize) {
             fmt::format_to(serverBuf, "{:<{}.{}} ", clientContent.substr(fieldSize), fieldSize, fieldSize);
+        } else {
+            fmt::format_to(serverBuf, "{:<{}.{}} ", serverContent, fieldSize, fieldSize);
         }
     }
 

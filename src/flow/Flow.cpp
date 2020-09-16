@@ -38,22 +38,22 @@ auto Flow::getFieldStr(Field field, Direction direction, int duration) const -> 
         }
     }
     switch (field) {
-    case Field::PKTS:
-        return prettyFormatNumber(totalPackets[direction]);
-    case Field::PKTS_RATE:
-        return prettyFormatNumber(packets[direction]);
-    case Field::PKTS_AVG:
-        return prettyFormatNumberAverage(totalPackets[direction], duration);
-    case Field::BYTES:
-        return prettyFormatBytes(totalBytes[direction]);
-    case Field::BYTES_RATE:
-        return prettyFormatBytes(bytes[direction]);
-    case Field::BYTES_AVG:
-        return prettyFormatBytesAverage(totalBytes[direction], duration);
-    case Field::DIR:
-        return directionToString(static_cast<Direction>(direction));
-    default:
-        return "";
+        case Field::PKTS:
+            return prettyFormatNumber(totalPackets[direction]);
+        case Field::PKTS_RATE:
+            return prettyFormatNumber(packets[direction]);
+        case Field::PKTS_AVG:
+            return prettyFormatNumberAverage(totalPackets[direction], duration);
+        case Field::BYTES:
+            return prettyFormatBytes(totalBytes[direction]);
+        case Field::BYTES_RATE:
+            return prettyFormatBytes(bytes[direction]);
+        case Field::BYTES_AVG:
+            return prettyFormatBytesAverage(totalBytes[direction], duration);
+        case Field::DIR:
+            return directionToString(static_cast<Direction>(direction));
+        default:
+            return "";
     }
 }
 

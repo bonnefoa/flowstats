@@ -6,10 +6,12 @@ auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int durati
 {
     auto fqdn = getFqdn();
     if (fqdn == "Total") {
-        switch (field) {
-        case Field::FQDN: return getFqdn();
-        default:
-                          break;
+        if (direction != FROM_SERVER) {
+            switch (field) {
+                case Field::FQDN: return getFqdn();
+                default:
+                                  break;
+            }
         }
     } else if (direction == FROM_CLIENT || direction == MERGED) {
         switch (field) {

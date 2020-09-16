@@ -41,21 +41,40 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
 
 auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
 {
-    switch (field) {
-        case Field::SYN_RATE: return std::to_string(syns[direction]);
-        case Field::SYNACK_RATE: return std::to_string(synAcks[direction]);
-        case Field::FIN_RATE: return std::to_string(fins[direction]);
-        case Field::ZWIN_RATE: return std::to_string(zeroWins[direction]);
-        case Field::RST_RATE: return std::to_string(rsts[direction]);
+    if (direction == MERGED) {
+        switch (field) {
+            case Field::SYN_RATE: return std::to_string(syns[FROM_CLIENT] + syns[FROM_SERVER]);
+            case Field::SYNACK_RATE: return std::to_string(synAcks[FROM_CLIENT] + synAcks[FROM_SERVER]);
+            case Field::FIN_RATE: return std::to_string(fins[FROM_CLIENT] + fins[FROM_SERVER]);
+            case Field::ZWIN_RATE: return std::to_string(zeroWins[FROM_CLIENT] + zeroWins[FROM_SERVER]);
+            case Field::RST_RATE: return std::to_string(rsts[FROM_CLIENT] + rsts[FROM_SERVER]);
 
-        case Field::SYN: return std::to_string(totalSyns[direction]);
-        case Field::SYNACK: return std::to_string(totalSynAcks[direction]);
-        case Field::FIN: return std::to_string(totalFins[direction]);
-        case Field::ZWIN: return std::to_string(totalZeroWins[direction]);
-        case Field::RST: return std::to_string(totalRsts[direction]);
+            case Field::SYN: return std::to_string(totalSyns[FROM_CLIENT] + totalSyns[FROM_SERVER]);
+            case Field::SYNACK: return std::to_string(totalSynAcks[FROM_CLIENT] + totalSynAcks[FROM_SERVER]);
+            case Field::FIN: return std::to_string(totalFins[FROM_CLIENT] + totalFins[FROM_SERVER]);
+            case Field::ZWIN: return std::to_string(totalZeroWins[FROM_CLIENT] + totalZeroWins[FROM_SERVER]);
+            case Field::RST: return std::to_string(totalRsts[FROM_CLIENT] + totalRsts[FROM_SERVER]);
 
-        case Field::MTU: return std::to_string(mtu[direction]);
-        default: break;
+            case Field::MTU: return std::to_string(std::max(mtu[FROM_CLIENT], mtu[FROM_SERVER]));
+            default: break;
+        }
+    } else {
+        switch (field) {
+            case Field::SYN_RATE: return std::to_string(syns[direction]);
+            case Field::SYNACK_RATE: return std::to_string(synAcks[direction]);
+            case Field::FIN_RATE: return std::to_string(fins[direction]);
+            case Field::ZWIN_RATE: return std::to_string(zeroWins[direction]);
+            case Field::RST_RATE: return std::to_string(rsts[direction]);
+
+            case Field::SYN: return std::to_string(totalSyns[direction]);
+            case Field::SYNACK: return std::to_string(totalSynAcks[direction]);
+            case Field::FIN: return std::to_string(totalFins[direction]);
+            case Field::ZWIN: return std::to_string(totalZeroWins[direction]);
+            case Field::RST: return std::to_string(totalRsts[direction]);
+
+            case Field::MTU: return std::to_string(mtu[direction]);
+            default: break;
+        }
     }
 
     if (direction == FROM_CLIENT || direction == MERGED) {
