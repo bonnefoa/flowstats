@@ -17,7 +17,7 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, Display
     }
 
     setDisplayPairs({
-        DisplayPair(DisplayConnections, { Field::CONN, Field::CONN_RATE, Field::CT_P95, Field::CT_P99 }),
+        DisplayPair(DisplayConnections, { Field::CONN, Field::CONN_RATE, Field::TLS_VERSION, Field::CT_P95, Field::CT_P99 }),
         DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::PKTS_AVG, Field::BYTES, Field::BYTES_RATE, Field::BYTES_AVG }),
     });
     setTotalFlow(new AggregatedSslFlow());
@@ -86,7 +86,8 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet,
     }
     auto payload = rawData->payload();
     auto cursor = Cursor(payload);
-    if (checkValidSsl(&cursor) == false) {
+    auto mbTlsHeader = TlsHeader::parse(&cursor);
+    if (! mbTlsHeader) {
         return;
     }
 

@@ -10,6 +10,7 @@ auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::IP: return getSrvIp();
             case Field::PORT: return std::to_string(getSrvPort());
             case Field::DOMAIN: return domain;
+            case Field::TLS_VERSION: return tlsVersion._to_string();
 
             case Field::CONN: return prettyFormatNumber(totalConnections);
             case Field::CONN_RATE: return prettyFormatNumber(numConnections);
@@ -32,9 +33,12 @@ void AggregatedSslFlow::resetFlow(bool resetTotal)
     }
 }
 
-auto AggregatedSslFlow::addConnection(int delta) -> void
+auto AggregatedSslFlow::addConnection(int delta, TLSVersion tlsVers) -> void
 {
     connections.addPoint(delta);
+    if (tlsVersion == +TLSVersion::UNKNOWN) {
+        tlsVersion = tlsVers;
+    }
     numConnections++;
     totalConnections++;
 }

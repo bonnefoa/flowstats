@@ -2,21 +2,22 @@
 
 #include "Flow.hpp"
 #include "Stats.hpp"
+#include "SslProto.hpp"
 
 namespace flowstats {
 
 class AggregatedSslFlow : public Flow {
 public:
     AggregatedSslFlow()
-        : Flow("Total") {};
+        : Flow("Total"), tlsVersion(TLSVersion::UNKNOWN) {};
 
     AggregatedSslFlow(FlowId const& flowId, std::string const& fqdn)
-        : Flow(flowId, fqdn) {};
+        : Flow(flowId, fqdn), tlsVersion(TLSVersion::UNKNOWN) {};
 
     auto getFieldStr(Field field, Direction direction, int duration) const -> std::string override;
     auto resetFlow(bool resetTotal) -> void override;
     auto setDomain(std::string _domain) -> void { domain = std::move(_domain); }
-    auto addConnection(int delta) -> void;
+    auto addConnection(int delta, TLSVersion tlsVers) -> void;
     auto merge() -> void { connections.merge(); };
 
     [[nodiscard]] auto getDomain() const { return domain; }
@@ -54,5 +55,6 @@ private:
     int numConnections = 0;
     int totalConnections = 0;
     Percentile connections;
+    TLSVersion tlsVersion;
 };
 } // namespace flowstats

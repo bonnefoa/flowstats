@@ -13,6 +13,7 @@ BETTER_ENUM(Field, char,
     IP,
     PORT,
     PROTO,
+    TLS_VERSION,
 
     ACTIVE_CONNECTIONS,
     FAILED_CONNECTIONS,

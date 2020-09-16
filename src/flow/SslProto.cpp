@@ -6,43 +6,22 @@ namespace flowstats {
 #define SSL_SNI_HOST_NAME 0
 
 #define RETURN_FALSE_IF_EMPTY(VAR)    \
-    if ((VAR).has_value() == false) { \
+    if (! VAR ) { \
         return false;                 \
     }
 
 #define RETURN_EMPTY_IF_EMPTY(VAR)    \
-    if ((VAR).has_value() == false) { \
+    if (! VAR) { \
         return {};                    \
     }
 
-auto checkValidSslVersion(std::optional<uint16_t> sslVersion) -> bool
+auto parseTlsVersion(Cursor *cursor) -> std::optional<TLSVersion>
 {
-    if (sslVersion == SSL3 || sslVersion == TLS1_0 || sslVersion == TLS1_1 || sslVersion == TLS1_2) {
-        return true;
-    }
-    return false;
-}
-
-auto checkRecordType(std::optional<uint8_t> recordType) -> bool
-{
-    if (recordType == SSL_CHANGE_CIPHER_SPEC || recordType == SSL_ALERT || recordType == SSL_HANDSHAKE || recordType == SSL_APPLICATION_DATA) {
-        return true;
-    }
-    return false;
-}
-
-auto checkValidSsl(Cursor* cursor) -> bool
-{
-    auto recordType = cursor->readUint8();
-    RETURN_FALSE_IF_EMPTY(recordType);
-    auto sslVersion = cursor->readUint16();
-    RETURN_FALSE_IF_EMPTY(sslVersion);
-
-    auto length = cursor->readUint16();
-    if (cursor->remainingBytes() < length) {
-        return false;
-    }
-    return true;
+    auto mbVersionInt = cursor->readUint16();
+    RETURN_EMPTY_IF_EMPTY(mbVersionInt);
+    auto mbVersion = TLSVersion::_from_integral_nothrow(mbVersionInt.value());
+    RETURN_EMPTY_IF_EMPTY(mbVersion);
+    return mbVersion.value();
 }
 
 auto getSslDomainFromSni(Cursor* cursor) -> std::optional<std::string>
@@ -92,39 +71,80 @@ auto getSslDomainFromExtension(Cursor* cursor) -> std::optional<std::string>
     return "";
 }
 
-auto checkSslHandshake(Cursor* cursor) -> bool
-{
-    auto recordType = cursor->readUint8();
-    RETURN_FALSE_IF_EMPTY(recordType);
-    if (recordType != SSL_HANDSHAKE) {
-        return false;
-    }
-    // 2 uint16_t
-    if (cursor->skip(4) == false) {
-        return false;
-    };
-    return true;
-}
-
 auto checkSslChangeCipherSpec(Cursor* cursor) -> bool
 {
-    auto recordType = cursor->readUint8();
-    if (recordType != SSL_CHANGE_CIPHER_SPEC) {
-        return false;
-    }
-    auto sslVersion = cursor->readUint16();
-    if (checkValidSslVersion(sslVersion) == false) {
-        return false;
-    }
-    auto length = cursor->readUint16();
-    if (length != 1) {
-        return false;
-    }
     auto message = cursor->readUint8();
     if (message != 1) {
         return false;
     }
     return true;
 }
+
+auto TlsHeader::parse(Cursor *cursor) -> std::optional<TlsHeader> {
+    auto mbContentTypeInt = cursor->readUint8();
+    RETURN_EMPTY_IF_EMPTY(mbContentTypeInt);
+    auto mbContentType = SSLContentType::_from_integral_nothrow(mbContentTypeInt.value());
+    RETURN_EMPTY_IF_EMPTY(mbContentType);
+
+    auto mbVersion = parseTlsVersion(cursor);
+    RETURN_EMPTY_IF_EMPTY(mbVersion);
+
+    auto mbLengthInt = cursor->readUint16();
+    RETURN_EMPTY_IF_EMPTY(mbLengthInt);
+    auto length = mbLengthInt.value();
+    if (cursor->remainingBytes() < length) {
+        return {};
+    }
+    return TlsHeader(mbContentType.value(), mbVersion.value(), length);
+}
+
+auto TlsHandshake::parse(Cursor *cursor) -> std::optional<TlsHandshake> {
+    auto mbHandshakeTypeInt = cursor->readUint8();
+    RETURN_EMPTY_IF_EMPTY(mbHandshakeTypeInt);
+    auto mbHandshakeType = SSLHandshakeType::_from_integral_nothrow(mbHandshakeTypeInt.value());
+    RETURN_EMPTY_IF_EMPTY(mbHandshakeType);
+
+    auto mbPduLength = cursor->readUint24();
+    RETURN_EMPTY_IF_EMPTY(mbPduLength);
+    auto pduLength = mbPduLength.value();
+    if (cursor->checkSize(pduLength - 4) == false) {
+        return {};
+    };
+
+    auto mbVersion = parseTlsVersion(cursor);
+    RETURN_EMPTY_IF_EMPTY(mbVersion);
+
+    auto tlsHandshake = TlsHandshake(mbHandshakeType.value(), pduLength, mbVersion.value(), cursor);
+
+    return tlsHandshake;
+}
+
+TlsHandshake::TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSVersion version, Cursor *cursor) : handshakeType(handshakeType), length(length), version(version) {
+
+    if (handshakeType == +SSLHandshakeType::SSL_CLIENT_HELLO) {
+        // Random
+        if (cursor->skip(32) == false) {
+            return;
+        };
+        auto sessionIdLength = cursor->readUint8();
+        if (cursor->skip(sessionIdLength) == false) {
+            return;
+        };
+        auto cipherSuiteLength = cursor->readUint16();
+        if (cursor->skip(cipherSuiteLength) == false) {
+            return;
+        };
+        auto compressionMethodLength = cursor->readUint8();
+        if (cursor->skip(compressionMethodLength) == false) {
+            return;
+        }
+
+        auto extractedDomain = getSslDomainFromExtension(cursor);
+        if (extractedDomain.value_or("") != "") {
+            domain = extractedDomain.value();
+        }
+    }
+};
+
 
 } // namespace flowstats

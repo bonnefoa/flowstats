@@ -4,6 +4,7 @@
 #include "Flow.hpp"
 #include "PduUtils.hpp"
 #include "Stats.hpp"
+#include "SslProto.hpp"
 
 namespace flowstats {
 
@@ -24,9 +25,12 @@ public:
 
 private:
     void processHandshake(Tins::Packet const& packet, Cursor* cursor);
+    void processChangeCipherSpec(Tins::Packet const& packet,
+            Cursor* cursor);
 
     std::vector<AggregatedSslFlow*> aggregatedFlows;
     std::string domain = "";
+    TLSVersion tlsVersion = TLSVersion::UNKNOWN;
     timeval startHandshake = {};
     bool connectionEstablished = false;
 };
