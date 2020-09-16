@@ -26,7 +26,7 @@ public:
 private:
     std::vector<int> fieldToSize;
     std::string filter;
-    bool mergeDirection = false;
+    bool mergeDirection = true;
     int maxResults = 1000;
 };
 
