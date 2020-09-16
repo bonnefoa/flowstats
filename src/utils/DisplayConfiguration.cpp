@@ -15,6 +15,7 @@ DisplayConfiguration::DisplayConfiguration()
     fieldToSize[Field::DIR] = 6;
 
     fieldToSize[Field::DOMAIN] = 34;
+    fieldToSize[Field::CIPHER_SUITE] = 38;
 
     fieldToSize[Field::BYTES] = 10;
 

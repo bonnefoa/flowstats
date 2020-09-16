@@ -22,6 +22,7 @@ option(ENABLE_TESTS "Enable tests" OFF)
 
 set(ADDITIONAL_LIBRARIES "")
 set(ADDITIONAL_EXECUTABLE_LIBRARIES "")
+add_compile_definitions(BETTER_ENUMS_MACRO_FILE="enum_macros.h")
 
 if(BUILD_STATIC_EXE)
     SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")

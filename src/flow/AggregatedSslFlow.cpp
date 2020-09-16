@@ -4,13 +4,26 @@ namespace flowstats {
 
 auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
 {
-    if (direction == FROM_CLIENT || direction == MERGED) {
+    auto fqdn = getFqdn();
+    if (fqdn == "Total") {
+        switch (field) {
+        case Field::FQDN: return getFqdn();
+        default:
+                          break;
+        }
+    } else if (direction == FROM_CLIENT || direction == MERGED) {
         switch (field) {
             case Field::FQDN: return getFqdn();
             case Field::IP: return getSrvIp();
             case Field::PORT: return std::to_string(getSrvPort());
             case Field::DOMAIN: return domain;
             case Field::TLS_VERSION: return tlsVersion._to_string();
+            case Field::CIPHER_SUITE: {
+                if (!sslCipherSuite) {
+                    return "Unknown";
+                }
+                return sslCipherSuite->_to_string();
+            }
 
             case Field::CONN: return prettyFormatNumber(totalConnections);
             case Field::CONN_RATE: return prettyFormatNumber(numConnections);
@@ -33,12 +46,14 @@ void AggregatedSslFlow::resetFlow(bool resetTotal)
     }
 }
 
-auto AggregatedSslFlow::addConnection(int delta, TLSVersion tlsVers) -> void
+auto AggregatedSslFlow::setTlsVersion(TLSVersion tlsVers) -> void
+{
+    tlsVersion = tlsVers;
+}
+
+auto AggregatedSslFlow::addConnection(int delta) -> void
 {
     connections.addPoint(delta);
-    if (tlsVersion == +TLSVersion::UNKNOWN) {
-        tlsVersion = tlsVers;
-    }
     numConnections++;
     totalConnections++;
 }

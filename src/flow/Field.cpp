@@ -67,6 +67,8 @@ auto fieldToHeader(Field field) -> char const*
         return "Proto";
     case Field::TLS_VERSION:
         return "TLS Version";
+    case Field::CIPHER_SUITE:
+        return "Cipher Suite";
     case Field::RCRD_AVG:
         return "Rcrd avg";
     case Field::TOP_CLIENT_IPS:

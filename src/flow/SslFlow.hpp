@@ -29,7 +29,6 @@ private:
             Cursor* cursor);
 
     std::vector<AggregatedSslFlow*> aggregatedFlows;
-    std::string domain = "";
     TLSVersion tlsVersion = TLSVersion::UNKNOWN;
     timeval startHandshake = {};
     bool connectionEstablished = false;

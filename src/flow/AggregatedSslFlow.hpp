@@ -16,8 +16,10 @@ public:
 
     auto getFieldStr(Field field, Direction direction, int duration) const -> std::string override;
     auto resetFlow(bool resetTotal) -> void override;
+    auto setTlsVersion(TLSVersion tlsVers) -> void;
     auto setDomain(std::string _domain) -> void { domain = std::move(_domain); }
-    auto addConnection(int delta, TLSVersion tlsVers) -> void;
+    auto setSslCipherSuite(SSLCipherSuite _sslCipherSuite) -> void { sslCipherSuite = _sslCipherSuite; }
+    auto addConnection(int delta) -> void;
     auto merge() -> void { connections.merge(); };
 
     [[nodiscard]] auto getDomain() const { return domain; }
@@ -56,5 +58,6 @@ private:
     int totalConnections = 0;
     Percentile connections;
     TLSVersion tlsVersion;
+    std::optional<SSLCipherSuite> sslCipherSuite;
 };
 } // namespace flowstats

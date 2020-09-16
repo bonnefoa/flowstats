@@ -50,7 +50,7 @@ auto getSslDomainFromSni(Cursor* cursor) -> std::optional<std::string>
     return "";
 }
 
-auto getSslDomainFromExtension(Cursor* cursor) -> std::optional<std::string>
+auto TlsHandshake::getSslDomainFromExtension(Cursor* cursor) -> std::optional<std::string>
 {
     auto length = cursor->readUint16();
     int initialSize = cursor->remainingBytes();
@@ -121,7 +121,8 @@ auto TlsHandshake::parse(Cursor *cursor) -> std::optional<TlsHandshake> {
 
 TlsHandshake::TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSVersion version, Cursor *cursor) : handshakeType(handshakeType), length(length), version(version) {
 
-    if (handshakeType == +SSLHandshakeType::SSL_CLIENT_HELLO) {
+    if (handshakeType == +SSLHandshakeType::SSL_CLIENT_HELLO
+            || handshakeType == +SSLHandshakeType::SSL_SERVER_HELLO ) {
         // Random
         if (cursor->skip(32) == false) {
             return;
@@ -130,6 +131,9 @@ TlsHandshake::TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSV
         if (cursor->skip(sessionIdLength) == false) {
             return;
         };
+    }
+
+    if (handshakeType == +SSLHandshakeType::SSL_CLIENT_HELLO) {
         auto cipherSuiteLength = cursor->readUint16();
         if (cursor->skip(cipherSuiteLength) == false) {
             return;
@@ -142,6 +146,13 @@ TlsHandshake::TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSV
         auto extractedDomain = getSslDomainFromExtension(cursor);
         if (extractedDomain.value_or("") != "") {
             domain = extractedDomain.value();
+        }
+    } else if (handshakeType == +SSLHandshakeType::SSL_SERVER_HELLO) {
+        auto mbCipherSuite = cursor->readUint16();
+        if (!mbCipherSuite) return;
+        auto mbSslCipherSuite = SSLCipherSuite::_from_integral_nothrow(mbCipherSuite.value());
+        if (mbSslCipherSuite) {
+            sslCipherSuite = mbSslCipherSuite.value();
         }
     }
 };
