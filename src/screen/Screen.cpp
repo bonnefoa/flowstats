@@ -69,12 +69,7 @@ auto Screen::updateDisplay(timeval tv, bool updateOutput,
     updateResizeWin();
     updateMenu();
 
-    if (shouldFreeze == true) {
-        refreshPads();
-        return;
-    }
-
-    if (updateOutput) {
+    if (!shouldFreeze && updateOutput) {
         collectorOutput = activeCollector->outputStatus(tv.tv_sec - firstTv.tv_sec);
     }
 
@@ -166,8 +161,12 @@ auto Screen::updateSortSelection() -> void
 auto Screen::updateStatus(std::optional<CaptureStat> const& captureStat) -> void
 {
     werase(statusWin);
-    waddstr(statusWin, fmt::format("Running time: {}s, Filter: \"{}\", selected line {}\n", lastTv.tv_sec - firstTv.tv_sec,
-                displayConf->getFilter(), selectedLine).c_str());
+    auto freezeStr = "";
+    if (shouldFreeze) {
+        freezeStr = ", Update freezed";
+    }
+    waddstr(statusWin, fmt::format("Running time: {}s, Filter: \"{}\"{}\n", lastTv.tv_sec - firstTv.tv_sec,
+                displayConf->getFilter(), freezeStr).c_str());
 
     if (captureStat.has_value()) {
         stagingCaptureStat = captureStat.value();
@@ -227,39 +226,69 @@ auto Screen::updateMenu() -> void
     werase(bottomWin);
 
     if (editMode == FILTER || editMode == SORT || editMode == RESIZE) {
-        waddstr(bottomWin, "Enter: ");
+        waddstr(bottomWin, "Enter");
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
-        waddstr(bottomWin, fmt::format("{:<6}", "Done").c_str());
+        waddstr(bottomWin, fmt::format("{:<8}", "Done").c_str());
         wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
 
-        waddstr(bottomWin, "Esc: ");
+        waddstr(bottomWin, "Esc");
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
-        waddstr(bottomWin, fmt::format("{:<6}", "Clear").c_str());
+        waddstr(bottomWin, fmt::format("{:<8}", "Clear").c_str());
         wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
-
-        waddstr(bottomWin, " ");
     } else {
-        waddstr(bottomWin, "F4 ");
+        waddstr(bottomWin, "F4");
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
         waddstr(bottomWin, fmt::format("{:<8}", "Filter").c_str());
         wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
 
-        waddstr(bottomWin, "R ");
+        waddstr(bottomWin, "r");
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
         waddstr(bottomWin, fmt::format("{:<8}", "Resize").c_str());
         wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
 
-        waddstr(bottomWin, "M ");
+        waddstr(bottomWin, "f");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<8}", "Freeze").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
+
+        waddstr(bottomWin, "m");
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
         waddstr(bottomWin, fmt::format("{:<10}", "Merge C/S").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
+
+        waddstr(bottomWin, ">");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<8}", "Sort asc").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
+
+        waddstr(bottomWin, "<");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<8}", "Sort desc").c_str());
         wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
     }
 
     if (editMode == FILTER) {
+        waddstr(bottomWin, " ");
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
         waddstr(bottomWin, fmt::format("Filter: {}", displayConf->getFilter()).c_str());
         wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
     }
+
+    if (editMode == RESIZE) {
+        waddstr(bottomWin, "+");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<8}", "Increase").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
+
+        waddstr(bottomWin, "-");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<8}", "Decrease").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
+    }
+
+    wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+    waddstr(bottomWin, std::string(DEFAULT_COLUMNS, ' ').c_str());
+    wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
 }
 
 auto Screen::getActiveCollector() -> Collector*
