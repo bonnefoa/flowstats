@@ -52,6 +52,27 @@ public:
         return aCast->connections.getPercentile(.99) < bCast->connections.getPercentile(.99);
     }
 
+    [[nodiscard]] static auto sortByDomain(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        return aCast->domain < bCast->domain;
+    }
+
+    [[nodiscard]] static auto sortByCipherSuite(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        return aCast->sslCipherSuite < bCast->sslCipherSuite;
+    }
+
+    [[nodiscard]] static auto sortByTlsVersion(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        return aCast->tlsVersion < bCast->tlsVersion;
+    }
+
 private:
     std::string domain;
     int numConnections = 0;

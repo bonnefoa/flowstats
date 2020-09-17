@@ -113,6 +113,12 @@ auto SslStatsCollector::getSortFun(Field field) const -> sortFlowFun
         return AggregatedSslFlow::sortByConnections;
     case Field::CONN_RATE:
         return AggregatedSslFlow::sortByConnectionRate;
+    case Field::DOMAIN:
+        return AggregatedSslFlow::sortByDomain;
+    case Field::CIPHER_SUITE:
+        return AggregatedSslFlow::sortByCipherSuite;
+    case Field::TLS_VERSION:
+        return AggregatedSslFlow::sortByTlsVersion;
     case Field::CT_P95:
         return AggregatedSslFlow::sortByConnectionP95;
     case Field::CT_P99:
