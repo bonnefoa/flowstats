@@ -36,16 +36,15 @@ auto AggregatedDnsFlow::getFieldStr(Field field, Direction direction, int durati
 {
     auto fqdn = getFqdn();
     if (fqdn == "Total") {
-        if (direction == FROM_SERVER) {
-            return "";
-        }
-        switch (field) {
-            case Field::IP: return "-";
-            case Field::PORT: return "-";
-            case Field::PROTO: return "-";
-            case Field::TYPE: return "-";
-            case Field::RCRD_AVG: return "-";
-            default: break;
+        if (direction == FROM_CLIENT || direction == MERGED) {
+            switch (field) {
+                case Field::IP: return "-";
+                case Field::PORT: return "-";
+                case Field::PROTO: return "-";
+                case Field::TYPE: return "-";
+                case Field::RCRD_AVG: return "-";
+                default: break;
+            }
         }
     }
 
