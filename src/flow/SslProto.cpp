@@ -5,19 +5,14 @@ namespace flowstats {
 #define SSL_SERVER_NAME_EXT 0
 #define SSL_SNI_HOST_NAME 0
 
-#define RETURN_FALSE_IF_EMPTY(VAR)    \
-    if (! VAR ) { \
-        return false;                 \
-    }
-
 #define RETURN_EMPTY_IF_EMPTY(VAR)    \
-    if (! VAR) { \
+    if (!VAR ) { \
         return {};                    \
     }
 
 auto parseTlsVersion(Cursor *cursor) -> std::optional<TLSVersion>
 {
-    auto mbVersionInt = cursor->readUint16();
+    auto mbVersionInt = cursor->read_be<uint16_t>();
     RETURN_EMPTY_IF_EMPTY(mbVersionInt);
     auto mbVersion = TLSVersion::_from_integral_nothrow(mbVersionInt.value());
     RETURN_EMPTY_IF_EMPTY(mbVersion);
@@ -26,10 +21,10 @@ auto parseTlsVersion(Cursor *cursor) -> std::optional<TLSVersion>
 
 auto getSslDomainFromSni(Cursor* cursor) -> std::optional<std::string>
 {
-    auto listLength = cursor->readUint16();
+    auto listLength = cursor->read_be<uint16_t>();
     RETURN_EMPTY_IF_EMPTY(listLength);
 
-    auto listType = cursor->readUint8();
+    auto listType = cursor->read<uint8_t>();
     RETURN_EMPTY_IF_EMPTY(listType);
 
     if (listType != SSL_SNI_HOST_NAME) {
@@ -41,7 +36,7 @@ auto getSslDomainFromSni(Cursor* cursor) -> std::optional<std::string>
 
     int initialReadListSize = cursor->remainingBytes();
     while ((initialReadListSize - cursor->remainingBytes()) < listLength) {
-        auto serverNameLength = cursor->readUint16();
+        auto serverNameLength = cursor->read_be<uint16_t>();
         if (serverNameLength.has_value() == false) {
             return {};
         }
@@ -52,13 +47,13 @@ auto getSslDomainFromSni(Cursor* cursor) -> std::optional<std::string>
 
 auto TlsHandshake::getSslDomainFromExtension(Cursor* cursor) -> std::optional<std::string>
 {
-    auto length = cursor->readUint16();
+    auto length = cursor->read_be<uint16_t>();
     int initialSize = cursor->remainingBytes();
     while ((initialSize - cursor->remainingBytes()) < length) {
-        auto extensionType = cursor->readUint16();
+        auto extensionType = cursor->read_be<uint16_t>();
         RETURN_EMPTY_IF_EMPTY(extensionType);
 
-        auto extensionLength = cursor->readUint16();
+        auto extensionLength = cursor->read_be<uint16_t>();
         RETURN_EMPTY_IF_EMPTY(extensionLength);
         if (extensionType != SSL_SERVER_NAME_EXT) {
             if (cursor->skip(extensionLength.value()) == false) {
@@ -73,7 +68,7 @@ auto TlsHandshake::getSslDomainFromExtension(Cursor* cursor) -> std::optional<st
 
 auto checkSslChangeCipherSpec(Cursor* cursor) -> bool
 {
-    auto message = cursor->readUint8();
+    auto message = cursor->read<uint8_t>();
     if (message != 1) {
         return false;
     }
@@ -81,7 +76,7 @@ auto checkSslChangeCipherSpec(Cursor* cursor) -> bool
 }
 
 auto TlsHeader::parse(Cursor *cursor) -> std::optional<TlsHeader> {
-    auto mbContentTypeInt = cursor->readUint8();
+    auto mbContentTypeInt = cursor->read<uint8_t>();
     RETURN_EMPTY_IF_EMPTY(mbContentTypeInt);
     auto mbContentType = SSLContentType::_from_integral_nothrow(mbContentTypeInt.value());
     RETURN_EMPTY_IF_EMPTY(mbContentType);
@@ -89,7 +84,7 @@ auto TlsHeader::parse(Cursor *cursor) -> std::optional<TlsHeader> {
     auto mbVersion = parseTlsVersion(cursor);
     RETURN_EMPTY_IF_EMPTY(mbVersion);
 
-    auto mbLengthInt = cursor->readUint16();
+    auto mbLengthInt = cursor->read_be<uint16_t>();
     RETURN_EMPTY_IF_EMPTY(mbLengthInt);
     auto length = mbLengthInt.value();
     if (cursor->remainingBytes() < length) {
@@ -99,7 +94,7 @@ auto TlsHeader::parse(Cursor *cursor) -> std::optional<TlsHeader> {
 }
 
 auto TlsHandshake::parse(Cursor *cursor) -> std::optional<TlsHandshake> {
-    auto mbHandshakeTypeInt = cursor->readUint8();
+    auto mbHandshakeTypeInt = cursor->read<uint8_t>();
     RETURN_EMPTY_IF_EMPTY(mbHandshakeTypeInt);
     auto mbHandshakeType = SSLHandshakeType::_from_integral_nothrow(mbHandshakeTypeInt.value());
     RETURN_EMPTY_IF_EMPTY(mbHandshakeType);
@@ -127,18 +122,19 @@ TlsHandshake::TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSV
         if (cursor->skip(32) == false) {
             return;
         };
-        auto sessionIdLength = cursor->readUint8();
+        auto sessionIdLength = cursor->read<uint8_t>();
         if (cursor->skip(sessionIdLength) == false) {
             return;
         };
     }
 
     if (handshakeType == +SSLHandshakeType::SSL_CLIENT_HELLO) {
-        auto cipherSuiteLength = cursor->readUint16();
+        auto cipherSuiteLength = cursor->read_be<uint16_t>();
         if (cursor->skip(cipherSuiteLength) == false) {
             return;
         };
-        auto compressionMethodLength = cursor->readUint8();
+
+        auto compressionMethodLength = cursor->read<uint8_t>();
         if (cursor->skip(compressionMethodLength) == false) {
             return;
         }
@@ -148,7 +144,7 @@ TlsHandshake::TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSV
             domain = extractedDomain.value();
         }
     } else if (handshakeType == +SSLHandshakeType::SSL_SERVER_HELLO) {
-        auto mbCipherSuite = cursor->readUint16();
+        auto mbCipherSuite = cursor->read_be<uint16_t>();
         if (!mbCipherSuite) return;
         auto mbSslCipherSuite = SSLCipherSuite::_from_integral_nothrow(mbCipherSuite.value());
         if (mbSslCipherSuite) {

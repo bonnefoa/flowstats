@@ -2,6 +2,7 @@
 #include "SslProto.hpp"
 #include <fmt/format.h>
 #include <tins/rawpdu.h>
+#include <tins/memory_helpers.h>
 
 namespace flowstats {
 

@@ -21,24 +21,6 @@ auto Cursor::checkSize(uint32_t size) -> bool
     return true;
 }
 
-auto Cursor::readUint8() -> std::optional<uint8_t>
-{
-    if (checkSize(1) == false) {
-        return {};
-    };
-    return payload[index++];
-}
-
-auto Cursor::readUint16() -> std::optional<uint16_t>
-{
-    if (checkSize(2) == false) {
-        return {};
-    }
-    auto res = (payload[index] << 8) + (payload[index + 1]);
-    index += 2;
-    return res;
-}
-
 auto Cursor::readUint24() -> std::optional<uint32_t>
 {
     if (checkSize(3) == false) {
@@ -46,17 +28,6 @@ auto Cursor::readUint24() -> std::optional<uint32_t>
     }
     auto res = (payload[index] << 16) + (payload[index + 1] << 8) + (payload[index + 2]);
     index += 3;
-    return res;
-}
-
-auto Cursor::readUint32() -> std::optional<uint32_t>
-{
-    if (checkSize(4) == false) {
-        return {};
-    }
-    auto res = (payload[index] << 24) + (payload[index + 1] << 16) + (payload[index + 2] << 8) + (payload[index + 3] << 0);
-
-    index += 4;
     return res;
 }
 
@@ -88,26 +59,6 @@ auto Cursor::skip(int n) -> bool
     }
     index += n;
     return true;
-}
-
-auto Cursor::skipUint8() -> bool
-{
-    return skip(1);
-}
-
-auto Cursor::skipUint16() -> bool
-{
-    return skip(2);
-}
-
-auto Cursor::skipUint24() -> bool
-{
-    return skip(3);
-}
-
-auto Cursor::skipUint32() -> bool
-{
-    return skip(4);
 }
 
 auto getPorts(Tins::TCP const* tcp, Tins::UDP const* udp) -> std::array<int, 2>

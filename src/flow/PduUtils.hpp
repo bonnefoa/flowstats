@@ -1,5 +1,6 @@
 #pragma once
 
+#include <tins/endianness.h>
 #include <tins/ip.h>
 #include <tins/ipv6.h>
 #include <tins/tcp.h>
@@ -19,18 +20,36 @@ public:
 
     auto remainingBytes() -> uint32_t { return payload.size() - index; };
 
-    [[nodiscard]] auto readUint8() -> std::optional<uint8_t>;
-    [[nodiscard]] auto readUint16() -> std::optional<uint16_t>;
+    template <typename T>
+    [[nodiscard]] auto read() -> std::optional<T>
+    {
+        T value;
+        auto sizeValue = sizeof(value);
+        if (!checkSize(sizeValue)) {
+            return {};
+        }
+        std::memcpy(&value, &payload[index], sizeValue);
+        if (!skip(sizeValue)) {
+            return {};
+        };
+        return value;
+    }
+
+    template <typename T>
+    [[nodiscard]] auto read_be() -> std::optional<T>
+    {
+        auto res = read<T>();
+        if (!res) {
+            return {};
+        };
+        return Tins::Endian::be_to_host(*res);
+    }
+
     [[nodiscard]] auto readUint24() -> std::optional<uint32_t>;
-    [[nodiscard]] auto readUint32() -> std::optional<uint32_t>;
     [[nodiscard]] auto readString(int n) -> std::optional<std::string>;
 
     [[nodiscard]] auto skip(std::optional<int> n) -> bool;
     [[nodiscard]] auto skip(int n) -> bool;
-    [[nodiscard]] auto skipUint8() -> bool;
-    [[nodiscard]] auto skipUint16() -> bool;
-    [[nodiscard]] auto skipUint24() -> bool;
-    [[nodiscard]] auto skipUint32() -> bool;
     [[nodiscard]] auto checkSize(uint32_t size) -> bool;
 
 private:
