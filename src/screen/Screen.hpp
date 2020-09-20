@@ -46,6 +46,7 @@ private:
     auto updateMenu() -> void;
     auto updateSortSelection() -> void;
     auto updateResizeWin() -> void;
+    auto updateRateMode() -> void;
 
     auto isEsc(char c) -> bool;
 
@@ -87,6 +88,7 @@ private:
         NONE,
         FILTER,
         RESIZE,
+        RATE_MODE,
         SORT
     } editMode = NONE;
     bool reversedSort = false;

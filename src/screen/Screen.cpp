@@ -12,6 +12,7 @@
 #define KEY_INF 60
 #define KEY_SUP 62
 #define KEY_B 98
+#define KEY_D 100
 #define KEY_LETTER_F 102
 #define KEY_M 109
 #define KEY_P 112
@@ -65,8 +66,14 @@ auto Screen::updateDisplay(timeval tv, bool updateOutput,
 
     const std::lock_guard<std::mutex> lock(screenMutex);
     updateStatus(captureStat);
-    updateSortSelection();
-    updateResizeWin();
+
+    if (editMode == SORT) {
+        updateSortSelection();
+    } else if (editMode == RESIZE) {
+        updateResizeWin();
+    } else if (editMode == RATE_MODE) {
+        updateRateMode();
+    }
     updateMenu();
 
     if (!shouldFreeze && updateOutput) {
@@ -104,9 +111,6 @@ auto Screen::updateBody() -> void
 
 auto Screen::updateResizeWin() -> void
 {
-    if (editMode != RESIZE) {
-        return;
-    }
     werase(leftWin);
     wattron(leftWin, COLOR_PAIR(KEY_HEADER_COLOR));
     waddstr(leftWin, fmt::format("{:<{}}", "Field Size", LEFT_WIN_COLUMNS - 1).c_str());
@@ -128,15 +132,10 @@ auto Screen::updateResizeWin() -> void
         i++;
         waddstr(leftWin, "\n");
     }
-
-
 }
 
 auto Screen::updateSortSelection() -> void
 {
-    if (editMode != SORT) {
-        return;
-    }
     werase(leftWin);
     wattron(leftWin, COLOR_PAIR(KEY_HEADER_COLOR));
     waddstr(leftWin, fmt::format("{:<{}}", "Sort by", LEFT_WIN_COLUMNS - 1).c_str());
@@ -157,6 +156,28 @@ auto Screen::updateSortSelection() -> void
         waddstr(leftWin, "\n");
     }
 }
+
+auto Screen::updateRateMode() -> void
+{
+    werase(leftWin);
+    wattron(leftWin, COLOR_PAIR(KEY_HEADER_COLOR));
+    waddstr(leftWin, fmt::format("{:<{}}", "Rate Mode", LEFT_WIN_COLUMNS - 1).c_str());
+    wattroff(leftWin, COLOR_PAIR(KEY_HEADER_COLOR));
+    waddstr(leftWin, " ");
+
+    for (auto rateMode : RateMode::_values()){
+        auto currentRateMode = displayConf->getRateMode();
+        if (rateMode == currentRateMode) {
+            wattron(leftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+        }
+        waddstr(leftWin, fmt::format("{:<{}}", rateMode._to_string(), LEFT_WIN_COLUMNS - 1).c_str());
+        if (rateMode == currentRateMode) {
+            wattroff(leftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+        }
+        waddstr(leftWin, "\n");
+    }
+}
+
 
 auto Screen::updateStatus(std::optional<CaptureStat> const& captureStat) -> void
 {
@@ -225,7 +246,7 @@ auto Screen::updateMenu() -> void
 {
     werase(bottomWin);
 
-    if (editMode == FILTER || editMode == SORT || editMode == RESIZE) {
+    if (editMode == FILTER || editMode == SORT || editMode == RESIZE || editMode == RATE_MODE) {
         waddstr(bottomWin, "Enter");
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
         waddstr(bottomWin, fmt::format("{:<8}", "Done").c_str());
@@ -254,6 +275,11 @@ auto Screen::updateMenu() -> void
         waddstr(bottomWin, "m");
         wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
         waddstr(bottomWin, fmt::format("{:<10}", "Merge C/S").c_str());
+        wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
+
+        waddstr(bottomWin, "d");
+        wattron(bottomWin, COLOR_PAIR(MENU_COLOR));
+        waddstr(bottomWin, fmt::format("{:<10}", "Rate Mode").c_str());
         wattroff(bottomWin, COLOR_PAIR(MENU_COLOR));
 
         waddstr(bottomWin, ">");
@@ -377,7 +403,7 @@ auto Screen::refreshPads() -> void
     wnoutrefresh(statusWin);
 
     int deltaValues = 0;
-    if (editMode == SORT || editMode == RESIZE) {
+    if (editMode == SORT || editMode == RESIZE || editMode == RATE_MODE) {
         deltaValues = LEFT_WIN_COLUMNS;
         wnoutrefresh(leftWin);
     }
@@ -418,6 +444,16 @@ auto Screen::refreshableAction(int c) -> bool
             return false;
         }
         return true;
+    }
+
+    if (editMode == RATE_MODE) {
+        if (c == KEY_DOWN) {
+            displayConf->nextRateMode();
+            return true;
+        } else if (c == KEY_UP) {
+            displayConf->previousRateMode();
+            return true;
+        }
     }
 
     if (editMode == RESIZE) {
@@ -470,6 +506,9 @@ auto Screen::refreshableAction(int c) -> bool
         return true;
     } else if (c == KEY_R) {
         editMode = RESIZE;
+        return true;
+    } else if (c == KEY_D) {
+        editMode = RATE_MODE;
         return true;
     } else if (c == KEY_M) {
         displayConf->toggleMergedDirection();

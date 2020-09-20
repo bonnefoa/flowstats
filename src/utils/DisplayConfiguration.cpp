@@ -44,4 +44,18 @@ auto DisplayConfiguration::updateFieldSize(Field field, int delta) -> void
     fieldSize = std::max(fieldSize + delta, 0);
 }
 
+auto DisplayConfiguration::nextRateMode() -> void
+{
+    auto index = rateMode._to_index();
+    auto nextIndex = std::min(index+1, RateMode::_size());
+    rateMode = RateMode::_from_index(nextIndex);
+};
+
+auto DisplayConfiguration::previousRateMode() -> void
+{
+    auto index = rateMode._to_index();
+    auto nextIndex = std::max(size_t(0), index-1);
+    rateMode = RateMode::_from_index(nextIndex);
+}
+
 } // namespace flowstats
