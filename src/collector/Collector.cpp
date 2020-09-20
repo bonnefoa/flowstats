@@ -121,7 +121,6 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
         tempVector.push_back(pair.second);
     }
 
-
     SPDLOG_INFO("Got {} {} flows", tempVector.size(), toString());
     // TODO Merge percentiles?
     auto sortFun = getSortFun(selectedSortField);

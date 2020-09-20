@@ -6,6 +6,11 @@ namespace flowstats {
 #define IP_SIZE 16
 #define LEFT_ALIGN(size) "{:<" STR(size) "." STR(size) "} "
 
+BETTER_ENUM(RateMode, uint8_t,
+    IMMEDIATE,
+    AVG,
+    TOTAL);
+
 BETTER_ENUM(Field, char,
     DIR,
     DOMAIN,
@@ -67,5 +72,6 @@ BETTER_ENUM(Field, char,
 
 auto fieldToSortable(Field field) -> bool;
 auto fieldToHeader(Field field) -> char const*;
+auto fieldWithRateMode(RateMode rateMode, Field field) -> Field;
 
 } // namespace flowstats

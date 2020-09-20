@@ -6,7 +6,7 @@ DisplayConfiguration::DisplayConfiguration()
 {
     fieldToSize.resize(Field::_size());
     for (size_t i = 0; i < Field::_size(); ++i) {
-        fieldToSize[i] = 8;
+        fieldToSize[i] = 12;
     }
     fieldToSize[Field::FQDN] = 42;
 
@@ -17,7 +17,7 @@ DisplayConfiguration::DisplayConfiguration()
     fieldToSize[Field::DOMAIN] = 34;
     fieldToSize[Field::CIPHER_SUITE] = 38;
 
-    fieldToSize[Field::BYTES] = 10;
+    fieldToSize[Field::BYTES] = 12;
 
     fieldToSize[Field::TOP_CLIENT_IPS] = 60;
 

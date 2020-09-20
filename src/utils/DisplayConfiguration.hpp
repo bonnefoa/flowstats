@@ -5,11 +5,6 @@
 #include <string>
 #include <vector>
 
-BETTER_ENUM(RateMode, uint8_t,
-    IMMEDIATE,
-    AVG,
-    TOTAL);
-
 namespace flowstats {
 
 class DisplayConfiguration {

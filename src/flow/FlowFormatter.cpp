@@ -9,7 +9,8 @@ auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accum
 {
     if (displayConf.getMergeDirection()) {
         fmt::memory_buffer mergedBuf;
-        for (auto const& field : displayFields) {
+        for (auto const& displayField : displayFields) {
+            auto field = fieldWithRateMode(displayConf.getRateMode(), displayField);
             if (displayConf.isFieldHidden(field)) {
                 continue;
             }
@@ -22,7 +23,8 @@ auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accum
 
     fmt::memory_buffer clientBuf;
     fmt::memory_buffer serverBuf;
-    for (auto const& field : displayFields) {
+    for (auto const& displayField : displayFields) {
+        auto field = fieldWithRateMode(displayConf.getRateMode(), displayField);
         if (displayConf.isFieldHidden(field)) {
             continue;
         }
@@ -47,7 +49,8 @@ auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const
 {
     fmt::memory_buffer headersBuf;
     auto fieldToSize = displayConf.getFieldToSize();
-    for (auto const& field : displayFields) {
+    for (auto const& displayField : displayFields) {
+        auto field = fieldWithRateMode(displayConf.getRateMode(), displayField);
         if (displayConf.isFieldHidden(field)) {
             continue;
         }

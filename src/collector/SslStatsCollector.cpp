@@ -18,8 +18,8 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, Display
     }
 
     setDisplayPairs({
-        DisplayPair(DisplayConnections, { Field::CONN, Field::CONN_RATE, Field::DOMAIN, Field::TLS_VERSION, Field::CIPHER_SUITE, Field::CT_P95, Field::CT_P99 }),
-        DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::PKTS_AVG, Field::BYTES, Field::BYTES_RATE, Field::BYTES_AVG }),
+        DisplayPair(DisplayConnections, { Field::CONN, Field::DOMAIN, Field::TLS_VERSION, Field::CIPHER_SUITE, Field::CT_P95, Field::CT_P99 }),
+        DisplayPair(DisplayTraffic, { Field::PKTS, Field::BYTES }),
     });
     setTotalFlow(new AggregatedSslFlow());
     updateDisplayType(0);
