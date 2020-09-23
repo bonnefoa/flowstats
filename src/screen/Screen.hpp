@@ -42,7 +42,8 @@ private:
     auto refreshableAction(int c) -> bool;
     auto updateHeaders() -> void;
     auto updateBody() -> void;
-    auto updateStatus(std::optional<CaptureStat> const& captureStat) -> void;
+    auto updateLeftStatus(std::optional<CaptureStat> const& captureStat) -> void;
+    auto updateRightStatus() -> void;
     auto updateMenu() -> void;
     auto updateSortSelection() -> void;
     auto updateResizeWin() -> void;
@@ -53,7 +54,8 @@ private:
     WINDOW* headerWin = nullptr;
     WINDOW* bodyWin = nullptr;
 
-    WINDOW* statusWin = nullptr;
+    WINDOW* statusLeftWin = nullptr;
+    WINDOW* statusRightWin = nullptr;
     WINDOW* bottomWin = nullptr;
 
     WINDOW* leftWin = nullptr;

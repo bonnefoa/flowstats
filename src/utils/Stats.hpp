@@ -46,14 +46,14 @@ public:
             rateDrop = drop - previousStat->drop;
             rateIfDrop = ifDrop - previousStat->ifDrop;
         }
-        auto rate = fmt::format("Packets recv:   {:>6}/s, drop: {:>4}/s, ifDrop: {:>4}/s\n",
+        auto rate = fmt::format("Packets recv:   {:>6}/s, drop: {:>6}/s, ifDrop: {:>6}/s\n",
             rateRecv, rateDrop, rateIfDrop);
         return rate;
     }
 
     [[nodiscard]] auto getTotal()
     {
-        auto stats = fmt::format("Packets recv: {:>8}, drop: {:>6}, ifDrop: {:>6}\n",
+        auto stats = fmt::format("Packets recv: {:>8},   drop: {:>6},   ifDrop: {:>6}\n",
             recv, drop, ifDrop);
         return stats;
     }

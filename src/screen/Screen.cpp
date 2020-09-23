@@ -65,7 +65,8 @@ auto Screen::updateDisplay(timeval tv, bool updateOutput,
     lastTv = tv;
 
     const std::lock_guard<std::mutex> lock(screenMutex);
-    updateStatus(captureStat);
+    updateLeftStatus(captureStat);
+    updateRightStatus();
 
     if (editMode == SORT) {
         updateSortSelection();
@@ -179,16 +180,15 @@ auto Screen::updateRateMode() -> void
 }
 
 
-auto Screen::updateStatus(std::optional<CaptureStat> const& captureStat) -> void
+auto Screen::updateLeftStatus(std::optional<CaptureStat> const& captureStat) -> void
 {
-    werase(statusWin);
+    werase(statusLeftWin);
     auto freezeStr = "";
     if (shouldFreeze) {
         freezeStr = ", Update freezed";
     }
-    waddstr(statusWin, fmt::format("Running time: {}s, RateMode: {}, Filter: \"{}\"{}\n", lastTv.tv_sec - firstTv.tv_sec,
-                rateModeToDescription(displayConf->getRateMode()),
-                displayConf->getFilter(), freezeStr).c_str());
+    waddstr(statusLeftWin, fmt::format("Running time: {}s{}\n", lastTv.tv_sec - firstTv.tv_sec,
+                freezeStr).c_str());
 
     if (captureStat.has_value()) {
         stagingCaptureStat = captureStat.value();
@@ -202,36 +202,43 @@ auto Screen::updateStatus(std::optional<CaptureStat> const& captureStat) -> void
         lastCaptureStatUpdate = lastTv;
     }
 
-    waddstr(statusWin, currentCaptureStat.getTotal().c_str());
-    waddstr(statusWin, currentCaptureStat.getRate(previousCaptureStat).c_str());
+    waddstr(statusLeftWin, currentCaptureStat.getTotal().c_str());
+    waddstr(statusLeftWin, currentCaptureStat.getRate(previousCaptureStat).c_str());
 
-    waddstr(statusWin, fmt::format("{:<10} ", "Protocol:").c_str());
+    waddstr(statusLeftWin, fmt::format("{:<10} ", "Protocol:").c_str());
     for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
         auto proto = protocols[i];
         if (selectedProtocolIndex == i) {
-            wattron(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
+            wattron(statusLeftWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }
-        waddstr(statusWin, fmt::format("{}: {:<10} ", i + 1, proto._to_string()).c_str());
+        waddstr(statusLeftWin, fmt::format("{}: {:<10} ", i + 1, proto._to_string()).c_str());
         if (selectedProtocolIndex == i) {
-            wattroff(statusWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
+            wattroff(statusLeftWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }
     }
-    waddstr(statusWin, "\n");
+    waddstr(statusLeftWin, "\n");
 
-    waddstr(statusWin, fmt::format("{:<10} ", "Display:").c_str());
+    waddstr(statusLeftWin, fmt::format("{:<10} ", "Display:").c_str());
     int i = 0;
     int displayIndex = protocolToDisplayIndex[selectedProtocolIndex];
     for (const auto& displayPair : activeCollector->getDisplayPairs()) {
         if (i == displayIndex) {
-            wattron(statusWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+            wattron(statusLeftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
-        waddstr(statusWin, fmt::format("{:<14}", displayTypeToString(displayPair.first)).c_str());
+        waddstr(statusLeftWin, fmt::format("{:<14}", displayTypeToString(displayPair.first)).c_str());
         if (i == displayIndex) {
-            wattroff(statusWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+            wattroff(statusLeftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
         i++;
     }
-    waddstr(statusWin, "\n");
+    waddstr(statusLeftWin, "\n");
+}
+
+auto Screen::updateRightStatus() -> void {
+    werase(statusRightWin);
+    waddstr(statusRightWin, fmt::format("RateMode: {}\n", rateModeToDescription(displayConf->getRateMode())).c_str());
+    waddstr(statusRightWin, fmt::format("Filter: \"{}\"\n", displayConf->getFilter()).c_str());
+
 }
 
 auto Screen::updateHeaders() -> void
@@ -375,7 +382,8 @@ Screen::Screen(std::atomic_bool* shouldStop,
     headerWin = newpad(HEADER_LINES + STATUS_LINES, DEFAULT_COLUMNS);
     bodyWin = newpad(BODY_LINES, DEFAULT_COLUMNS);
 
-    statusWin = newwin(STATUS_LINES, DEFAULT_COLUMNS, 0, 0);
+    statusLeftWin = newwin(STATUS_LINES, COLS / 2, 0, 0);
+    statusRightWin = newwin(STATUS_LINES, COLS / 2, 0, COLS / 2);
     leftWin = newwin(SORT_LINES, LEFT_WIN_COLUMNS, STATUS_LINES, 0);
     bottomWin = newwin(BOTTOM_LINES, DEFAULT_COLUMNS, LINES - 1, 0);
 
@@ -401,7 +409,8 @@ auto Screen::refreshPads() -> void
     if (noDisplay) {
         return;
     }
-    wnoutrefresh(statusWin);
+    wnoutrefresh(statusLeftWin);
+    wnoutrefresh(statusRightWin);
 
     int deltaValues = 0;
     if (editMode == SORT || editMode == RESIZE || editMode == RATE_MODE) {
@@ -623,7 +632,8 @@ Screen::~Screen()
     delwin(headerWin);
     delwin(bodyWin);
     delwin(leftWin);
-    delwin(statusWin);
+    delwin(statusLeftWin);
+    delwin(statusRightWin);
     delwin(bottomWin);
 }
 
