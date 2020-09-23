@@ -72,7 +72,9 @@ void SslFlow::processHandshake(Tins::Packet const& packet,
         }
     } else if (tlsHandshake.handshakeType == +SSLHandshakeType::SSL_SERVER_HELLO) {
         for (auto* aggregatedSslFlow : aggregatedFlows) {
-            aggregatedSslFlow->setSslCipherSuite(tlsHandshake.sslCipherSuite);
+            if (tlsHandshake.sslCipherSuite) {
+                aggregatedSslFlow->setSslCipherSuite(tlsHandshake.sslCipherSuite);
+            }
         }
     }
 }
