@@ -66,7 +66,7 @@ struct AggregatedTcpFlow : Flow {
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
-        return aCast->totalSrts < bCast->totalSrts;
+        return aCast->totalNumSrts < bCast->totalNumSrts;
     }
 
     [[nodiscard]] static auto sortByRequestRate(Flow const* a, Flow const* b) -> bool
@@ -178,21 +178,21 @@ struct AggregatedTcpFlow : Flow {
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
-        return aCast->connections.getPercentile(0.95) < bCast->connections.getPercentile(0.95);
+        return aCast->connectionTimes.getPercentile(0.95) < bCast->connectionTimes.getPercentile(0.95);
     }
 
     [[nodiscard]] static auto sortByCtP99(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
-        return aCast->connections.getPercentile(0.99) < bCast->connections.getPercentile(0.99);
+        return aCast->connectionTimes.getPercentile(0.99) < bCast->connectionTimes.getPercentile(0.99);
     }
 
     [[nodiscard]] static auto sortByCtMax(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
-        return aCast->connections.getPercentile(1) < bCast->connections.getPercentile(1);
+        return aCast->connectionTimes.getPercentile(1) < bCast->connectionTimes.getPercentile(1);
     }
 
     [[nodiscard]] static auto sortBySrtP95(Flow const* a, Flow const* b) -> bool
@@ -276,11 +276,15 @@ private:
     int totalConnections = 0;
 
     int numSrts = 0;
-    int totalSrts = 0;
+    int totalNumSrts = 0;
 
-    Percentile connections;
+    Percentile connectionTimes;
     Percentile srts;
     Percentile requestSizes;
+
+    Percentile totalConnectionTimes;
+    Percentile totalSrts;
+    Percentile totalRequestSizes;
 };
 
 } // namespace flowstats

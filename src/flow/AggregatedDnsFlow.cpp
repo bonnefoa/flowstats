@@ -59,11 +59,11 @@ auto AggregatedDnsFlow::getFieldStr(Field field, Direction direction, int durati
 
             case Field::TIMEOUTS: return std::to_string(totalTimeouts);
             case Field::REQ: return prettyFormatNumber(totalQueries);
-            case Field::SRT: return prettyFormatNumber(totalSrt);
+            case Field::SRT: return prettyFormatNumber(totalNumSrt);
 
             case Field::TIMEOUTS_AVG: return prettyFormatNumberAverage(totalTimeouts, duration);
             case Field::REQ_AVG: return prettyFormatNumberAverage(totalQueries, duration);
-            case Field::SRT_AVG: return prettyFormatNumberAverage(totalSrt, duration);
+            case Field::SRT_AVG: return prettyFormatNumberAverage(totalNumSrt, duration);
 
             case Field::TIMEOUTS_RATE: return std::to_string(timeouts);
             case Field::REQ_RATE: return prettyFormatNumber(queries);
@@ -71,6 +71,8 @@ auto AggregatedDnsFlow::getFieldStr(Field field, Direction direction, int durati
 
             case Field::SRT_P95: return srts.getPercentileStr(0.95);
             case Field::SRT_P99: return srts.getPercentileStr(0.99);
+            case Field::SRT_TOTAL_P95: return totalSrts.getPercentileStr(0.95);
+            case Field::SRT_TOTAL_P99: return totalSrts.getPercentileStr(0.99);
             case Field::TRUNC: return std::to_string(totalTruncated);
             case Field::RCRD_AVG: return prettyFormatNumberAverage(totalRecords, totalQueries);
             default:
@@ -99,7 +101,8 @@ auto AggregatedDnsFlow::addFlow(Flow const* flow) -> void
         totalTruncated += dnsFlow->getTruncated();
         totalRecords += dnsFlow->getNumberRecords();
         srts.addPoint(dnsFlow->getDeltaTv());
-        totalSrt++;
+        totalSrts.addPoint(dnsFlow->getDeltaTv());
+        totalNumSrt++;
         numSrt++;
     }
 }
@@ -124,7 +127,8 @@ auto AggregatedDnsFlow::addAggregatedFlow(Flow const* flow) -> void
     totalTruncated += dnsFlow->totalTruncated;
     totalRecords += dnsFlow->totalRecords;
     srts.addPoints(dnsFlow->srts);
-    totalSrt += dnsFlow->totalSrt;
+    totalSrts.addPoints(dnsFlow->srts);
+    totalNumSrt += dnsFlow->totalNumSrt;
     numSrt += dnsFlow->numSrt;
 }
 
@@ -163,12 +167,13 @@ void AggregatedDnsFlow::resetFlow(bool resetTotal)
     numSrt = 0;
 
     if (resetTotal) {
+        totalSrts.reset();
         sourceIps.clear();
         totalQueries = 0;
         totalTimeouts = 0;
         totalTruncated = 0;
         totalRecords = 0;
-        totalSrt = 0;
+        totalNumSrt = 0;
     }
 }
 } // namespace flowstats

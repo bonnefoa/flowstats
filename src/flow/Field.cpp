@@ -42,7 +42,7 @@ auto fieldWithRateMode(RateMode rateMode, Field field) -> Field
             case Field::TIMEOUTS:
                 return Field::TIMEOUTS_RATE;
             default:
-                return field;
+                break;
         }
     } else if (rateMode == +RateMode::AVG) {
         switch (field) {
@@ -71,7 +71,29 @@ auto fieldWithRateMode(RateMode rateMode, Field field) -> Field
             case Field::TIMEOUTS:
                 return Field::TIMEOUTS_AVG;
             default:
-                return field;
+                break;
+        }
+    }
+    if (rateMode == +RateMode::AVG || rateMode == +RateMode::TOTAL) {
+        switch (field) {
+            case Field::SRT_P95:
+                return Field::SRT_TOTAL_P95;
+            case Field::SRT_P99:
+                return Field::SRT_TOTAL_P99;
+            case Field::SRT_MAX:
+                return Field::SRT_TOTAL_MAX;
+            case Field::DS_P95:
+                return Field::DS_TOTAL_P95;
+            case Field::DS_P99:
+                return Field::DS_TOTAL_P99;
+            case Field::DS_MAX:
+                return Field::DS_TOTAL_MAX;
+            case Field::CT_P95:
+                return Field::CT_TOTAL_P95;
+            case Field::CT_P99:
+                return Field::CT_TOTAL_P99;
+            default:
+                break;
         }
     }
     return field;
@@ -105,6 +127,10 @@ auto fieldToHeader(Field field) -> char const*
     case Field::CT_P95:
         return "CTp95";
     case Field::CT_P99:
+        return "CTp99";
+    case Field::CT_TOTAL_P95:
+        return "CTp95";
+    case Field::CT_TOTAL_P99:
         return "CTp99";
     case Field::DIR:
         return "Dir";
@@ -158,6 +184,7 @@ auto fieldToHeader(Field field) -> char const*
         return "Srt/s";
     case Field::SRT_AVG:
         return "Srt/s";
+
     case Field::SRT_P95:
         return "Srt95";
     case Field::SRT_P99:
@@ -165,11 +192,25 @@ auto fieldToHeader(Field field) -> char const*
     case Field::SRT_MAX:
         return "SrtMax";
 
+    case Field::SRT_TOTAL_P95:
+        return "Srt95";
+    case Field::SRT_TOTAL_P99:
+        return "Srt99";
+    case Field::SRT_TOTAL_MAX:
+        return "SrtMax";
+
     case Field::DS_P95:
         return "Ds95";
     case Field::DS_P99:
         return "Ds99";
     case Field::DS_MAX:
+        return "DsMax";
+
+    case Field::DS_TOTAL_P95:
+        return "Ds95";
+    case Field::DS_TOTAL_P99:
+        return "Ds99";
+    case Field::DS_TOTAL_MAX:
         return "DsMax";
 
     case Field::SYN:

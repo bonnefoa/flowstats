@@ -29,8 +29,11 @@ BETTER_ENUM(Field, char,
     CONN,
     CONN_RATE,
     CONN_AVG,
+
     CT_P95,
     CT_P99,
+    CT_TOTAL_P95,
+    CT_TOTAL_P99,
 
     RCRD_AVG,
     TOP_CLIENT_IPS,
@@ -41,13 +44,21 @@ BETTER_ENUM(Field, char,
     SRT,
     SRT_RATE,
     SRT_AVG,
+
     SRT_P95,
     SRT_P99,
     SRT_MAX,
 
+    SRT_TOTAL_P95,
+    SRT_TOTAL_P99,
+    SRT_TOTAL_MAX,
+
     DS_P95,
     DS_P99,
     DS_MAX,
+    DS_TOTAL_P95,
+    DS_TOTAL_P99,
+    DS_TOTAL_MAX,
 
     MTU,
     PKTS,

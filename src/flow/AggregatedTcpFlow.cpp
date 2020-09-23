@@ -5,7 +5,8 @@ namespace flowstats {
 
 AggregatedTcpFlow::~AggregatedTcpFlow()
 {
-    connections.resetAndShrink();
+    connectionTimes.resetAndShrink();
+    totalConnectionTimes.resetAndShrink();
     srts.resetAndShrink();
     requestSizes.resetAndShrink();
 }
@@ -104,17 +105,27 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::ACTIVE_CONNECTIONS: return std::to_string(activeConnections);
             case Field::FAILED_CONNECTIONS: return std::to_string(failedConnections);
             case Field::CLOSE: return std::to_string(totalCloses);
-            case Field::CONN: return prettyFormatNumber(totalConnections);
-            case Field::CT_P95: return connections.getPercentileStr(0.95);
-            case Field::CT_P99: return connections.getPercentileStr(0.99);
 
-            case Field::SRT: return prettyFormatNumber(totalSrts);
+            case Field::CONN: return prettyFormatNumber(totalConnections);
+            case Field::CT_P95: return connectionTimes.getPercentileStr(0.95);
+            case Field::CT_P99: return connectionTimes.getPercentileStr(0.99);
+            case Field::CT_TOTAL_P95: return totalConnectionTimes.getPercentileStr(0.95);
+            case Field::CT_TOTAL_P99: return totalConnectionTimes.getPercentileStr(0.99);
+
+            case Field::SRT: return prettyFormatNumber(totalNumSrts);
             case Field::SRT_P95: return srts.getPercentileStr(0.95);
             case Field::SRT_P99: return srts.getPercentileStr(0.99);
+            case Field::SRT_MAX: return srts.getPercentileStr(1);
+            case Field::SRT_TOTAL_P95: return totalSrts.getPercentileStr(0.95);
+            case Field::SRT_TOTAL_P99: return totalSrts.getPercentileStr(0.99);
+            case Field::SRT_TOTAL_MAX: return totalSrts.getPercentileStr(1);
 
             case Field::DS_P95: return prettyFormatBytes(requestSizes.getPercentile(0.95));
             case Field::DS_P99: return prettyFormatBytes(requestSizes.getPercentile(0.99));
             case Field::DS_MAX: return prettyFormatBytes(requestSizes.getPercentile(1));
+            case Field::DS_TOTAL_P95: return prettyFormatBytes(totalRequestSizes.getPercentile(0.95));
+            case Field::DS_TOTAL_P99: return prettyFormatBytes(totalRequestSizes.getPercentile(0.99));
+            case Field::DS_TOTAL_MAX: return prettyFormatBytes(totalRequestSizes.getPercentile(1));
 
             case Field::FQDN: return getFqdn();
             case Field::IP: return getSrvIp();
@@ -122,11 +133,11 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
 
             case Field::CONN_RATE: return std::to_string(numConnections);
             case Field::CLOSE_RATE: return std::to_string(closes);
-            case Field::SRT_RATE: return prettyFormatNumber(numSrts);
+            case Field::SRT_RATE: return prettyFormatNumber(srts.getCount());
 
             case Field::CONN_AVG: return prettyFormatNumberAverage(totalConnections, duration);
             case Field::CLOSE_AVG: return prettyFormatNumberAverage(totalCloses, duration);
-            case Field::SRT_AVG: return prettyFormatNumberAverage(totalSrts, duration);
+            case Field::SRT_AVG: return prettyFormatNumberAverage(totalNumSrts, duration);
             default: break;
         }
     }
@@ -162,9 +173,10 @@ auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
     totalConnections += tcpFlow->totalConnections;
 
     numSrts += tcpFlow->numSrts;
-    totalSrts += tcpFlow->totalSrts;
+    totalNumSrts += tcpFlow->totalNumSrts;
 
-    connections.addPoints(tcpFlow->connections);
+    connectionTimes.addPoints(tcpFlow->connectionTimes);
+    totalConnectionTimes.addPoints(tcpFlow->totalConnectionTimes);
     srts.addPoints(tcpFlow->srts);
     requestSizes.addPoints(tcpFlow->requestSizes);
 }
@@ -196,10 +208,10 @@ auto AggregatedTcpFlow::resetFlow(bool resetTotal) -> void
 
         totalCloses = 0;
         totalConnections = 0;
-        totalSrts = 0;
+        totalNumSrts = 0;
     }
 
-    connections.reset();
+    connectionTimes.reset();
     srts.reset();
     requestSizes.reset();
 }
@@ -212,7 +224,8 @@ auto AggregatedTcpFlow::failConnection() -> void
 auto AggregatedTcpFlow::mergePercentiles() -> void
 {
     srts.merge();
-    connections.merge();
+    connectionTimes.merge();
+    totalConnectionTimes.merge();
     requestSizes.merge();
 }
 
@@ -223,7 +236,8 @@ auto AggregatedTcpFlow::ongoingConnection() -> void
 
 auto AggregatedTcpFlow::openConnection(int connectionTime) -> void
 {
-    connections.addPoint(connectionTime);
+    connectionTimes.addPoint(connectionTime);
+    totalConnectionTimes.addPoint(connectionTime);
     numConnections++;
     activeConnections++;
     totalConnections++;
@@ -234,7 +248,7 @@ auto AggregatedTcpFlow::addSrt(int srt, int dataSize) -> void
     srts.addPoint(srt);
     requestSizes.addPoint(dataSize);
     numSrts++;
-    totalSrts++;
+    totalNumSrts++;
 };
 
 auto AggregatedTcpFlow::closeConnection() -> void
@@ -254,7 +268,7 @@ auto AggregatedTcpFlow::getStatsdMetrics() const -> std::vector<std::string>
         lst.push_back(DogFood::Metric("flowstats.tcp.srt", i,
             DogFood::Histogram, 1, tags));
     }
-    for (auto& i : connections.getPoints()) {
+    for (auto& i : connectionTimes.getPoints()) {
         lst.push_back(DogFood::Metric("flowstats.tcp.ct", i,
             DogFood::Histogram, 1, tags));
     }

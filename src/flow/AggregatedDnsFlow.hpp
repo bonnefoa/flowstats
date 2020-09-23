@@ -72,7 +72,7 @@ struct AggregatedDnsFlow : Flow {
     {
         auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
         auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
-        return aCast->totalSrt < bCast->totalSrt;
+        return aCast->totalNumSrt < bCast->totalNumSrt;
     }
 
     [[nodiscard]] static auto sortBySrtRate(Flow const* a, Flow const* b) -> bool
@@ -128,9 +128,11 @@ private:
     uint16_t records = 0;
 
     int numSrt = 0;
-    int totalSrt = 0;
+    int totalNumSrt = 0;
     std::map<int, int> sourceIps;
+
     Percentile srts;
+    Percentile totalSrts;
 };
 
 } // namespace flowstats
