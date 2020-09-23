@@ -54,15 +54,21 @@ auto AggregatedDnsFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::PROTO: return getTransport()._to_string();
             case Field::TYPE: return dnsTypeToString(dnsType);
             case Field::IP: return getSrvIp();
-            case Field::TIMEOUTS_RATE: return std::to_string(timeouts);
-            case Field::TIMEOUTS: return std::to_string(totalTimeouts);
             case Field::PORT: return std::to_string(getSrvPort());
-            case Field::REQ: return prettyFormatNumber(totalQueries);
-            case Field::REQ_RATE: return prettyFormatNumber(queries);
-            case Field::REQ_AVG: return prettyFormatNumberAverage(totalQueries, duration);
             case Field::TOP_CLIENT_IPS: return getTopClientIpsStr();
+
+            case Field::TIMEOUTS: return std::to_string(totalTimeouts);
+            case Field::REQ: return prettyFormatNumber(totalQueries);
             case Field::SRT: return prettyFormatNumber(totalSrt);
+
+            case Field::TIMEOUTS_AVG: return prettyFormatNumberAverage(totalTimeouts, duration);
+            case Field::REQ_AVG: return prettyFormatNumberAverage(totalQueries, duration);
+            case Field::SRT_AVG: return prettyFormatNumberAverage(totalSrt, duration);
+
+            case Field::TIMEOUTS_RATE: return std::to_string(timeouts);
+            case Field::REQ_RATE: return prettyFormatNumber(queries);
             case Field::SRT_RATE: return prettyFormatNumber(numSrt);
+
             case Field::SRT_P95: return srts.getPercentileStr(0.95);
             case Field::SRT_P99: return srts.getPercentileStr(0.99);
             case Field::TRUNC: return std::to_string(totalTruncated);

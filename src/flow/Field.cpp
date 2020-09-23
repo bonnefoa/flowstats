@@ -7,9 +7,6 @@ auto fieldToSortable(Field field) -> bool
     switch (field) {
     case Field::DIR:
     case Field::TOP_CLIENT_IPS:
-    case Field::REQ_AVG:
-    case Field::PKTS_AVG:
-    case Field::BYTES_AVG:
         return false;
     default:
         return true;
@@ -18,7 +15,7 @@ auto fieldToSortable(Field field) -> bool
 
 auto fieldWithRateMode(RateMode rateMode, Field field) -> Field
 {
-    if (rateMode == +RateMode::IMMEDIATE) {
+    if (rateMode == +RateMode::LAST_SECOND) {
         switch (field) {
             case Field::CLOSE:
                 return Field::CLOSE_RATE;
@@ -47,6 +44,35 @@ auto fieldWithRateMode(RateMode rateMode, Field field) -> Field
             default:
                 return field;
         }
+    } else if (rateMode == +RateMode::AVG) {
+        switch (field) {
+            case Field::CLOSE:
+                return Field::CLOSE_AVG;
+            case Field::CONN:
+                return Field::CONN_AVG;
+            case Field::REQ:
+                return Field::REQ_AVG;
+            case Field::SRT:
+                return Field::SRT_AVG;
+            case Field::PKTS:
+                return Field::PKTS_AVG;
+            case Field::BYTES:
+                return Field::BYTES_AVG;
+            case Field::SYN:
+                return Field::SYN_AVG;
+            case Field::SYNACK:
+                return Field::SYNACK_AVG;
+            case Field::ZWIN:
+                return Field::ZWIN_AVG;
+            case Field::RST:
+                return Field::RST_AVG;
+            case Field::FIN:
+                return Field::FIN_AVG;
+            case Field::TIMEOUTS:
+                return Field::TIMEOUTS_AVG;
+            default:
+                return field;
+        }
     }
     return field;
 }
@@ -59,18 +85,22 @@ auto fieldToHeader(Field field) -> char const*
     case Field::FAILED_CONNECTIONS:
         return "FailConn";
     case Field::BYTES:
-        return "Bytes Total";
+        return "Bytes";
     case Field::BYTES_RATE:
         return "Bytes/s";
     case Field::BYTES_AVG:
-        return "Bytes Avg";
+        return "Bytes/s";
     case Field::CLOSE:
-        return "Close Total";
+        return "Close";
     case Field::CLOSE_RATE:
         return "Close/s";
+    case Field::CLOSE_AVG:
+        return "Close/s";
     case Field::CONN:
-        return "Conn Total";
+        return "Conn";
     case Field::CONN_RATE:
+        return "Conn/s";
+    case Field::CONN_AVG:
         return "Conn/s";
     case Field::CT_P95:
         return "CTp95";
@@ -81,8 +111,10 @@ auto fieldToHeader(Field field) -> char const*
     case Field::DOMAIN:
         return "Domain";
     case Field::FIN:
-        return "FIN Total";
+        return "FIN";
     case Field::FIN_RATE:
+        return "FIN/s";
+    case Field::FIN_AVG:
         return "FIN/s";
     case Field::FQDN:
         return "Fqdn";
@@ -91,11 +123,11 @@ auto fieldToHeader(Field field) -> char const*
     case Field::MTU:
         return "Mtu";
     case Field::PKTS:
-        return "Pkts Total";
+        return "Pkts";
     case Field::PKTS_RATE:
         return "Pkts/s";
     case Field::PKTS_AVG:
-        return "Pkts Avg";
+        return "Pkts/s";
     case Field::PORT:
         return "Port";
     case Field::PROTO:
@@ -105,22 +137,26 @@ auto fieldToHeader(Field field) -> char const*
     case Field::CIPHER_SUITE:
         return "Cipher Suite";
     case Field::RCRD_AVG:
-        return "Rcrd avg";
+        return "Rcrd";
     case Field::TOP_CLIENT_IPS:
         return "TopClientIps";
     case Field::REQ:
-        return "Req Total";
+        return "Req";
     case Field::REQ_RATE:
         return "Req/s";
     case Field::REQ_AVG:
-        return "ReqAvg";
+        return "Req/s";
     case Field::RST:
-        return "RST Total";
+        return "RST";
     case Field::RST_RATE:
         return "RST/s";
+    case Field::RST_AVG:
+        return "RST/s";
     case Field::SRT:
-        return "Srt Total";
+        return "Srt";
     case Field::SRT_RATE:
+        return "Srt/s";
+    case Field::SRT_AVG:
         return "Srt/s";
     case Field::SRT_P95:
         return "Srt95";
@@ -137,27 +173,46 @@ auto fieldToHeader(Field field) -> char const*
         return "DsMax";
 
     case Field::SYN:
-        return "SYN Total";
+        return "SYN";
     case Field::SYN_RATE:
         return "SYN/s";
+    case Field::SYN_AVG:
+        return "SYN/s";
     case Field::SYNACK:
-        return "SYNACK Total";
+        return "SYNACK";
     case Field::SYNACK_RATE:
         return "SYNACK/s";
+    case Field::SYNACK_AVG:
+        return "SYNACK/s";
     case Field::TIMEOUTS:
-        return "Tmo Total";
+        return "Tmo";
     case Field::TIMEOUTS_RATE:
+        return "Tmo/s";
+    case Field::TIMEOUTS_AVG:
         return "Tmo/s";
     case Field::TRUNC:
         return "Trunc";
     case Field::TYPE:
         return "Type";
     case Field::ZWIN:
-        return "0win Total";
+        return "0win";
     case Field::ZWIN_RATE:
+        return "0win/s";
+    case Field::ZWIN_AVG:
         return "0win/s";
     default:
         return "Unknown";
+    }
+}
+
+auto rateModeToDescription(RateMode rateMode) -> std::string {
+    switch (rateMode) {
+        case RateMode::LAST_SECOND:
+            return "Last second average";
+        case RateMode::AVG:
+            return "Global average";
+        case RateMode::TOTAL:
+            return "Total";
     }
 }
 

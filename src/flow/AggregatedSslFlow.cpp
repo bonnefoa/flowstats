@@ -6,11 +6,15 @@ auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int durati
 {
     auto fqdn = getFqdn();
     if (fqdn == "Total") {
-        if (direction != FROM_SERVER) {
+        if (direction == FROM_CLIENT || direction == MERGED) {
             switch (field) {
-                case Field::FQDN: return getFqdn();
+                case Field::PORT:
+                case Field::DOMAIN:
+                case Field::TLS_VERSION:
+                case Field::CIPHER_SUITE:
+                    return "-";
                 default:
-                                  break;
+                    break;
             }
         }
     } else if (direction == FROM_CLIENT || direction == MERGED) {
@@ -29,6 +33,7 @@ auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int durati
 
             case Field::CONN: return prettyFormatNumber(totalConnections);
             case Field::CONN_RATE: return prettyFormatNumber(numConnections);
+            case Field::CONN_AVG: return prettyFormatNumberAverage(numConnections, duration);
             case Field::CT_P95: return connections.getPercentileStr(0.95);
             case Field::CT_P99: return connections.getPercentileStr(0.99);
             default: break;

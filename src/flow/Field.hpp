@@ -7,7 +7,7 @@ namespace flowstats {
 #define LEFT_ALIGN(size) "{:<" STR(size) "." STR(size) "} "
 
 BETTER_ENUM(RateMode, uint8_t,
-    IMMEDIATE,
+    LAST_SECOND,
     AVG,
     TOTAL);
 
@@ -25,8 +25,10 @@ BETTER_ENUM(Field, char,
     FAILED_CONNECTIONS,
     CLOSE,
     CLOSE_RATE,
+    CLOSE_AVG,
     CONN,
     CONN_RATE,
+    CONN_AVG,
     CT_P95,
     CT_P99,
 
@@ -38,6 +40,7 @@ BETTER_ENUM(Field, char,
 
     SRT,
     SRT_RATE,
+    SRT_AVG,
     SRT_P95,
     SRT_P99,
     SRT_MAX,
@@ -56,22 +59,29 @@ BETTER_ENUM(Field, char,
 
     SYN,
     SYN_RATE,
+    SYN_AVG,
     SYNACK,
     SYNACK_RATE,
+    SYNACK_AVG,
     ZWIN,
     ZWIN_RATE,
+    ZWIN_AVG,
     RST,
     RST_RATE,
+    RST_AVG,
     FIN,
     FIN_RATE,
+    FIN_AVG,
 
     TIMEOUTS,
     TIMEOUTS_RATE,
+    TIMEOUTS_AVG,
     TRUNC,
     TYPE);
 
 auto fieldToSortable(Field field) -> bool;
 auto fieldToHeader(Field field) -> char const*;
 auto fieldWithRateMode(RateMode rateMode, Field field) -> Field;
+auto rateModeToDescription(RateMode rateMode) -> std::string;
 
 } // namespace flowstats

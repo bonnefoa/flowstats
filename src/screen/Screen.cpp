@@ -186,7 +186,8 @@ auto Screen::updateStatus(std::optional<CaptureStat> const& captureStat) -> void
     if (shouldFreeze) {
         freezeStr = ", Update freezed";
     }
-    waddstr(statusWin, fmt::format("Running time: {}s, Filter: \"{}\"{}\n", lastTv.tv_sec - firstTv.tv_sec,
+    waddstr(statusWin, fmt::format("Running time: {}s, RateMode: {}, Filter: \"{}\"{}\n", lastTv.tv_sec - firstTv.tv_sec,
+                rateModeToDescription(displayConf->getRateMode()),
                 displayConf->getFilter(), freezeStr).c_str());
 
     if (captureStat.has_value()) {

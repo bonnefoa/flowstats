@@ -36,7 +36,7 @@ private:
     std::string filter;
     bool mergeDirection = true;
     int maxResults = 1000;
-    RateMode rateMode = +RateMode::IMMEDIATE;
+    RateMode rateMode = +RateMode::AVG;
 };
 
 } // namespace flowstats

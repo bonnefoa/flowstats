@@ -41,6 +41,16 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
 
 auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
 {
+    auto fqdn = getFqdn();
+    if (fqdn == "Total") {
+        if (direction == FROM_CLIENT || direction == MERGED) {
+            switch (field) {
+                case Field::PORT: return "-";
+                default: break;
+            }
+        }
+    }
+
     if (direction == MERGED) {
         switch (field) {
             case Field::SYN_RATE: return std::to_string(syns[FROM_CLIENT] + syns[FROM_SERVER]);
@@ -48,6 +58,12 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::FIN_RATE: return std::to_string(fins[FROM_CLIENT] + fins[FROM_SERVER]);
             case Field::ZWIN_RATE: return std::to_string(zeroWins[FROM_CLIENT] + zeroWins[FROM_SERVER]);
             case Field::RST_RATE: return std::to_string(rsts[FROM_CLIENT] + rsts[FROM_SERVER]);
+
+            case Field::SYN_AVG: return prettyFormatNumberAverage(totalSyns[FROM_CLIENT] + totalSyns[FROM_SERVER], duration);
+            case Field::SYNACK_AVG: return prettyFormatNumberAverage(totalSynAcks[FROM_CLIENT] + totalSynAcks[FROM_SERVER], duration);
+            case Field::FIN_AVG: return prettyFormatNumberAverage(totalFins[FROM_CLIENT] + totalFins[FROM_SERVER], duration);
+            case Field::ZWIN_AVG: return prettyFormatNumberAverage(totalZeroWins[FROM_CLIENT] + totalZeroWins[FROM_SERVER], duration);
+            case Field::RST_AVG: return prettyFormatNumberAverage(totalRsts[FROM_CLIENT] + totalRsts[FROM_SERVER], duration);
 
             case Field::SYN: return std::to_string(totalSyns[FROM_CLIENT] + totalSyns[FROM_SERVER]);
             case Field::SYNACK: return std::to_string(totalSynAcks[FROM_CLIENT] + totalSynAcks[FROM_SERVER]);
@@ -65,6 +81,12 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::FIN_RATE: return std::to_string(fins[direction]);
             case Field::ZWIN_RATE: return std::to_string(zeroWins[direction]);
             case Field::RST_RATE: return std::to_string(rsts[direction]);
+
+            case Field::SYN_AVG: return prettyFormatNumberAverage(totalSyns[direction], duration);
+            case Field::SYNACK_AVG: return prettyFormatNumberAverage(totalSynAcks[direction], duration);
+            case Field::FIN_AVG: return prettyFormatNumberAverage(totalFins[direction], duration);
+            case Field::ZWIN_AVG: return prettyFormatNumberAverage(totalZeroWins[direction], duration);
+            case Field::RST_AVG: return prettyFormatNumberAverage(totalRsts[direction], duration);
 
             case Field::SYN: return std::to_string(totalSyns[direction]);
             case Field::SYNACK: return std::to_string(totalSynAcks[direction]);
@@ -101,6 +123,10 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::CONN_RATE: return std::to_string(numConnections);
             case Field::CLOSE_RATE: return std::to_string(closes);
             case Field::SRT_RATE: return prettyFormatNumber(numSrts);
+
+            case Field::CONN_AVG: return prettyFormatNumberAverage(totalConnections, duration);
+            case Field::CLOSE_AVG: return prettyFormatNumberAverage(totalCloses, duration);
+            case Field::SRT_AVG: return prettyFormatNumberAverage(totalSrts, duration);
             default: break;
         }
     }
