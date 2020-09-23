@@ -17,7 +17,9 @@ auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int durati
                     break;
             }
         }
-    } else if (direction == FROM_CLIENT || direction == MERGED) {
+    }
+
+    if (direction == FROM_CLIENT || direction == MERGED) {
         switch (field) {
             case Field::FQDN: return getFqdn();
             case Field::IP: return getSrvIp();
@@ -33,7 +35,7 @@ auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int durati
 
             case Field::CONN: return prettyFormatNumber(totalConnections);
             case Field::CONN_RATE: return prettyFormatNumber(numConnections);
-            case Field::CONN_AVG: return prettyFormatNumberAverage(numConnections, duration);
+            case Field::CONN_AVG: return prettyFormatNumberAverage(totalConnections, duration);
             case Field::CT_P95: return connections.getPercentileStr(0.95);
             case Field::CT_P99: return connections.getPercentileStr(0.99);
             default: break;
