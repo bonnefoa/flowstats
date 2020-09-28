@@ -8,7 +8,9 @@ AggregatedTcpFlow::~AggregatedTcpFlow()
     connectionTimes.resetAndShrink();
     totalConnectionTimes.resetAndShrink();
     srts.resetAndShrink();
+    totalSrts.resetAndShrink();
     requestSizes.resetAndShrink();
+    totalRequestSizes.resetAndShrink();
 }
 
 auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
@@ -178,6 +180,7 @@ auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
     connectionTimes.addPoints(tcpFlow->connectionTimes);
     totalConnectionTimes.addPoints(tcpFlow->totalConnectionTimes);
     srts.addPoints(tcpFlow->srts);
+    totalSrts.addPoints(tcpFlow->srts);
     requestSizes.addPoints(tcpFlow->requestSizes);
 }
 
@@ -209,6 +212,10 @@ auto AggregatedTcpFlow::resetFlow(bool resetTotal) -> void
         totalCloses = 0;
         totalConnections = 0;
         totalNumSrts = 0;
+
+        totalSrts.reset();
+        totalConnectionTimes.reset();
+        totalRequestSizes.reset();
     }
 
     connectionTimes.reset();
@@ -224,9 +231,11 @@ auto AggregatedTcpFlow::failConnection() -> void
 auto AggregatedTcpFlow::mergePercentiles() -> void
 {
     srts.merge();
+    totalSrts.merge();
     connectionTimes.merge();
     totalConnectionTimes.merge();
     requestSizes.merge();
+    totalRequestSizes.merge();
 }
 
 auto AggregatedTcpFlow::ongoingConnection() -> void
@@ -246,6 +255,7 @@ auto AggregatedTcpFlow::openConnection(int connectionTime) -> void
 auto AggregatedTcpFlow::addSrt(int srt, int dataSize) -> void
 {
     srts.addPoint(srt);
+    totalSrts.addPoint(srt);
     requestSizes.addPoint(dataSize);
     numSrts++;
     totalNumSrts++;

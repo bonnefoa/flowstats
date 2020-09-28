@@ -8,8 +8,7 @@ namespace flowstats {
 
 BETTER_ENUM(RateMode, uint8_t,
     LAST_SECOND,
-    AVG,
-    TOTAL);
+    AVG);
 
 BETTER_ENUM(Field, char,
     DIR,

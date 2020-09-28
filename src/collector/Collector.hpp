@@ -3,6 +3,7 @@
 #include "AggregatedKeys.hpp"
 #include "CollectorOutput.hpp"
 #include "Configuration.hpp"
+#include "DisplayType.hpp"
 #include "DogFood.hpp"
 #include "Flow.hpp"
 #include "FlowFormatter.hpp"

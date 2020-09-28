@@ -65,8 +65,8 @@ auto Screen::updateDisplay(timeval tv, bool updateOutput,
     lastTv = tv;
 
     const std::lock_guard<std::mutex> lock(screenMutex);
-    updateLeftStatus(captureStat);
-    updateRightStatus();
+    updateTopLeftStatus(captureStat);
+    updateTopRightStatus();
 
     if (editMode == SORT) {
         updateSortSelection();
@@ -75,7 +75,7 @@ auto Screen::updateDisplay(timeval tv, bool updateOutput,
     } else if (editMode == RATE_MODE) {
         updateRateMode();
     }
-    updateMenu();
+    updateBottomMenu();
 
     if (!shouldFreeze && updateOutput) {
         collectorOutput = activeCollector->outputStatus(tv.tv_sec - firstTv.tv_sec);
@@ -179,13 +179,12 @@ auto Screen::updateRateMode() -> void
     }
 }
 
-
-auto Screen::updateLeftStatus(std::optional<CaptureStat> const& captureStat) -> void
+auto Screen::updateTopLeftStatus(std::optional<CaptureStat> const& captureStat) -> void
 {
     werase(statusLeftWin);
     auto freezeStr = "";
     if (shouldFreeze) {
-        freezeStr = ", Update freezed";
+        freezeStr = ", Update frozen";
     }
     waddstr(statusLeftWin, fmt::format("Running time: {}s{}\n", lastTv.tv_sec - firstTv.tv_sec,
                 freezeStr).c_str());
@@ -234,7 +233,7 @@ auto Screen::updateLeftStatus(std::optional<CaptureStat> const& captureStat) -> 
     waddstr(statusLeftWin, "\n");
 }
 
-auto Screen::updateRightStatus() -> void {
+auto Screen::updateTopRightStatus() -> void {
     werase(statusRightWin);
     waddstr(statusRightWin, fmt::format("RateMode: {}\n", rateModeToDescription(displayConf->getRateMode())).c_str());
     waddstr(statusRightWin, fmt::format("Filter: \"{}\"\n", displayConf->getFilter()).c_str());
@@ -250,7 +249,7 @@ auto Screen::updateHeaders() -> void
     wattroff(headerWin, COLOR_PAIR(KEY_HEADER_COLOR));
 }
 
-auto Screen::updateMenu() -> void
+auto Screen::updateBottomMenu() -> void
 {
     werase(bottomWin);
 

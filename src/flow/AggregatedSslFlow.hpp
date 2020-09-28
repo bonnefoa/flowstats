@@ -20,7 +20,7 @@ public:
     auto setDomain(std::string _domain) -> void { domain = std::move(_domain); }
     auto setSslCipherSuite(SSLCipherSuite _sslCipherSuite) -> void { sslCipherSuite = _sslCipherSuite; }
     auto addConnection(int delta) -> void;
-    auto merge() -> void { connections.merge(); };
+    auto merge() -> void { connectionTimes.merge(); };
 
     [[nodiscard]] auto getDomain() const { return domain; }
 
@@ -42,14 +42,14 @@ public:
     {
         auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
         auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
-        return aCast->connections.getPercentile(.95) < bCast->connections.getPercentile(.95);
+        return aCast->connectionTimes.getPercentile(.95) < bCast->connectionTimes.getPercentile(.95);
     }
 
     [[nodiscard]] static auto sortByConnectionP99(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
         auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
-        return aCast->connections.getPercentile(.99) < bCast->connections.getPercentile(.99);
+        return aCast->connectionTimes.getPercentile(.99) < bCast->connectionTimes.getPercentile(.99);
     }
 
     [[nodiscard]] static auto sortByDomain(Flow const* a, Flow const* b) -> bool
@@ -76,8 +76,11 @@ public:
 private:
     std::string domain;
     int numConnections = 0;
+    // TODO
+    //int activeConnections = 0;
     int totalConnections = 0;
-    Percentile connections;
+    Percentile connectionTimes;
+    Percentile totalConnectionTimes;
     TLSVersion tlsVersion;
     std::optional<SSLCipherSuite> sslCipherSuite;
 };

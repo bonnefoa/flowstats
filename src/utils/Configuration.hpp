@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Field.hpp"
 #include <DogFood.hpp> // for Configuration
 #include <cstdint> // for uint16_t, uint32_t
 #include <map> // for map
@@ -11,16 +10,6 @@
 
 namespace flowstats {
 
-enum DisplayType {
-    DisplayRequests,
-    DisplayResponses,
-    DisplayClients,
-    DisplayConnections,
-    DisplayFlags,
-    DisplayTraffic,
-};
-
-auto displayTypeToString(enum DisplayType displayType) -> std::string;
 
 class LogConfiguration {
 public:
@@ -91,5 +80,4 @@ private:
     std::string ip = {};
 };
 
-using DisplayPair = std::pair<DisplayType, std::vector<Field>>;
 } // namespace flowstats

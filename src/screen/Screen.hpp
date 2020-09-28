@@ -42,9 +42,9 @@ private:
     auto refreshableAction(int c) -> bool;
     auto updateHeaders() -> void;
     auto updateBody() -> void;
-    auto updateLeftStatus(std::optional<CaptureStat> const& captureStat) -> void;
-    auto updateRightStatus() -> void;
-    auto updateMenu() -> void;
+    auto updateTopLeftStatus(std::optional<CaptureStat> const& captureStat) -> void;
+    auto updateTopRightStatus() -> void;
+    auto updateBottomMenu() -> void;
     auto updateSortSelection() -> void;
     auto updateResizeWin() -> void;
     auto updateRateMode() -> void;

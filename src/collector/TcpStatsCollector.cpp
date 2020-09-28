@@ -21,10 +21,12 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
     }
 
     setDisplayPairs({
-        DisplayPair(DisplayFlags, { Field::SYN, Field::SYNACK, Field::FIN, Field::RST, Field::ZWIN }),
-        DisplayPair(DisplayConnections, { Field::ACTIVE_CONNECTIONS, Field::FAILED_CONNECTIONS, Field::CONN, Field::CT_P95, Field::CT_P99, Field::CLOSE }),
-        DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_P95, Field::SRT_P99, Field::SRT_MAX, Field::DS_P95, Field::DS_P99, Field::DS_MAX }),
-        DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::BYTES }),
+        DisplayPair(DisplayTcpFlags, { Field::SYN, Field::SYN_RATE, Field::SYNACK, Field::SYNACK_RATE, Field::FIN, Field::FIN_RATE }),
+        DisplayPair(DisplayOtherFlags, { Field::RST, Field::RST_RATE, Field::ZWIN,  Field::ZWIN_RATE }),
+        DisplayPair(DisplayConnections, { Field::ACTIVE_CONNECTIONS, Field::FAILED_CONNECTIONS, Field::CONN, Field::CONN_RATE, Field::CLOSE, Field::CLOSE_RATE }),
+        DisplayPair(DisplayConnectionTimes, { Field::CT_P95, Field::CT_TOTAL_P95, Field::CT_P99, Field::CT_TOTAL_P99 }),
+        DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_TOTAL_P95, Field::SRT_P99, Field::SRT_TOTAL_P99 }),
+        DisplayPair(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE, Field::DS_P95, Field::DS_TOTAL_P95, Field::DS_P99, Field::DS_TOTAL_P99 }),
     });
     setTotalFlow(new AggregatedTcpFlow());
     updateDisplayType(0);

@@ -36,8 +36,10 @@ auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::CONN: return prettyFormatNumber(totalConnections);
             case Field::CONN_RATE: return prettyFormatNumber(numConnections);
             case Field::CONN_AVG: return prettyFormatNumberAverage(totalConnections, duration);
-            case Field::CT_P95: return connections.getPercentileStr(0.95);
-            case Field::CT_P99: return connections.getPercentileStr(0.99);
+            case Field::CT_P95: return connectionTimes.getPercentileStr(0.95);
+            case Field::CT_P99: return connectionTimes.getPercentileStr(0.99);
+            case Field::CT_TOTAL_P95: return totalConnectionTimes.getPercentileStr(0.95);
+            case Field::CT_TOTAL_P99: return totalConnectionTimes.getPercentileStr(0.99);
             default: break;
         }
     }
@@ -47,11 +49,12 @@ auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int durati
 void AggregatedSslFlow::resetFlow(bool resetTotal)
 {
     Flow::resetFlow(resetTotal);
-    connections.reset();
+    connectionTimes.reset();
     numConnections = 0;
 
     if (resetTotal) {
         totalConnections = 0;
+        totalConnectionTimes.reset();
     }
 }
 
@@ -62,7 +65,8 @@ auto AggregatedSslFlow::setTlsVersion(TLSVersion tlsVers) -> void
 
 auto AggregatedSslFlow::addConnection(int delta) -> void
 {
-    connections.addPoint(delta);
+    connectionTimes.addPoint(delta);
+    totalConnectionTimes.addPoint(delta);
     numConnections++;
     totalConnections++;
 }
