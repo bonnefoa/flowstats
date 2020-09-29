@@ -248,22 +248,38 @@ auto TcpStatsCollector::getSortFun(Field field) const -> sortFlowFun
 
     case Field::CT_P95:
         return &AggregatedTcpFlow::sortByCtP95;
+    case Field::CT_TOTAL_P95:
+        return &AggregatedTcpFlow::sortByCtTotalP95;
     case Field::CT_P99:
         return &AggregatedTcpFlow::sortByCtP99;
+    case Field::CT_TOTAL_P99:
+        return &AggregatedTcpFlow::sortByCtTotalP99;
 
     case Field::SRT_P95:
         return &AggregatedTcpFlow::sortBySrtP95;
+    case Field::SRT_TOTAL_P95:
+        return &AggregatedTcpFlow::sortBySrtTotalP95;
     case Field::SRT_P99:
         return &AggregatedTcpFlow::sortBySrtP99;
+    case Field::SRT_TOTAL_P99:
+        return &AggregatedTcpFlow::sortBySrtTotalP99;
     case Field::SRT_MAX:
         return &AggregatedTcpFlow::sortBySrtMax;
+    case Field::SRT_TOTAL_MAX:
+        return &AggregatedTcpFlow::sortBySrtTotalMax;
 
     case Field::DS_P95:
         return &AggregatedTcpFlow::sortByDsP95;
+    case Field::DS_TOTAL_P95:
+        return &AggregatedTcpFlow::sortByDsTotalP95;
     case Field::DS_P99:
         return &AggregatedTcpFlow::sortByDsP99;
+    case Field::DS_TOTAL_P99:
+        return &AggregatedTcpFlow::sortByDsTotalP99;
     case Field::DS_MAX:
         return &AggregatedTcpFlow::sortByDsMax;
+    case Field::DS_TOTAL_MAX:
+        return &AggregatedTcpFlow::sortByDsTotalMax;
     default:
         return nullptr;
     }

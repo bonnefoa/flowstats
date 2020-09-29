@@ -45,11 +45,25 @@ public:
         return aCast->connectionTimes.getPercentile(.95) < bCast->connectionTimes.getPercentile(.95);
     }
 
+    [[nodiscard]] static auto sortByConnectionTotalP95(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        return aCast->totalConnectionTimes.getPercentile(.95) < bCast->totalConnectionTimes.getPercentile(.95);
+    }
+
     [[nodiscard]] static auto sortByConnectionP99(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
         auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
         return aCast->connectionTimes.getPercentile(.99) < bCast->connectionTimes.getPercentile(.99);
+    }
+
+    [[nodiscard]] static auto sortByConnectionTotalP99(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        return aCast->totalConnectionTimes.getPercentile(.99) < bCast->totalConnectionTimes.getPercentile(.99);
     }
 
     [[nodiscard]] static auto sortByDomain(Flow const* a, Flow const* b) -> bool

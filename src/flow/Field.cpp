@@ -6,6 +6,26 @@ auto fieldToSortable(Field field) -> bool
 {
     switch (field) {
     case Field::DIR:
+    case Field::REQ_RATE:
+    case Field::FIN_RATE:
+    case Field::RST_RATE:
+    case Field::SRT_RATE:
+    case Field::SYN_RATE:
+    case Field::CONN_RATE:
+    case Field::PKTS_RATE:
+    case Field::ZWIN_RATE:
+    case Field::BYTES_RATE:
+    case Field::CLOSE_RATE:
+    case Field::SYNACK_RATE:
+    case Field::TIMEOUTS_RATE:
+
+    case Field::CT_P95:
+    case Field::CT_P99:
+    case Field::SRT_P95:
+    case Field::SRT_P99:
+    case Field::DS_P95:
+    case Field::DS_P99:
+
     case Field::REQ_AVG:
     case Field::FIN_AVG:
     case Field::RST_AVG:

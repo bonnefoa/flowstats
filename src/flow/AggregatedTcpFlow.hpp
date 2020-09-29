@@ -181,11 +181,25 @@ struct AggregatedTcpFlow : Flow {
         return aCast->connectionTimes.getPercentile(0.95) < bCast->connectionTimes.getPercentile(0.95);
     }
 
+    [[nodiscard]] static auto sortByCtTotalP95(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalConnectionTimes.getPercentile(0.95) < bCast->totalConnectionTimes.getPercentile(0.95);
+    }
+
     [[nodiscard]] static auto sortByCtP99(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
         return aCast->connectionTimes.getPercentile(0.99) < bCast->connectionTimes.getPercentile(0.99);
+    }
+
+    [[nodiscard]] static auto sortByCtTotalP99(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalConnectionTimes.getPercentile(0.99) < bCast->totalConnectionTimes.getPercentile(0.99);
     }
 
     [[nodiscard]] static auto sortByCtMax(Flow const* a, Flow const* b) -> bool
@@ -195,11 +209,25 @@ struct AggregatedTcpFlow : Flow {
         return aCast->connectionTimes.getPercentile(1) < bCast->connectionTimes.getPercentile(1);
     }
 
+    [[nodiscard]] static auto sortByCtTotalMax(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalConnectionTimes.getPercentile(1) < bCast->totalConnectionTimes.getPercentile(1);
+    }
+
     [[nodiscard]] static auto sortBySrtP95(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
         return aCast->srts.getPercentile(0.95) < bCast->srts.getPercentile(0.95);
+    }
+
+    [[nodiscard]] static auto sortBySrtTotalP95(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalSrts.getPercentile(0.95) < bCast->totalSrts.getPercentile(0.95);
     }
 
     [[nodiscard]] static auto sortBySrtP99(Flow const* a, Flow const* b) -> bool
@@ -209,11 +237,25 @@ struct AggregatedTcpFlow : Flow {
         return aCast->srts.getPercentile(0.99) < bCast->srts.getPercentile(0.99);
     }
 
+    [[nodiscard]] static auto sortBySrtTotalP99(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalSrts.getPercentile(0.99) < bCast->totalSrts.getPercentile(0.99);
+    }
+
     [[nodiscard]] static auto sortBySrtMax(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
         return aCast->srts.getPercentile(1) < bCast->srts.getPercentile(1);
+    }
+
+    [[nodiscard]] static auto sortBySrtTotalMax(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalSrts.getPercentile(1) < bCast->totalSrts.getPercentile(1);
     }
 
     [[nodiscard]] static auto sortByDsP95(Flow const* a, Flow const* b) -> bool
@@ -223,6 +265,13 @@ struct AggregatedTcpFlow : Flow {
         return aCast->requestSizes.getPercentile(0.95) < bCast->requestSizes.getPercentile(0.95);
     }
 
+    [[nodiscard]] static auto sortByDsTotalP95(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalRequestSizes.getPercentile(0.95) < bCast->totalRequestSizes.getPercentile(0.95);
+    }
+
     [[nodiscard]] static auto sortByDsP99(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
@@ -230,11 +279,25 @@ struct AggregatedTcpFlow : Flow {
         return aCast->requestSizes.getPercentile(0.99) < bCast->requestSizes.getPercentile(0.99);
     }
 
+    [[nodiscard]] static auto sortByDsTotalP99(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalRequestSizes.getPercentile(0.99) < bCast->totalRequestSizes.getPercentile(0.99);
+    }
+
     [[nodiscard]] static auto sortByDsMax(Flow const* a, Flow const* b) -> bool
     {
         auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
         auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
         return aCast->requestSizes.getPercentile(1) < bCast->requestSizes.getPercentile(1);
+    }
+
+    [[nodiscard]] static auto sortByDsTotalMax(Flow const* a, Flow const* b) -> bool
+    {
+        auto const* aCast = static_cast<AggregatedTcpFlow const*>(a);
+        auto const* bCast = static_cast<AggregatedTcpFlow const*>(b);
+        return aCast->totalRequestSizes.getPercentile(1) < bCast->totalRequestSizes.getPercentile(1);
     }
 
     [[nodiscard]] static auto sortByClose(Flow const* a, Flow const* b) -> bool
