@@ -204,12 +204,18 @@ auto DnsStatsCollector::getSortFun(Field field) const -> sortFlowFun
         return &AggregatedDnsFlow::sortBySrt;
     case Field::SRT_RATE:
         return &AggregatedDnsFlow::sortBySrtRate;
+    case Field::SRT_TOTAL_P95:
+        return &AggregatedDnsFlow::sortBySrtTotalP95;
     case Field::SRT_P95:
         return &AggregatedDnsFlow::sortBySrtP95;
     case Field::SRT_P99:
         return &AggregatedDnsFlow::sortBySrtP99;
+    case Field::SRT_TOTAL_P99:
+        return &AggregatedDnsFlow::sortBySrtTotalP99;
     case Field::SRT_MAX:
         return &AggregatedDnsFlow::sortBySrtMax;
+    case Field::SRT_TOTAL_MAX:
+        return &AggregatedDnsFlow::sortBySrtTotalMax;
     case Field::RCRD_AVG:
         return &AggregatedDnsFlow::sortByRcrdAvg;
     default:

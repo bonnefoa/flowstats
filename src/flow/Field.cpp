@@ -6,6 +6,18 @@ auto fieldToSortable(Field field) -> bool
 {
     switch (field) {
     case Field::DIR:
+    case Field::REQ_AVG:
+    case Field::FIN_AVG:
+    case Field::RST_AVG:
+    case Field::SRT_AVG:
+    case Field::SYN_AVG:
+    case Field::CONN_AVG:
+    case Field::PKTS_AVG:
+    case Field::ZWIN_AVG:
+    case Field::BYTES_AVG:
+    case Field::CLOSE_AVG:
+    case Field::SYNACK_AVG:
+    case Field::TIMEOUTS_AVG:
     case Field::TOP_CLIENT_IPS:
         return false;
     default:
