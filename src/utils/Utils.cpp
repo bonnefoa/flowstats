@@ -175,4 +175,17 @@ auto ipv4ToString(uint32_t ipv4) -> std::string
     return fmt::format("{}.{}.{}.{}", ipParts[0], ipParts[1], ipParts[2], ipParts[3]);
 }
 
+auto getTopMapPair(std::map<int, int> const& src, int num) -> std::vector<std::pair<int, int>>
+{
+    int size = std::min(num, static_cast<int>(src.size()));
+    std::vector<std::pair<int, int>> topIps(size);
+    std::partial_sort_copy(src.begin(), src.end(),
+        topIps.begin(), topIps.end(),
+        [](std::pair<int, int> const& l,
+            std::pair<int, int> const& r) {
+            return l.second > r.second;
+        });
+    return topIps;
+}
+
 } // namespace flowstats

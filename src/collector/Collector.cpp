@@ -33,12 +33,6 @@ auto Collector::buildTotalFlow(std::vector<Flow const*> const& aggregatedFlows) 
 
 auto Collector::fillSortFields() -> void
 {
-    //std::vector<Field> mergeDisplayValues;
-    //for (auto val : displayPairs) {
-        //mergeDisplayValues.insert(mergeDisplayValues.end(),
-                //val.second.begin(), val.second.end());
-    //}
-    //flowFormatter.setDisplayValues(mergeDisplayValues);
     for (auto const& pair : displayPairs) {
         for (auto const& field : pair.second) {
             if (fieldToSortable(field)) {

@@ -34,6 +34,9 @@ BETTER_ENUM(Field, char,
     CT_TOTAL_P95,
     CT_TOTAL_P99,
 
+    TOP_PKTS_CLIENT_IPS,
+    TOP_BYTES_CLIENT_IPS,
+
     RCRD_AVG,
     TOP_CLIENT_IPS,
     REQ,

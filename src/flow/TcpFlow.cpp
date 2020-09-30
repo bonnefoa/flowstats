@@ -146,6 +146,11 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     if (tcp.has_flags(Tins::TCP::SYN) && opening == false) {
         opening = true;
     }
+
+    for (auto& aggregatedFlow : aggregatedFlows) {
+        aggregatedFlow->addCltPacket(getCltIpInt(), direction, tcpPayloadSize);
+    }
+
 }
 
 auto TcpFlow::tcpToString(Tins::TCP const& tcp) -> std::string

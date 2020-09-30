@@ -57,4 +57,6 @@ auto getDomainToServerPort(std::vector<std::string> const& initialServerPorts) -
 
 auto packetToTimeval(Tins::Packet const& packet) -> timeval;
 auto ipv4ToString(uint32_t ipv4) -> std::string;
+auto getTopMapPair(std::map<int, int> const& src, int num) -> std::vector<std::pair<int, int>>;
+
 } // namespace flowstats

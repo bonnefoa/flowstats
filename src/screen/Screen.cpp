@@ -378,7 +378,7 @@ Screen::Screen(std::atomic_bool* shouldStop,
     define_key("\033[13~", KEY_F(3));
     define_key("\033[14~", KEY_F(4));
 
-    headerWin = newpad(HEADER_LINES + STATUS_LINES, DEFAULT_COLUMNS);
+    headerWin = newpad(HEADER_LINES + STATUS_LINES, COLS);
     bodyWin = newpad(BODY_LINES, DEFAULT_COLUMNS);
 
     statusLeftWin = newwin(STATUS_LINES, COLS / 2, 0, 0);

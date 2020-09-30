@@ -145,8 +145,6 @@ auto fieldToHeader(Field field) -> char const*
         return "Cipher Suite";
     case Field::RCRD_AVG:
         return "Rcrd";
-    case Field::TOP_CLIENT_IPS:
-        return "TopClientIps";
     case Field::REQ:
         return "Req";
     case Field::REQ_RATE:
@@ -165,6 +163,13 @@ auto fieldToHeader(Field field) -> char const*
         return "Srt/s";
     case Field::SRT_AVG:
         return "Srt/s";
+
+    case Field::TOP_PKTS_CLIENT_IPS:
+        return "TopPktsClientIps";
+    case Field::TOP_BYTES_CLIENT_IPS:
+        return "TopBytesClientIps";
+    case Field::TOP_CLIENT_IPS:
+        return "TopClientIps";
 
     case Field::SRT_P95:
         return "Srt95 (1s)";

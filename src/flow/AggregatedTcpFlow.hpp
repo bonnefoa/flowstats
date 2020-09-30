@@ -25,8 +25,9 @@ struct AggregatedTcpFlow : Flow {
         return totalSyns[0] < b.totalSyns[0];
     }
 
-    auto updateFlow(Tins::Packet const& packet, FlowId const& flowId,
-        Tins::TCP const& tcpLayer) -> void;
+    auto updateFlow(Tins::Packet const& packet,
+            FlowId const& flowId,
+            Tins::TCP const& tcpLayer) -> void;
 
     auto resetFlow(bool resetTotal) -> void override;
 
@@ -36,6 +37,7 @@ struct AggregatedTcpFlow : Flow {
     auto mergePercentiles() -> void override;
     auto failConnection() -> void;
     auto closeConnection() -> void;
+    auto addCltPacket(IPv4 ipClt, Direction direction, int numBytes) -> void;
     auto openConnection(int connectionTime) -> void;
     auto ongoingConnection() -> void;
     auto addSrt(int srt, int dataSize) -> void;
@@ -315,6 +317,8 @@ struct AggregatedTcpFlow : Flow {
     }
 
 private:
+    auto getTopClientIps(std::map<int, int> const& srcMap) const -> std::string;
+
     std::array<int, 2> syns = {};
     std::array<int, 2> synAcks = {};
     std::array<int, 2> fins = {};
@@ -328,6 +332,9 @@ private:
     std::array<int, 2> totalZeroWins = {};
 
     std::array<uint32_t, 2> mtu = {};
+
+    std::map<int, int> sourceBytesIps;
+    std::map<int, int> sourcePktsIps;
 
     int closes = 0;
     int totalCloses = 0;
