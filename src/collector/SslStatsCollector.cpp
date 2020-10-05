@@ -99,9 +99,8 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet,
         return;
     }
     auto direction = flowId.getDirection();
-    sslFlow->addPacket(packet, direction);
-
     const std::lock_guard<std::mutex> lock(*getDataMutex());
+    sslFlow->addPacket(packet, direction);
     sslFlow->updateFlow(packet, direction, *tcp);
 }
 
