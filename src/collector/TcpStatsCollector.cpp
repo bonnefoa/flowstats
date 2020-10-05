@@ -146,6 +146,7 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet,
         return;
     }
 
+    const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto direction = flowId.getDirection();
     tcpFlow->addPacket(packet, direction);
 
