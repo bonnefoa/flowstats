@@ -30,7 +30,8 @@
 #define DEFAULT_COLUMNS 200
 #define LEFT_WIN_COLUMNS 28
 
-#define STATUS_LINES 5
+#define STATUS_LINES 3
+#define TOP_MENU_LINES 2
 #define HEADER_LINES 1
 #define BODY_LINES 30000
 #define BOTTOM_LINES 1
@@ -68,6 +69,7 @@ auto Screen::updateDisplay(timeval tv, bool updateOutput,
     lastTv = tv;
     updateTopLeftStatus(captureStat);
     updateTopRightStatus();
+    updateTopMenu();
 
     if (editMode == SORT) {
         updateSortSelection();
@@ -180,6 +182,39 @@ auto Screen::updateRateMode() -> void
     }
 }
 
+auto Screen::updateTopMenu() -> void
+{
+    werase(topMenuWin);
+    waddstr(topMenuWin, fmt::format("{:<10} ", "Protocol:").c_str());
+    for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
+        auto proto = protocols[i];
+        if (selectedProtocolIndex == i) {
+            wattron(topMenuWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
+        }
+        waddstr(topMenuWin, fmt::format("{}: {:<10} ", i + 1, proto._to_string()).c_str());
+        if (selectedProtocolIndex == i) {
+            wattroff(topMenuWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
+        }
+    }
+    waddstr(topMenuWin, "\n");
+
+    waddstr(topMenuWin, fmt::format("{:<10} ", "Display:").c_str());
+    int i = 0;
+    int displayIndex;
+    displayIndex = protocolToDisplayIndex[selectedProtocolIndex];
+    for (const auto& displayPair : activeCollector->getDisplayPairs()) {
+        if (i == displayIndex) {
+            wattron(topMenuWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+        }
+        waddstr(topMenuWin, fmt::format("{:<14}", displayTypeToString(displayPair.first)).c_str());
+        if (i == displayIndex) {
+            wattroff(topMenuWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
+        }
+        i++;
+    }
+    waddstr(topMenuWin, "\n");
+}
+
 auto Screen::updateTopLeftStatus(std::optional<CaptureStat> const& captureStat) -> void
 {
     werase(statusLeftWin);
@@ -203,35 +238,6 @@ auto Screen::updateTopLeftStatus(std::optional<CaptureStat> const& captureStat) 
 
     waddstr(statusLeftWin, currentCaptureStat.getTotal().c_str());
     waddstr(statusLeftWin, currentCaptureStat.getRate(previousCaptureStat).c_str());
-
-    waddstr(statusLeftWin, fmt::format("{:<10} ", "Protocol:").c_str());
-    for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
-        auto proto = protocols[i];
-        if (selectedProtocolIndex == i) {
-            wattron(statusLeftWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
-        }
-        waddstr(statusLeftWin, fmt::format("{}: {:<10} ", i + 1, proto._to_string()).c_str());
-        if (selectedProtocolIndex == i) {
-            wattroff(statusLeftWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
-        }
-    }
-    waddstr(statusLeftWin, "\n");
-
-    waddstr(statusLeftWin, fmt::format("{:<10} ", "Display:").c_str());
-    int i = 0;
-    int displayIndex;
-    displayIndex = protocolToDisplayIndex[selectedProtocolIndex];
-    for (const auto& displayPair : activeCollector->getDisplayPairs()) {
-        if (i == displayIndex) {
-            wattron(statusLeftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
-        }
-        waddstr(statusLeftWin, fmt::format("{:<14}", displayTypeToString(displayPair.first)).c_str());
-        if (i == displayIndex) {
-            wattroff(statusLeftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
-        }
-        i++;
-    }
-    waddstr(statusLeftWin, "\n");
 }
 
 auto Screen::updateTopRightStatus() -> void
@@ -379,12 +385,13 @@ Screen::Screen(std::atomic_bool* shouldStop,
     define_key("\033[13~", KEY_F(3));
     define_key("\033[14~", KEY_F(4));
 
-    headerWin = newpad(HEADER_LINES + STATUS_LINES, COLS);
+    headerWin = newpad(HEADER_LINES + STATUS_LINES + TOP_MENU_LINES, COLS);
     bodyWin = newpad(BODY_LINES, DEFAULT_COLUMNS);
 
-    statusLeftWin = newwin(STATUS_LINES, COLS, 0, 0);
+    statusLeftWin = newwin(STATUS_LINES, COLS / 2, 0, 0);
     statusRightWin = newwin(STATUS_LINES, COLS / 2, 0, COLS / 2);
-    leftWin = newwin(SORT_LINES, LEFT_WIN_COLUMNS, STATUS_LINES, 0);
+    topMenuWin = newwin(TOP_MENU_LINES, COLS, STATUS_LINES, 0);
+    leftWin = newwin(SORT_LINES, LEFT_WIN_COLUMNS, STATUS_LINES + TOP_MENU_LINES, 0);
     bottomWin = newwin(BOTTOM_LINES, DEFAULT_COLUMNS, LINES - 1, 0);
 
     activeCollector = getActiveCollector();
@@ -409,8 +416,6 @@ auto Screen::refreshPads() -> void
     if (noDisplay) {
         return;
     }
-    wnoutrefresh(statusLeftWin);
-    wnoutrefresh(statusRightWin);
 
     int deltaValues = 0;
     if (editMode == SORT || editMode == RESIZE || editMode == RATE_MODE) {
@@ -421,14 +426,17 @@ auto Screen::refreshPads() -> void
     int displayedColumn = std::min(DEFAULT_COLUMNS - deltaValues, COLS - 1);
     pnoutrefresh(headerWin,
         0, 0,
-        STATUS_LINES, deltaValues,
-        STATUS_LINES + HEADER_LINES, displayedColumn);
+        STATUS_LINES + TOP_MENU_LINES, deltaValues,
+        STATUS_LINES + TOP_MENU_LINES + HEADER_LINES, displayedColumn);
 
     pnoutrefresh(bodyWin,
         verticalScroll, 0,
-        STATUS_LINES + HEADER_LINES, deltaValues,
+        STATUS_LINES + TOP_MENU_LINES + HEADER_LINES, deltaValues,
         LINES - (HEADER_LINES + BOTTOM_LINES), displayedColumn);
 
+    wnoutrefresh(statusLeftWin);
+    wnoutrefresh(statusRightWin);
+    wnoutrefresh(topMenuWin);
     wnoutrefresh(bottomWin);
     doupdate();
 }
@@ -580,7 +588,7 @@ auto Screen::displayLoop() -> void
             }
 
             int coefficient = displayConf->getMergeDirection() ? 1 : 2;
-            maxElements = (LINES - (STATUS_LINES + HEADER_LINES + BOTTOM_LINES)) / coefficient - 1;
+            maxElements = (LINES - (STATUS_LINES + TOP_MENU_LINES + HEADER_LINES + BOTTOM_LINES)) / coefficient - 1;
 
             const std::lock_guard<std::mutex> lock(screenMutex);
             switch (c) {
@@ -639,6 +647,7 @@ Screen::~Screen()
     delwin(leftWin);
     delwin(statusLeftWin);
     delwin(statusRightWin);
+    delwin(topMenuWin);
     delwin(bottomWin);
 }
 

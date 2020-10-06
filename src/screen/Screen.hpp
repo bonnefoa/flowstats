@@ -43,6 +43,7 @@ private:
     auto updateHeaders() -> void;
     auto updateBody() -> void;
     auto updateTopLeftStatus(std::optional<CaptureStat> const& captureStat) -> void;
+    auto updateTopMenu() -> void;
     auto updateTopRightStatus() -> void;
     auto updateBottomMenu() -> void;
     auto updateSortSelection() -> void;
@@ -56,6 +57,7 @@ private:
 
     WINDOW* statusLeftWin = nullptr;
     WINDOW* statusRightWin = nullptr;
+    WINDOW* topMenuWin = nullptr;
     WINDOW* bottomWin = nullptr;
 
     WINDOW* leftWin = nullptr;
