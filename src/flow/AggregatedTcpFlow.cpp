@@ -43,15 +43,16 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
         packet.pdu()->advertised_size());
 }
 
-auto AggregatedTcpFlow::getTopClientIps(std::map<int, int> const& srcMap) const -> std::string
+auto AggregatedTcpFlow::getTopClientIps(std::map<IPAddress, uint64_t> const& srcMap, std::string (*format)(uint64_t)) const -> std::string
 {
     auto topIps = getTopMapPair(srcMap, 5);
     std::vector<std::string> topIpsStr;
     topIpsStr.reserve(topIps.size());
     for (auto& pair : topIps) {
-        topIpsStr.push_back(fmt::format("{:<3} {:<" STR(IP_SIZE) "}",
-            prettyFormatNumber(pair.second),
-            Tins::IPv4Address(pair.first).to_string()));
+        assert(pair.second >= 0);
+        topIpsStr.push_back(fmt::format("{:<6} {:<" STR(IP_SIZE) "}",
+            format(pair.second),
+            pair.first.getAddrV4().to_string()));
     }
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
@@ -143,8 +144,8 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::DS_TOTAL_P99: return prettyFormatBytes(totalRequestSizes.getPercentile(0.99));
             case Field::DS_TOTAL_MAX: return prettyFormatBytes(totalRequestSizes.getPercentile(1));
 
-            case Field::TOP_BYTES_CLIENT_IPS: return getTopClientIps(sourceBytesIps);
-            case Field::TOP_PKTS_CLIENT_IPS: return getTopClientIps(sourcePktsIps);
+            case Field::TOP_BYTES_CLIENT_IPS: return getTopClientIps(sourceBytesIps, prettyFormatBytes);
+            case Field::TOP_PKTS_CLIENT_IPS: return getTopClientIps(sourcePktsIps, prettyFormatNumber);
 
             case Field::FQDN: return getFqdn();
             case Field::IP: return getSrvIp();
@@ -168,11 +169,14 @@ auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
     Flow::addFlow(flow);
 
     auto const* tcpFlow = static_cast<const AggregatedTcpFlow*>(flow);
-    for (auto it : tcpFlow->sourcePktsIps) {
-        sourcePktsIps[it.first] += it.second;
+    for (auto sourceIt : tcpFlow->sourcePktsIps) {
+        assert(sourceIt.second >= 0);
+        setOrIncreaseMapValue(&sourcePktsIps, sourceIt.first, sourceIt.second);
     }
-    for (auto it : tcpFlow->sourceBytesIps) {
-        sourceBytesIps[it.first] += it.second;
+
+    for (auto sourceIt : tcpFlow->sourceBytesIps) {
+        assert(sourceIt.second >= 0);
+        setOrIncreaseMapValue(&sourceBytesIps, sourceIt.first, sourceIt.second);
     }
 
     for (int i = 0; i <= FROM_SERVER; ++i) {
@@ -278,8 +282,9 @@ auto AggregatedTcpFlow::openConnection(int connectionTime) -> void
 
 auto AggregatedTcpFlow::addCltPacket(IPv4 cltIp, Direction direction, int numBytes) -> void
 {
-    sourcePktsIps[cltIp]++;
-    sourceBytesIps[cltIp] += numBytes;
+    setOrIncreaseMapValue(&sourcePktsIps, IPAddress(cltIp), 1);
+    assert(numBytes >= 0);
+    setOrIncreaseMapValue(&sourceBytesIps, cltIp, numBytes);
 };
 
 auto AggregatedTcpFlow::addSrt(int srt, int dataSize) -> void

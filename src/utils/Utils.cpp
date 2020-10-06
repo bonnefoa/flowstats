@@ -67,21 +67,6 @@ auto splitSet(std::string const& s, char delimiter) -> std::set<std::string>
     return res;
 }
 
-template <std::size_t... Is>
-auto fmtVector(std::string const& format,
-    std::vector<std::string> const& v,
-    std::index_sequence<Is...>) -> std::string
-{
-    return fmt::format(format, v[Is]...);
-}
-
-template <std::size_t N>
-auto fmtVector(std::string const& format,
-    const std::vector<std::string>& v) -> std::string
-{
-    return fmtVector(format, v, std::make_index_sequence<N>());
-}
-
 auto stringsToInts(const std::vector<std::string>& strInts) -> std::set<int>
 {
     std::set<int> res;
@@ -116,10 +101,12 @@ static auto prettyFormatGeneric(int num, std::vector<std::string> const& suffixe
     }
 }
 
-auto prettyFormatNumber(int num) -> std::string
+template <typename T>
+auto prettyFormatNumber(T num) -> std::string
 {
-    return prettyFormatGeneric(num, { "", "K" });
+    return prettyFormatGeneric(num, { "", "K", "M", "G", "P" });
 }
+template auto prettyFormatNumber(uint64_t num) -> std::string;
 
 auto prettyFormatNumberAverage(int total, int duration) -> std::string
 {
@@ -134,11 +121,12 @@ auto prettyFormatMs(int ms) -> std::string
     return prettyFormatGeneric(ms, { "ms", "s" });
 }
 
-auto prettyFormatBytes(int bytes) -> std::string
+template <typename T>
+auto prettyFormatBytes(T bytes) -> std::string
 {
     std::vector<std::string> suffixes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
     int unit = 0;
-    double currentCount = bytes;
+    T currentCount = bytes;
     while (currentCount >= 1024 && unit < suffixes.size()) {
         unit++;
         currentCount /= 1024;
@@ -149,6 +137,8 @@ auto prettyFormatBytes(int bytes) -> std::string
         return fmt::format("{:.1f} {}", currentCount, suffixes[unit]);
     }
 }
+template auto prettyFormatBytes(uint64_t bytes) -> std::string;
+template auto prettyFormatBytes(unsigned int bytes) -> std::string;
 
 auto prettyFormatBytesAverage(int bytes, int duration) -> std::string
 {
@@ -175,17 +165,29 @@ auto ipv4ToString(uint32_t ipv4) -> std::string
     return fmt::format("{}.{}.{}.{}", ipParts[0], ipParts[1], ipParts[2], ipParts[3]);
 }
 
-auto getTopMapPair(std::map<int, int> const& src, int num) -> std::vector<std::pair<int, int>>
+auto getTopMapPair(std::map<IPAddress, uint64_t> const& src, int num) -> std::vector<std::pair<IPAddress, uint64_t>>
 {
     int size = std::min(num, static_cast<int>(src.size()));
-    std::vector<std::pair<int, int>> topIps(size);
+    std::vector<std::pair<IPAddress, uint64_t>> topIps(size);
     std::partial_sort_copy(src.begin(), src.end(),
         topIps.begin(), topIps.end(),
-        [](std::pair<int, int> const& l,
-            std::pair<int, int> const& r) {
+        [](std::pair<IPAddress, uint64_t> const& l,
+            std::pair<IPAddress, uint64_t> const& r) {
             return l.second > r.second;
         });
     return topIps;
+}
+
+auto setOrIncreaseMapValue(std::map<IPAddress, uint64_t>* map, IPAddress key, uint64_t val) -> void
+{
+    auto it = map->find(key);
+    if (it != map->end()) {
+        //it->second += val;
+        (*map)[key] += val;
+    } else {
+        (*map)[key] = val;
+        //it->second = val;
+    }
 }
 
 } // namespace flowstats

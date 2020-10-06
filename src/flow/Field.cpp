@@ -39,6 +39,8 @@ auto fieldToSortable(Field field) -> bool
     case Field::SYNACK_AVG:
     case Field::TIMEOUTS_AVG:
     case Field::TOP_CLIENT_IPS:
+    case Field::TOP_PKTS_CLIENT_IPS:
+    case Field::TOP_BYTES_CLIENT_IPS:
         return false;
     default:
         return true;

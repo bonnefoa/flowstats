@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Configuration.hpp"
+#include "IPAddress.hpp"
 #include <cstdint>
 #include <ctime> // for time_t, timeval
 #include <iosfwd> // for size_t
@@ -44,11 +45,12 @@ auto splitSet(std::string const& s, char delimiter) -> std::set<std::string>;
 auto resolveDns(std::string const& domain) -> std::vector<std::string>;
 auto stringsToInts(std::vector<std::string> const& strInts) -> std::set<int>;
 
-template <std::size_t N>
-auto fmtVector(std::string const& format, std::vector<std::string> const& v) -> std::string;
-auto prettyFormatBytes(int bytes) -> std::string;
+template <typename T>
+auto prettyFormatBytes(T bytes) -> std::string;
 auto prettyFormatBytesAverage(int bytes, int duration) -> std::string;
-auto prettyFormatNumber(int num) -> std::string;
+template <typename T>
+auto prettyFormatNumber(T num) -> std::string;
+
 auto prettyFormatNumberAverage(int num, int duration) -> std::string;
 auto prettyFormatMs(int ms) -> std::string;
 
@@ -57,6 +59,7 @@ auto getDomainToServerPort(std::vector<std::string> const& initialServerPorts) -
 
 auto packetToTimeval(Tins::Packet const& packet) -> timeval;
 auto ipv4ToString(uint32_t ipv4) -> std::string;
-auto getTopMapPair(std::map<int, int> const& src, int num) -> std::vector<std::pair<int, int>>;
+auto getTopMapPair(std::map<IPAddress, uint64_t> const& src, int num) -> std::vector<std::pair<IPAddress, uint64_t>>;
+auto setOrIncreaseMapValue(std::map<IPAddress, uint64_t>* map, IPAddress key, uint64_t val) -> void;
 
 } // namespace flowstats

@@ -317,7 +317,7 @@ struct AggregatedTcpFlow : Flow {
     }
 
 private:
-    auto getTopClientIps(std::map<int, int> const& srcMap) const -> std::string;
+    auto getTopClientIps(std::map<IPAddress, uint64_t> const& srcMap, std::string (*format)(uint64_t)) const -> std::string;
 
     std::array<int, 2> syns = {};
     std::array<int, 2> synAcks = {};
@@ -333,8 +333,8 @@ private:
 
     std::array<uint32_t, 2> mtu = {};
 
-    std::map<int, int> sourceBytesIps;
-    std::map<int, int> sourcePktsIps;
+    std::map<IPAddress, uint64_t> sourceBytesIps;
+    std::map<IPAddress, uint64_t> sourcePktsIps;
 
     int closes = 0;
     int totalCloses = 0;

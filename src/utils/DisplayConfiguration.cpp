@@ -20,6 +20,8 @@ DisplayConfiguration::DisplayConfiguration()
     fieldToSize[Field::BYTES] = 12;
 
     fieldToSize[Field::TOP_CLIENT_IPS] = 60;
+    fieldToSize[Field::TOP_PKTS_CLIENT_IPS] = 60;
+    fieldToSize[Field::TOP_BYTES_CLIENT_IPS] = 60;
 
     fieldToSize[Field::IP] = 16;
 

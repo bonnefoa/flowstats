@@ -49,6 +49,7 @@ namespace flowstats {
 
 int lastKey = 0;
 std::array<CollectorProtocol, 3> protocols = { CollectorProtocol::DNS, CollectorProtocol::TCP, CollectorProtocol::SSL };
+
 std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
 std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
 int selectedResizeField = 0;
@@ -62,9 +63,9 @@ auto Screen::updateDisplay(timeval tv, bool updateOutput,
     if (firstTv.tv_sec == 0) {
         firstTv = tv;
     }
-    lastTv = tv;
-
     const std::lock_guard<std::mutex> lock(screenMutex);
+
+    lastTv = tv;
     updateTopLeftStatus(captureStat);
     updateTopRightStatus();
 
@@ -166,7 +167,7 @@ auto Screen::updateRateMode() -> void
     wattroff(leftWin, COLOR_PAIR(KEY_HEADER_COLOR));
     waddstr(leftWin, " ");
 
-    for (auto rateMode : RateMode::_values()){
+    for (auto rateMode : RateMode::_values()) {
         auto currentRateMode = displayConf->getRateMode();
         if (rateMode == currentRateMode) {
             wattron(leftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
@@ -186,8 +187,7 @@ auto Screen::updateTopLeftStatus(std::optional<CaptureStat> const& captureStat) 
     if (shouldFreeze) {
         freezeStr = ", Update frozen";
     }
-    waddstr(statusLeftWin, fmt::format("Running time: {}s{}\n", lastTv.tv_sec - firstTv.tv_sec,
-                freezeStr).c_str());
+    waddstr(statusLeftWin, fmt::format("Running time: {}s{}\n", lastTv.tv_sec - firstTv.tv_sec, freezeStr).c_str());
 
     if (captureStat.has_value()) {
         stagingCaptureStat = captureStat.value();
@@ -219,7 +219,8 @@ auto Screen::updateTopLeftStatus(std::optional<CaptureStat> const& captureStat) 
 
     waddstr(statusLeftWin, fmt::format("{:<10} ", "Display:").c_str());
     int i = 0;
-    int displayIndex = protocolToDisplayIndex[selectedProtocolIndex];
+    int displayIndex;
+    displayIndex = protocolToDisplayIndex[selectedProtocolIndex];
     for (const auto& displayPair : activeCollector->getDisplayPairs()) {
         if (i == displayIndex) {
             wattron(statusLeftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
@@ -233,11 +234,11 @@ auto Screen::updateTopLeftStatus(std::optional<CaptureStat> const& captureStat) 
     waddstr(statusLeftWin, "\n");
 }
 
-auto Screen::updateTopRightStatus() -> void {
+auto Screen::updateTopRightStatus() -> void
+{
     werase(statusRightWin);
     waddstr(statusRightWin, fmt::format("RateMode: {}\n", rateModeToDescription(displayConf->getRateMode())).c_str());
     waddstr(statusRightWin, fmt::format("Filter: \"{}\"\n", displayConf->getFilter()).c_str());
-
 }
 
 auto Screen::updateHeaders() -> void
@@ -381,7 +382,7 @@ Screen::Screen(std::atomic_bool* shouldStop,
     headerWin = newpad(HEADER_LINES + STATUS_LINES, COLS);
     bodyWin = newpad(BODY_LINES, DEFAULT_COLUMNS);
 
-    statusLeftWin = newwin(STATUS_LINES, COLS / 2, 0, 0);
+    statusLeftWin = newwin(STATUS_LINES, COLS, 0, 0);
     statusRightWin = newwin(STATUS_LINES, COLS / 2, 0, COLS / 2);
     leftWin = newwin(SORT_LINES, LEFT_WIN_COLUMNS, STATUS_LINES, 0);
     bottomWin = newwin(BOTTOM_LINES, DEFAULT_COLUMNS, LINES - 1, 0);
@@ -434,6 +435,7 @@ auto Screen::refreshPads() -> void
 
 auto Screen::refreshableAction(int c) -> bool
 {
+    const std::lock_guard<std::mutex> lock(screenMutex);
     if (c == KEY_VALID) {
         editMode = NONE;
         return true;
@@ -523,14 +525,14 @@ auto Screen::refreshableAction(int c) -> bool
         displayConf->toggleMergedDirection();
         return true;
     } else if (c == KEY_LEFT) {
-        protocolToDisplayIndex[selectedProtocolIndex] = std::max(
-            protocolToDisplayIndex[selectedProtocolIndex] - 1, 0);
+            protocolToDisplayIndex[selectedProtocolIndex] = std::max(
+                protocolToDisplayIndex[selectedProtocolIndex] - 1, 0);
         activeCollector->updateDisplayType(protocolToDisplayIndex[selectedProtocolIndex]);
         return true;
     } else if (c == KEY_RIGHT) {
-        protocolToDisplayIndex[selectedProtocolIndex] = std::min(
-            protocolToDisplayIndex[selectedProtocolIndex] + 1,
-            static_cast<int>(activeCollector->getDisplayPairs().size()) - 1);
+            protocolToDisplayIndex[selectedProtocolIndex] = std::min(
+                protocolToDisplayIndex[selectedProtocolIndex] + 1,
+                static_cast<int>(activeCollector->getDisplayPairs().size()) - 1);
         activeCollector->updateDisplayType(protocolToDisplayIndex[selectedProtocolIndex]);
         return true;
     } else if (c == KEY_SUP) {
@@ -571,38 +573,42 @@ auto Screen::displayLoop() -> void
             return;
         }
 
-        if (refreshableAction(c)) {
-            updateDisplay(lastTv, true, {});
-            continue;
-        }
+        {
+            if (refreshableAction(c)) {
+                updateDisplay(lastTv, true, {});
+                continue;
+            }
 
-        int coefficient = displayConf->getMergeDirection() ? 1 : 2;
-        maxElements = (LINES - (STATUS_LINES + HEADER_LINES + BOTTOM_LINES)) / coefficient - 1;
-        switch (c) {
-        case KEY_LETTER_F:
-            shouldFreeze = !shouldFreeze;
-            break;
-        case KEY_UP:
-            selectedLine -= 1;
-            selectedLine = std::max(selectedLine, 0);
-            break;
-        case KEY_DOWN:
-            selectedLine += 1;
-            selectedLine = std::min(selectedLine, numberElements - 1);
-            break;
-        case KEY_PPAGE:
-            selectedLine -= maxElements;
-            selectedLine = std::max(selectedLine, 0);
-            break;
-        case KEY_NPAGE:
-            selectedLine += maxElements;
-            selectedLine = std::min(selectedLine, numberElements - 1);
-            break;
-        }
-        if (selectedLine * coefficient < verticalScroll) {
-            verticalScroll = selectedLine * coefficient;
-        } else if (selectedLine * coefficient > (maxElements * coefficient + verticalScroll)) {
-            verticalScroll += selectedLine * coefficient - (maxElements * coefficient + verticalScroll);
+            int coefficient = displayConf->getMergeDirection() ? 1 : 2;
+            maxElements = (LINES - (STATUS_LINES + HEADER_LINES + BOTTOM_LINES)) / coefficient - 1;
+
+            const std::lock_guard<std::mutex> lock(screenMutex);
+            switch (c) {
+                case KEY_LETTER_F:
+                    shouldFreeze = !shouldFreeze;
+                    break;
+                case KEY_UP:
+                    selectedLine -= 1;
+                    selectedLine = std::max(selectedLine, 0);
+                    break;
+                case KEY_DOWN:
+                    selectedLine += 1;
+                    selectedLine = std::min(selectedLine, numberElements - 1);
+                    break;
+                case KEY_PPAGE:
+                    selectedLine -= maxElements;
+                    selectedLine = std::max(selectedLine, 0);
+                    break;
+                case KEY_NPAGE:
+                    selectedLine += maxElements;
+                    selectedLine = std::min(selectedLine, numberElements - 1);
+                    break;
+            }
+            if (selectedLine * coefficient < verticalScroll) {
+                verticalScroll = selectedLine * coefficient;
+            } else if (selectedLine * coefficient > (maxElements * coefficient + verticalScroll)) {
+                verticalScroll += selectedLine * coefficient - (maxElements * coefficient + verticalScroll);
+            }
         }
         updateDisplay(lastTv, false, {});
     }
