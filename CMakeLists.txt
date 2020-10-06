@@ -32,6 +32,7 @@ endif()
 
 if(BUILD_TSAN)
     SET(CMAKE_EXE_LINKER_FLAGS "-fsanitize=thread")
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=thread")
     list(APPEND ADDITIONAL_EXECUTABLE_LIBRARIES ${TCMALLOC})
 endif()
 
