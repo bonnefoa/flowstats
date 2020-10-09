@@ -150,7 +150,6 @@ auto DnsStatsCollector::addFlowToAggregation(DnsFlow const* flow) -> void
         aggregatedFlow = new AggregatedDnsFlow(flow->getFlowId(), fqdn, dnsType);
         aggregatedMap->emplace(key, aggregatedFlow);
     } else {
-        assert(it->first == key);
         aggregatedFlow = dynamic_cast<AggregatedDnsFlow*>(it->second);
     }
     aggregatedFlow->addFlow(flow);

@@ -49,7 +49,6 @@ auto AggregatedTcpFlow::getTopClientIps(std::map<IPAddress, uint64_t> const& src
     std::vector<std::string> topIpsStr;
     topIpsStr.reserve(topIps.size());
     for (auto& pair : topIps) {
-        assert(pair.second >= 0);
         topIpsStr.push_back(fmt::format("{:<6} {:<" STR(IP_SIZE) "}",
             format(pair.second),
             pair.first.getAddrV4().to_string()));
@@ -170,12 +169,10 @@ auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
 
     auto const* tcpFlow = static_cast<const AggregatedTcpFlow*>(flow);
     for (auto sourceIt : tcpFlow->sourcePktsIps) {
-        assert(sourceIt.second >= 0);
         setOrIncreaseMapValue(&sourcePktsIps, sourceIt.first, sourceIt.second);
     }
 
     for (auto sourceIt : tcpFlow->sourceBytesIps) {
-        assert(sourceIt.second >= 0);
         setOrIncreaseMapValue(&sourceBytesIps, sourceIt.first, sourceIt.second);
     }
 
@@ -244,6 +241,9 @@ auto AggregatedTcpFlow::resetFlow(bool resetTotal) -> void
         totalSrts.reset();
         totalConnectionTimes.reset();
         totalRequestSizes.reset();
+
+        sourcePktsIps.clear();
+        sourceBytesIps.clear();
     }
 
     connectionTimes.reset();
@@ -283,7 +283,6 @@ auto AggregatedTcpFlow::openConnection(int connectionTime) -> void
 auto AggregatedTcpFlow::addCltPacket(IPv4 cltIp, Direction direction, int numBytes) -> void
 {
     setOrIncreaseMapValue(&sourcePktsIps, IPAddress(cltIp), 1);
-    assert(numBytes >= 0);
     setOrIncreaseMapValue(&sourceBytesIps, cltIp, numBytes);
 };
 
