@@ -61,5 +61,6 @@ auto packetToTimeval(Tins::Packet const& packet) -> timeval;
 auto ipv4ToString(uint32_t ipv4) -> std::string;
 auto getTopMapPair(std::map<IPAddress, uint64_t> const& src, int num) -> std::vector<std::pair<IPAddress, uint64_t>>;
 auto setOrIncreaseMapValue(std::map<IPAddress, uint64_t>* map, IPAddress key, uint64_t val) -> void;
+auto getWithWarparound(int currentValue, int max, int delta) -> int;
 
 } // namespace flowstats

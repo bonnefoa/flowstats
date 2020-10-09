@@ -182,12 +182,21 @@ auto setOrIncreaseMapValue(std::map<IPAddress, uint64_t>* map, IPAddress key, ui
 {
     auto it = map->find(key);
     if (it != map->end()) {
-        //it->second += val;
-        (*map)[key] += val;
+        it->second += val;
     } else {
-        (*map)[key] = val;
-        //it->second = val;
+        map->insert(std::make_pair(key, val));
     }
+}
+
+auto getWithWarparound(int currentValue, int max, int delta) -> int
+{
+    if (delta >= 0) {
+        return (currentValue + delta) % max;
+    }
+    if (currentValue + delta < 0) {
+        return (currentValue + max + delta % max);
+    }
+    return (currentValue + delta);
 }
 
 } // namespace flowstats

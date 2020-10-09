@@ -499,15 +499,13 @@ auto Screen::refreshableAction(int c) -> bool
     }
 
     if (editMode == SORT) {
+        auto maxSort = static_cast<int>(activeCollector->getSortFields().size());
         if (c == KEY_UP) {
-            protocolToSortIndex[selectedProtocolIndex] = std::max(
-                protocolToSortIndex[selectedProtocolIndex] - 1, 0);
+            protocolToSortIndex[selectedProtocolIndex] = getWithWarparound(protocolToSortIndex[selectedProtocolIndex], maxSort, -1);
             activeCollector->updateSort(protocolToSortIndex[selectedProtocolIndex], reversedSort);
             return true;
         } else if (c == KEY_DOWN) {
-            protocolToSortIndex[selectedProtocolIndex] = std::min(
-                protocolToSortIndex[selectedProtocolIndex] + 1,
-                static_cast<int>(activeCollector->getSortFields().size()) - 1);
+            protocolToSortIndex[selectedProtocolIndex] = getWithWarparound(protocolToSortIndex[selectedProtocolIndex], maxSort, 1);
             activeCollector->updateSort(protocolToSortIndex[selectedProtocolIndex], reversedSort);
             return true;
         } else if (isEsc(c)) {
@@ -533,14 +531,13 @@ auto Screen::refreshableAction(int c) -> bool
         displayConf->toggleMergedDirection();
         return true;
     } else if (c == KEY_LEFT) {
-            protocolToDisplayIndex[selectedProtocolIndex] = std::max(
-                protocolToDisplayIndex[selectedProtocolIndex] - 1, 0);
+            protocolToDisplayIndex[selectedProtocolIndex] = getWithWarparound(protocolToDisplayIndex[selectedProtocolIndex],
+                    static_cast<int>(activeCollector->getDisplayPairs().size()), -1);
         activeCollector->updateDisplayType(protocolToDisplayIndex[selectedProtocolIndex]);
         return true;
     } else if (c == KEY_RIGHT) {
-            protocolToDisplayIndex[selectedProtocolIndex] = std::min(
-                protocolToDisplayIndex[selectedProtocolIndex] + 1,
-                static_cast<int>(activeCollector->getDisplayPairs().size()) - 1);
+            protocolToDisplayIndex[selectedProtocolIndex] = getWithWarparound(protocolToDisplayIndex[selectedProtocolIndex],
+                    static_cast<int>(activeCollector->getDisplayPairs().size()), 1);
         activeCollector->updateDisplayType(protocolToDisplayIndex[selectedProtocolIndex]);
         return true;
     } else if (c == KEY_SUP) {

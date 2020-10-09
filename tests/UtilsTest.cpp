@@ -23,3 +23,15 @@ TEST_CASE("Fqdn sort", "[sort]")
     CHECK(vec1[4]->getFqdn() == "z1");
 }
 
+TEST_CASE("Get With Warparound", "[warparound]")
+{
+    CHECK(getWithWarparound(8, 10, 1) == 9);
+    CHECK(getWithWarparound(9, 10, 1) == 0);
+    CHECK(getWithWarparound(9, 10, 2) == 1);
+
+    CHECK(getWithWarparound(2, 10, -1) == 1);
+    CHECK(getWithWarparound(2, 10, -2) == 0);
+    CHECK(getWithWarparound(2, 10, -3) == 9);
+
+    CHECK(getWithWarparound(0, 10, -1) == 9);
+}
