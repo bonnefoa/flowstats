@@ -90,10 +90,12 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         gap++;
         requestSize = 0;
         lastPayloadTime = { 0, 0 };
+        opening = false;
         seqNum[!direction] = std::max(seqNum[!direction], ackNumber);
     }
 
     if (!(flags & Tins::TCP::RST)) {
+        opening = false;
         seqNum[direction] = std::max(seqNum[direction], nextSeq);
     }
     if (tcpPayloadSize > 0) {
