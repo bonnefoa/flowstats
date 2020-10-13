@@ -106,6 +106,24 @@ TEST_CASE("https pcap", "[tcp]")
     }
 }
 
+TEST_CASE("Tcp gap connection", "[tcp]")
+{
+    auto tester = Tester();
+    auto const& tcpStatsCollector = tester.getTcpStatsCollector();
+
+    SECTION("Connection time is not computed if there's a gap ")
+    {
+        tester.readPcap("connection_with_gap.pcap");
+
+        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 443);
+        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        REQUIRE(aggregatedMap.size() == 1);
+        auto *aggregatedFlow = aggregatedMap[tcpKey];
+
+        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1)== "0");
+    }
+}
+
 TEST_CASE("Tcp reused port", "[tcp]")
 {
     auto tester = Tester();
@@ -117,7 +135,7 @@ TEST_CASE("Tcp reused port", "[tcp]")
         auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 1234);
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
-        auto aggregatedFlow = aggregatedMap[tcpKey];
+        auto *aggregatedFlow = aggregatedMap[tcpKey];
 
         CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1) == "6");
         CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1) == "5");
@@ -272,7 +290,7 @@ TEST_CASE("Request size", "[tcp]")
         auto flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        REQUIRE(flow->getFieldStr(Field::DS_MAX, FROM_CLIENT, 1) == "183.5 KB");
+        REQUIRE(flow->getFieldStr(Field::DS_MAX, FROM_CLIENT, 1) == "183 KB");
     }
 }
 
