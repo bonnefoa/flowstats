@@ -18,14 +18,13 @@ public:
     auto setupLog();
     auto setLogDebug() { logger->set_level(spdlog::level::debug); };
 
-protected:
+private:
     std::shared_ptr<spdlog::logger> logger;
 };
 
 class FlowstatsConfiguration : public LogConfiguration {
 public:
     FlowstatsConfiguration() = default;
-    virtual ~FlowstatsConfiguration() = default;
 
     [[nodiscard]] auto getInterfaceName() const -> std::string const& { return iface; };
     [[nodiscard]] auto getPcapFileName() const -> std::string const& { return pcapFileName; };
@@ -60,11 +59,10 @@ private:
 class FlowReplayConfiguration : public LogConfiguration {
 public:
     FlowReplayConfiguration() = default;
-    virtual ~FlowReplayConfiguration() = default;
 
     auto setBpfFilter(std::string b) { bpfFilter = std::move(b); };
     auto setPcapFileName(std::string p) { pcapFileName = std::move(p); };
-    auto setIp(std::string ipStr) { ip = ipStr; };
+    auto setIp(std::string ipStr) { ip = std::move(ipStr); };
     auto setDstPort(uint16_t inPort) { dstPort = inPort; };
 
     [[nodiscard]] auto getPcapFileName() const -> std::string const& { return pcapFileName; };
