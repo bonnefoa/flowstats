@@ -5,12 +5,12 @@ namespace flowstats {
 #define SSL_SERVER_NAME_EXT 0
 #define SSL_SNI_HOST_NAME 0
 
-#define RETURN_EMPTY_IF_EMPTY(VAR)    \
-    if (!VAR ) { \
-        return {};                    \
+#define RETURN_EMPTY_IF_EMPTY(VAR) \
+    if (!VAR) {                    \
+        return {};                 \
     }
 
-auto parseTlsVersion(Cursor *cursor) -> std::optional<TLSVersion>
+auto parseTlsVersion(Cursor* cursor) -> std::optional<TLSVersion>
 {
     auto mbVersionInt = cursor->read_be<uint16_t>();
     RETURN_EMPTY_IF_EMPTY(mbVersionInt);
@@ -75,7 +75,8 @@ auto checkSslChangeCipherSpec(Cursor* cursor) -> bool
     return true;
 }
 
-auto TlsHeader::parse(Cursor *cursor) -> std::optional<TlsHeader> {
+auto TlsHeader::parse(Cursor* cursor) -> std::optional<TlsHeader>
+{
     auto mbContentTypeInt = cursor->read<uint8_t>();
     RETURN_EMPTY_IF_EMPTY(mbContentTypeInt);
     auto mbContentType = SSLContentType::_from_integral_nothrow(mbContentTypeInt.value());
@@ -93,7 +94,8 @@ auto TlsHeader::parse(Cursor *cursor) -> std::optional<TlsHeader> {
     return TlsHeader(mbContentType.value(), mbVersion.value(), length);
 }
 
-auto TlsHandshake::parse(Cursor *cursor) -> std::optional<TlsHandshake> {
+auto TlsHandshake::parse(Cursor* cursor) -> std::optional<TlsHandshake>
+{
     auto mbHandshakeTypeInt = cursor->read<uint8_t>();
     RETURN_EMPTY_IF_EMPTY(mbHandshakeTypeInt);
     auto mbHandshakeType = SSLHandshakeType::_from_integral_nothrow(mbHandshakeTypeInt.value());
@@ -114,10 +116,14 @@ auto TlsHandshake::parse(Cursor *cursor) -> std::optional<TlsHandshake> {
     return tlsHandshake;
 }
 
-TlsHandshake::TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSVersion version, Cursor *cursor) : handshakeType(handshakeType), length(length), version(version) {
+TlsHandshake::TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSVersion version, Cursor* cursor)
+    : handshakeType(handshakeType)
+    , length(length)
+    , version(version)
+{
 
     if (handshakeType == +SSLHandshakeType::SSL_CLIENT_HELLO
-            || handshakeType == +SSLHandshakeType::SSL_SERVER_HELLO ) {
+        || handshakeType == +SSLHandshakeType::SSL_SERVER_HELLO) {
         // Random
         if (cursor->skip(32) == false) {
             return;
@@ -145,13 +151,13 @@ TlsHandshake::TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSV
         }
     } else if (handshakeType == +SSLHandshakeType::SSL_SERVER_HELLO) {
         auto mbCipherSuite = cursor->read_be<uint16_t>();
-        if (!mbCipherSuite) return;
+        if (!mbCipherSuite)
+            return;
         auto mbSslCipherSuite = SSLCipherSuite::_from_integral_nothrow(mbCipherSuite.value());
         if (mbSslCipherSuite) {
             sslCipherSuite = mbSslCipherSuite.value();
         }
     }
 };
-
 
 } // namespace flowstats

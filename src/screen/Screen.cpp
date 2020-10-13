@@ -531,13 +531,13 @@ auto Screen::refreshableAction(int c) -> bool
         displayConf->toggleMergedDirection();
         return true;
     } else if (c == KEY_LEFT) {
-            protocolToDisplayIndex[selectedProtocolIndex] = getWithWarparound(protocolToDisplayIndex[selectedProtocolIndex],
-                    static_cast<int>(activeCollector->getDisplayPairs().size()), -1);
+        protocolToDisplayIndex[selectedProtocolIndex] = getWithWarparound(protocolToDisplayIndex[selectedProtocolIndex],
+            static_cast<int>(activeCollector->getDisplayPairs().size()), -1);
         activeCollector->updateDisplayType(protocolToDisplayIndex[selectedProtocolIndex]);
         return true;
     } else if (c == KEY_RIGHT) {
-            protocolToDisplayIndex[selectedProtocolIndex] = getWithWarparound(protocolToDisplayIndex[selectedProtocolIndex],
-                    static_cast<int>(activeCollector->getDisplayPairs().size()), 1);
+        protocolToDisplayIndex[selectedProtocolIndex] = getWithWarparound(protocolToDisplayIndex[selectedProtocolIndex],
+            static_cast<int>(activeCollector->getDisplayPairs().size()), 1);
         activeCollector->updateDisplayType(protocolToDisplayIndex[selectedProtocolIndex]);
         return true;
     } else if (c == KEY_SUP) {

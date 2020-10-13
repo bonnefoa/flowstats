@@ -244,14 +244,14 @@ inline auto ValidateSampleRate(const double _rate) -> bool
 inline auto ValidateType(const Type& _type) -> bool
 {
     switch (_type) {
-    case Type::Counter:
-    case Type::Gauge:
-    case Type::Timer:
-    case Type::Histogram:
-    case Type::Set:
-        return true;
-    default:
-        return false;
+        case Type::Counter:
+        case Type::Gauge:
+        case Type::Timer:
+        case Type::Histogram:
+        case Type::Set:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -344,23 +344,23 @@ auto Metric(
     //     `c` or `g` or `ms` or `h` or `s`
     //
     switch (_type) {
-    case Type::Counter:
-        _datagram += "c";
-        break;
-    case Type::Gauge:
-        _datagram += "g";
-        break;
-    case Type::Timer:
-        _datagram += "ms";
-        break;
-    case Type::Histogram:
-        _datagram += "h";
-        break;
-    case Type::Set:
-        _datagram += "s";
-        break;
-    default:
-        return "";
+        case Type::Counter:
+            _datagram += "c";
+            break;
+        case Type::Gauge:
+            _datagram += "g";
+            break;
+        case Type::Timer:
+            _datagram += "ms";
+            break;
+        case Type::Histogram:
+            _datagram += "h";
+            break;
+        case Type::Set:
+            _datagram += "s";
+            break;
+        default:
+            return "";
     }
 
     ////////////////////////////////////////////////////////////

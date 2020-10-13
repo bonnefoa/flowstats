@@ -81,57 +81,57 @@ auto main(int argc, char* argv[]) -> int
                 &optionIndex))
         != -1) {
         switch (opt) {
-        case 0:
-            break;
-        case 'b':
-            conf.setBpfFilter(optarg);
-            break;
-        case 'i':
-            conf.setIface(optarg);
-            break;
-        case 'a':
-            agentAddr = optarg;
-            break;
-        case 'm':
-            displayConf.setMaxResults(atoi(optarg));
-            break;
-        case 'f':
-            conf.setPcapFileName(optarg);
-            break;
-        case 'p':
-            localhostIp = optarg;
-            break;
-        case 'k':
-            initialServerPorts = flowstats::split(optarg, ',');
-            break;
-        case 'd':
-            initialDomains = flowstats::split(optarg, ',');
-            break;
-        case 'v':
-            conf.setLogDebug();
-            break;
-        case 'h':
-            printUsage();
-            break;
+            case 0:
+                break;
+            case 'b':
+                conf.setBpfFilter(optarg);
+                break;
+            case 'i':
+                conf.setIface(optarg);
+                break;
+            case 'a':
+                agentAddr = optarg;
+                break;
+            case 'm':
+                displayConf.setMaxResults(atoi(optarg));
+                break;
+            case 'f':
+                conf.setPcapFileName(optarg);
+                break;
+            case 'p':
+                localhostIp = optarg;
+                break;
+            case 'k':
+                initialServerPorts = flowstats::split(optarg, ',');
+                break;
+            case 'd':
+                initialDomains = flowstats::split(optarg, ',');
+                break;
+            case 'v':
+                conf.setLogDebug();
+                break;
+            case 'h':
+                printUsage();
+                break;
 
-        case 'u':
-            conf.setDisplayUnknownFqdn(true);
-            break;
-        case 'n':
-            noDisplay = true;
-            break;
-        case 'c':
-            noCurses = true;
-            break;
-        case 'w':
-            conf.setPerIpAggr(true);
-            break;
-        case 'l':
-            flowstats::listInterfaces();
-            break;
-        default:
-            printUsage();
-            exit(-1);
+            case 'u':
+                conf.setDisplayUnknownFqdn(true);
+                break;
+            case 'n':
+                noDisplay = true;
+                break;
+            case 'c':
+                noCurses = true;
+                break;
+            case 'w':
+                conf.setPerIpAggr(true);
+                break;
+            case 'l':
+                flowstats::listInterfaces();
+                break;
+            default:
+                printUsage();
+                exit(-1);
         }
     }
 
@@ -155,7 +155,7 @@ auto main(int argc, char* argv[]) -> int
 
     std::atomic_bool shouldStop = false;
     flowstats::Screen screen(&shouldStop, &displayConf,
-            noCurses, noDisplay, pcapReplay, collectors);
+        noCurses, noDisplay, pcapReplay, collectors);
     flowstats::PktSource pktSource(&screen, conf, collectors, &shouldStop);
     screen.StartDisplay();
     if (pcapReplay) {

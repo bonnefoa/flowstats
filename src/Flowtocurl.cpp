@@ -65,26 +65,26 @@ void printUsage()
 auto methodToString(HttpRequestLayer::HttpMethod method) -> std::string
 {
     switch (method) {
-    case HttpRequestLayer::HttpGET:
-        return "GET";
-    case HttpRequestLayer::HttpHEAD:
-        return "HEAD";
-    case HttpRequestLayer::HttpPOST:
-        return "POST";
-    case HttpRequestLayer::HttpPUT:
-        return "PUT";
-    case HttpRequestLayer::HttpDELETE:
-        return "DELETE";
-    case HttpRequestLayer::HttpTRACE:
-        return "TRACE";
-    case HttpRequestLayer::HttpOPTIONS:
-        return "OPTIONS";
-    case HttpRequestLayer::HttpCONNECT:
-        return "CONNECT";
-    case HttpRequestLayer::HttpPATCH:
-        return "PATCH";
-    case HttpRequestLayer::HttpMethodUnknown:
-        return "UNKNOWN";
+        case HttpRequestLayer::HttpGET:
+            return "GET";
+        case HttpRequestLayer::HttpHEAD:
+            return "HEAD";
+        case HttpRequestLayer::HttpPOST:
+            return "POST";
+        case HttpRequestLayer::HttpPUT:
+            return "PUT";
+        case HttpRequestLayer::HttpDELETE:
+            return "DELETE";
+        case HttpRequestLayer::HttpTRACE:
+            return "TRACE";
+        case HttpRequestLayer::HttpOPTIONS:
+            return "OPTIONS";
+        case HttpRequestLayer::HttpCONNECT:
+            return "CONNECT";
+        case HttpRequestLayer::HttpPATCH:
+            return "PATCH";
+        case HttpRequestLayer::HttpMethodUnknown:
+            return "UNKNOWN";
     }
 }
 
@@ -184,44 +184,44 @@ auto main(int argc, char* argv[]) -> int
                 &optionIndex))
         != -1) {
         switch (opt) {
-        case 0:
-            break;
-        case 'a':
-            conf.apiKey = optarg;
-            break;
-        case 's':
-            conf.appKey = optarg;
-            break;
-        case 'b':
-            conf.bpfFilter = optarg;
-            break;
-        case 'i':
-            conf.interfaceNameOrIP = optarg;
-            break;
-        case 'p':
-            httpServerPortStrs = split(optarg, ',');
-            break;
-        case 'd':
-            conf.destinationIP = optarg;
-            break;
-        case 'f':
-            conf.pcapFileName = optarg;
-            break;
-        case 'u':
-            conf.excludedUris = splitSet(optarg, ',');
-            break;
-        case 'v':
-            spdlog::set_level(spdlog::level::debug);
-            break;
-        case 'h':
-            printUsage();
-            break;
-        case 'l':
-            listInterfaces();
-            break;
-        default:
-            printUsage();
-            exit(-1);
+            case 0:
+                break;
+            case 'a':
+                conf.apiKey = optarg;
+                break;
+            case 's':
+                conf.appKey = optarg;
+                break;
+            case 'b':
+                conf.bpfFilter = optarg;
+                break;
+            case 'i':
+                conf.interfaceNameOrIP = optarg;
+                break;
+            case 'p':
+                httpServerPortStrs = split(optarg, ',');
+                break;
+            case 'd':
+                conf.destinationIP = optarg;
+                break;
+            case 'f':
+                conf.pcapFileName = optarg;
+                break;
+            case 'u':
+                conf.excludedUris = splitSet(optarg, ',');
+                break;
+            case 'v':
+                spdlog::set_level(spdlog::level::debug);
+                break;
+            case 'h':
+                printUsage();
+                break;
+            case 'l':
+                listInterfaces();
+                break;
+            default:
+                printUsage();
+                exit(-1);
         }
     }
 

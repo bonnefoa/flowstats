@@ -10,7 +10,6 @@
 
 namespace flowstats {
 
-
 class LogConfiguration {
 public:
     LogConfiguration();

@@ -69,29 +69,29 @@ auto main(int argc, char* argv[]) -> int
                 &optionIndex))
         != -1) {
         switch (opt) {
-        case 0:
-            break;
-        case 'b':
-            conf.setBpfFilter(optarg);
-            break;
-        case 'f':
-            conf.setPcapFileName(optarg);
-            break;
-        case 'p':
-            conf.setDstPort(atoi(optarg));
-            break;
-        case 'd':
-            conf.setIp(optarg);
-            break;
-        case 'v':
-            spdlog::set_level(spdlog::level::debug);
-            break;
-        case 'h':
-            printUsage();
-            break;
-        default:
-            printUsage();
-            exit(-1);
+            case 0:
+                break;
+            case 'b':
+                conf.setBpfFilter(optarg);
+                break;
+            case 'f':
+                conf.setPcapFileName(optarg);
+                break;
+            case 'p':
+                conf.setDstPort(atoi(optarg));
+                break;
+            case 'd':
+                conf.setIp(optarg);
+                break;
+            case 'v':
+                spdlog::set_level(spdlog::level::debug);
+                break;
+            case 'h':
+                printUsage();
+                break;
+            default:
+                printUsage();
+                exit(-1);
         }
     }
 

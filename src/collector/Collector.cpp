@@ -45,22 +45,22 @@ auto Collector::fillSortFields() -> void
 auto Collector::getSortFun(Field field) const -> sortFlowFun
 {
     switch (field) {
-    case Field::FQDN:
-        return &Flow::sortByFqdn;
-    case Field::IP:
-        return &Flow::sortByIp;
-    case Field::PORT:
-        return &Flow::sortByPort;
-    case Field::BYTES_RATE:
-        return &Flow::sortByBytes;
-    case Field::BYTES:
-        return &Flow::sortByTotalBytes;
-    case Field::PKTS_RATE:
-        return &Flow::sortByPackets;
-    case Field::PKTS:
-        return &Flow::sortByTotalPackets;
-    default:
-        return nullptr;
+        case Field::FQDN:
+            return &Flow::sortByFqdn;
+        case Field::IP:
+            return &Flow::sortByIp;
+        case Field::PORT:
+            return &Flow::sortByPort;
+        case Field::BYTES_RATE:
+            return &Flow::sortByBytes;
+        case Field::BYTES:
+            return &Flow::sortByTotalBytes;
+        case Field::PKTS_RATE:
+            return &Flow::sortByPackets;
+        case Field::PKTS:
+            return &Flow::sortByTotalPackets;
+        default:
+            return nullptr;
     }
 }
 
@@ -101,7 +101,7 @@ auto Collector::outputStatus(time_t duration) -> CollectorOutput
 
     buildTotalFlow(aggregatedFlows);
     auto bodyLines = flowFormatter.outputFlow(totalFlow,
-            aggregatedFlows, duration, displayConf);
+        aggregatedFlows, duration, displayConf);
     return CollectorOutput(toString(), headers, bodyLines);
 }
 
@@ -111,7 +111,7 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
     auto aggregatedMap = getAggregatedMap();
     tempVector.reserve(aggregatedMap.size());
     for (auto const& pair : aggregatedMap) {
-        auto flow = pair.second;
+        auto* flow = pair.second;
         auto filter = displayConf.getFilter();
         if (!filter.empty()) {
             if (flow->getFqdn().find(filter) == std::string::npos) {

@@ -18,7 +18,7 @@ public:
     virtual ~FlowFormatter() = default;
 
     auto outputBody(Flow const* flow, std::vector<std::string>* accumulator,
-            int duration, DisplayConfiguration const& displayConf) const -> void;
+        int duration, DisplayConfiguration const& displayConf) const -> void;
     [[nodiscard]] auto outputHeaders(DisplayConfiguration const& displayConf) const -> std::string;
 
     [[nodiscard]] auto getDisplayFields() const& { return displayFields; };

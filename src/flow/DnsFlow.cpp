@@ -85,8 +85,8 @@ auto dnsTypeToString(Tins::DNS::QueryType dnsType) -> std::string
         ENUM_TEXT(DHCID);
         ENUM_TEXT(NSEC3);
         ENUM_TEXT(NSEC3PARAM);
-    default:
-        return "Unknown";
+        default:
+            return "Unknown";
     }
 }
 } // namespace flowstats

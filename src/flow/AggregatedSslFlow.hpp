@@ -1,18 +1,20 @@
 #pragma once
 
 #include "Flow.hpp"
-#include "Stats.hpp"
 #include "SslProto.hpp"
+#include "Stats.hpp"
 
 namespace flowstats {
 
 class AggregatedSslFlow : public Flow {
 public:
     AggregatedSslFlow()
-        : Flow("Total"), tlsVersion(TLSVersion::UNKNOWN) {};
+        : Flow("Total")
+        , tlsVersion(TLSVersion::UNKNOWN) {};
 
     AggregatedSslFlow(FlowId const& flowId, std::string const& fqdn)
-        : Flow(flowId, fqdn), tlsVersion(TLSVersion::UNKNOWN) {};
+        : Flow(flowId, fqdn)
+        , tlsVersion(TLSVersion::UNKNOWN) {};
 
     auto getFieldStr(Field field, Direction direction, int duration) const -> std::string override;
     auto resetFlow(bool resetTotal) -> void override;

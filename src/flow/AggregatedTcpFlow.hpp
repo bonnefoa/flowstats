@@ -26,8 +26,8 @@ struct AggregatedTcpFlow : Flow {
     }
 
     auto updateFlow(Tins::Packet const& packet,
-            FlowId const& flowId,
-            Tins::TCP const& tcpLayer) -> void;
+        FlowId const& flowId,
+        Tins::TCP const& tcpLayer) -> void;
 
     auto resetFlow(bool resetTotal) -> void override;
 

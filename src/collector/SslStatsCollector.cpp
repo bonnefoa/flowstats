@@ -1,8 +1,8 @@
 #include "SslStatsCollector.hpp"
 #include "SslProto.hpp"
 #include <fmt/format.h>
-#include <tins/rawpdu.h>
 #include <tins/memory_helpers.h>
+#include <tins/rawpdu.h>
 
 namespace flowstats {
 
@@ -90,7 +90,7 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet,
     auto payload = rawData->payload();
     auto cursor = Cursor(payload);
     auto mbTlsHeader = TlsHeader::parse(&cursor);
-    if (! mbTlsHeader) {
+    if (!mbTlsHeader) {
         return;
     }
 
@@ -111,26 +111,26 @@ auto SslStatsCollector::getSortFun(Field field) const -> sortFlowFun
         return sortFun;
     }
     switch (field) {
-    case Field::CONN:
-        return AggregatedSslFlow::sortByConnections;
-    case Field::CONN_RATE:
-        return AggregatedSslFlow::sortByConnectionRate;
-    case Field::DOMAIN:
-        return AggregatedSslFlow::sortByDomain;
-    case Field::CIPHER_SUITE:
-        return AggregatedSslFlow::sortByCipherSuite;
-    case Field::TLS_VERSION:
-        return AggregatedSslFlow::sortByTlsVersion;
-    case Field::CT_P95:
-        return AggregatedSslFlow::sortByConnectionP95;
-    case Field::CT_TOTAL_P95:
-        return AggregatedSslFlow::sortByConnectionTotalP95;
-    case Field::CT_P99:
-        return AggregatedSslFlow::sortByConnectionP99;
-    case Field::CT_TOTAL_P99:
-        return AggregatedSslFlow::sortByConnectionTotalP99;
-    default:
-        return nullptr;
+        case Field::CONN:
+            return AggregatedSslFlow::sortByConnections;
+        case Field::CONN_RATE:
+            return AggregatedSslFlow::sortByConnectionRate;
+        case Field::DOMAIN:
+            return AggregatedSslFlow::sortByDomain;
+        case Field::CIPHER_SUITE:
+            return AggregatedSslFlow::sortByCipherSuite;
+        case Field::TLS_VERSION:
+            return AggregatedSslFlow::sortByTlsVersion;
+        case Field::CT_P95:
+            return AggregatedSslFlow::sortByConnectionP95;
+        case Field::CT_TOTAL_P95:
+            return AggregatedSslFlow::sortByConnectionTotalP95;
+        case Field::CT_P99:
+            return AggregatedSslFlow::sortByConnectionP99;
+        case Field::CT_TOTAL_P99:
+            return AggregatedSslFlow::sortByConnectionTotalP99;
+        default:
+            return nullptr;
     }
 }
 

@@ -13,8 +13,7 @@ struct CollectorOutput {
         std::vector<std::string> values)
         : name(std::move(name))
         , headers(std::move(headers))
-        , values(std::move(values))
-        {};
+        , values(std::move(values)) {};
 
     auto print() const -> void;
 

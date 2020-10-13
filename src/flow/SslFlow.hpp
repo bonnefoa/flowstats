@@ -3,8 +3,8 @@
 #include "AggregatedSslFlow.hpp"
 #include "Flow.hpp"
 #include "PduUtils.hpp"
-#include "Stats.hpp"
 #include "SslProto.hpp"
+#include "Stats.hpp"
 
 namespace flowstats {
 
@@ -26,7 +26,7 @@ public:
 private:
     void processHandshake(Tins::Packet const& packet, Cursor* cursor);
     void processChangeCipherSpec(Tins::Packet const& packet,
-            Cursor* cursor);
+        Cursor* cursor);
 
     std::vector<AggregatedSslFlow*> aggregatedFlows;
     TLSVersion tlsVersion = TLSVersion::UNKNOWN;

@@ -150,7 +150,6 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     for (auto& aggregatedFlow : aggregatedFlows) {
         aggregatedFlow->addCltPacket(getCltIpInt(), packet.pdu()->advertised_size());
     }
-
 }
 
 auto TcpFlow::tcpToString(Tins::TCP const& tcp) -> std::string

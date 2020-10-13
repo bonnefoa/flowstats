@@ -1,8 +1,8 @@
 #include "DnsStatsCollector.hpp"
 #include "PduUtils.hpp"
 #include "PrintHelper.hpp"
-#include <tins/rawpdu.h>
 #include <tins/memory_helpers.h>
+#include <tins/rawpdu.h>
 
 namespace flowstats {
 
@@ -27,10 +27,10 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
 auto DnsStatsCollector::isDnsPort(uint16_t port) -> bool
 {
     switch (port) {
-    case 53:
-    case 5353:
-    case 5355:
-        return true;
+        case 53:
+        case 5353:
+        case 5355:
+            return true;
     }
     return false;
 }
@@ -187,38 +187,38 @@ auto DnsStatsCollector::getSortFun(Field field) const -> sortFlowFun
         return sortFun;
     }
     switch (field) {
-    case Field::PROTO:
-        return &AggregatedDnsFlow::sortByProto;
-    case Field::TYPE:
-        return &AggregatedDnsFlow::sortByType;
-    case Field::REQ:
-        return &AggregatedDnsFlow::sortByRequest;
-    case Field::REQ_RATE:
-        return &AggregatedDnsFlow::sortByRequestRate;
-    case Field::TIMEOUTS:
-        return &AggregatedDnsFlow::sortByTimeout;
-    case Field::TIMEOUTS_RATE:
-        return &AggregatedDnsFlow::sortByTimeoutRate;
-    case Field::SRT:
-        return &AggregatedDnsFlow::sortBySrt;
-    case Field::SRT_RATE:
-        return &AggregatedDnsFlow::sortBySrtRate;
-    case Field::SRT_TOTAL_P95:
-        return &AggregatedDnsFlow::sortBySrtTotalP95;
-    case Field::SRT_P95:
-        return &AggregatedDnsFlow::sortBySrtP95;
-    case Field::SRT_P99:
-        return &AggregatedDnsFlow::sortBySrtP99;
-    case Field::SRT_TOTAL_P99:
-        return &AggregatedDnsFlow::sortBySrtTotalP99;
-    case Field::SRT_MAX:
-        return &AggregatedDnsFlow::sortBySrtMax;
-    case Field::SRT_TOTAL_MAX:
-        return &AggregatedDnsFlow::sortBySrtTotalMax;
-    case Field::RCRD_AVG:
-        return &AggregatedDnsFlow::sortByRcrdAvg;
-    default:
-        return nullptr;
+        case Field::PROTO:
+            return &AggregatedDnsFlow::sortByProto;
+        case Field::TYPE:
+            return &AggregatedDnsFlow::sortByType;
+        case Field::REQ:
+            return &AggregatedDnsFlow::sortByRequest;
+        case Field::REQ_RATE:
+            return &AggregatedDnsFlow::sortByRequestRate;
+        case Field::TIMEOUTS:
+            return &AggregatedDnsFlow::sortByTimeout;
+        case Field::TIMEOUTS_RATE:
+            return &AggregatedDnsFlow::sortByTimeoutRate;
+        case Field::SRT:
+            return &AggregatedDnsFlow::sortBySrt;
+        case Field::SRT_RATE:
+            return &AggregatedDnsFlow::sortBySrtRate;
+        case Field::SRT_TOTAL_P95:
+            return &AggregatedDnsFlow::sortBySrtTotalP95;
+        case Field::SRT_P95:
+            return &AggregatedDnsFlow::sortBySrtP95;
+        case Field::SRT_P99:
+            return &AggregatedDnsFlow::sortBySrtP99;
+        case Field::SRT_TOTAL_P99:
+            return &AggregatedDnsFlow::sortBySrtTotalP99;
+        case Field::SRT_MAX:
+            return &AggregatedDnsFlow::sortBySrtMax;
+        case Field::SRT_TOTAL_MAX:
+            return &AggregatedDnsFlow::sortBySrtTotalMax;
+        case Field::RCRD_AVG:
+            return &AggregatedDnsFlow::sortByRcrdAvg;
+        default:
+            return nullptr;
     }
 }
 } // namespace flowstats

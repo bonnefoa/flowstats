@@ -94,7 +94,8 @@ private:
         RESIZE,
         RATE_MODE,
         SORT
-    } editMode = NONE;
+    } editMode
+        = NONE;
     bool reversedSort = false;
 
     std::mutex screenMutex;
