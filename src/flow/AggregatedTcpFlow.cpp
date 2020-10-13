@@ -280,7 +280,7 @@ auto AggregatedTcpFlow::openConnection(int connectionTime) -> void
     totalConnections++;
 };
 
-auto AggregatedTcpFlow::addCltPacket(IPv4 cltIp, Direction direction, int numBytes) -> void
+auto AggregatedTcpFlow::addCltPacket(IPv4 cltIp, int numBytes) -> void
 {
     setOrIncreaseMapValue(&sourcePktsIps, IPAddress(cltIp), 1);
     setOrIncreaseMapValue(&sourceBytesIps, cltIp, numBytes);

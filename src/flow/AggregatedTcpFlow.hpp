@@ -31,16 +31,17 @@ struct AggregatedTcpFlow : Flow {
 
     auto resetFlow(bool resetTotal) -> void override;
 
-    auto getFieldStr(Field field, Direction direction, int duration) const -> std::string override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
 
     auto mergePercentiles() -> void override;
     auto failConnection() -> void;
     auto closeConnection() -> void;
-    auto addCltPacket(IPv4 ipClt, Direction direction, int numBytes) -> void;
+    auto addCltPacket(IPv4 ipClt, int numBytes) -> void;
     auto openConnection(int connectionTime) -> void;
     auto ongoingConnection() -> void;
     auto addSrt(int srt, int dataSize) -> void;
+
+    [[nodiscard]] auto getFieldStr(Field field, Direction direction, int duration) const -> std::string override;
     [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string> override;
 
     [[nodiscard]] static auto sortByMtu(Flow const* a, Flow const* b) -> bool
