@@ -148,7 +148,7 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     }
 
     for (auto& aggregatedFlow : aggregatedFlows) {
-        aggregatedFlow->addCltPacket(getCltIpInt(), direction, tcpPayloadSize);
+        aggregatedFlow->addCltPacket(getCltIpInt(), packet.pdu()->advertised_size());
     }
 
 }
