@@ -84,6 +84,13 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         }
     }
 
+    if (!(flags & Tins::TCP::RST)) {
+        seqNum[direction] = std::max(seqNum[direction], nextSeq);
+    } else {
+        opening = false;
+        lastPayloadTime = { 0, 0 };
+    }
+
     uint32_t ackNumber = tcp.ack_seq();
     if (seqNum[!direction] > 0 && ackNumber > seqNum[!direction]) {
         SPDLOG_DEBUG("Got a gap, ack {}, expected seqNum {}", ackNumber, seqNum[!direction]);
@@ -92,12 +99,14 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
         lastPayloadTime = { 0, 0 };
         opening = false;
         seqNum[!direction] = std::max(seqNum[!direction], ackNumber);
+    } else if (!tcp.has_flags(Tins::TCP::SYN) && !tcp.has_flags(Tins::TCP::RST) && !opened && !opening && seqNum[!direction] == ackNumber) {
+        SPDLOG_DEBUG("Detected ongoing conversation");
+        opened = true;
+        for (auto& aggregatedFlow : aggregatedFlows) {
+            aggregatedFlow->ongoingConnection();
+        }
     }
 
-    if (!(flags & Tins::TCP::RST)) {
-        opening = false;
-        seqNum[direction] = std::max(seqNum[direction], nextSeq);
-    }
     if (tcpPayloadSize > 0) {
         if (lastDirection != direction && direction == getSrvPos() && lastPayloadTime.tv_sec > 0) {
             uint32_t delta = getTimevalDeltaMs(lastPayloadTime, tv);
@@ -114,14 +123,6 @@ auto TcpFlow::updateFlow(Tins::Packet const& packet, Direction direction,
             requestSize = 0;
         } else {
             requestSize += tcpPayloadSize;
-        }
-    }
-
-    if (!tcp.has_flags(Tins::TCP::SYN) && !tcp.has_flags(Tins::TCP::RST) && !opened && !opening && seqNum[!direction] == ackNumber) {
-        SPDLOG_DEBUG("Detected ongoing conversation");
-        opened = true;
-        for (auto& aggregatedFlow : aggregatedFlows) {
-            aggregatedFlow->ongoingConnection();
         }
     }
 
