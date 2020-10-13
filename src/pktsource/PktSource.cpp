@@ -109,8 +109,10 @@ auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
             SPDLOG_INFO("Malformed packet: {}", packet);
         }
     }
-    auto ts = packet.timestamp();
-    updateScreen({ ts.seconds(), ts.microseconds() / 1000 });
+    if (screen) {
+        auto ts = packet.timestamp();
+        updateScreen({ ts.seconds(), ts.microseconds() / 1000 });
+    }
 }
 
 /**
@@ -119,13 +121,10 @@ auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
 auto PktSource::analyzePcapFile()
     -> int
 {
-    auto* reader = new Tins::FileSniffer(conf.getPcapFileName(), conf.getBpfFilter());
-    if (reader == nullptr) {
-        return 1;
-    }
+    auto reader = Tins::FileSniffer(conf.getPcapFileName(), conf.getBpfFilter());
 
     int lastSecond = 0;
-    for (auto packet : *reader) {
+    for (auto const& packet : reader) {
         auto pktSecond = packet.timestamp().seconds();
         if (packet.timestamp().seconds() == 0) {
             break;
@@ -136,7 +135,6 @@ auto PktSource::analyzePcapFile()
         lastSecond = pktSecond;
         processPacketSource(packet);
     }
-    delete reader;
 
     for (auto* collector : collectors) {
         collector->resetMetrics();

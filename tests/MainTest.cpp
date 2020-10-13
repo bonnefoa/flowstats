@@ -23,11 +23,12 @@ Tester::Tester(bool perIpAggr)
     collectors.push_back(&dnsStatsCollector);
     collectors.push_back(&sslStatsCollector);
     collectors.push_back(&tcpStatsCollector);
+    pktSource = new PktSource(nullptr, conf, collectors, &shouldStop);
 }
 
-auto Tester::readPcap(std::string pcap, std::string bpf, bool advanceTick) -> int
+auto Tester::readPcap(std::string const& pcap, std::string const& bpf, bool advanceTick) -> int
 {
-    struct stat buffer;
+    struct stat buffer = {};
     std::string fullPath = fmt::format("{}/pcaps/{}", TEST_PATH, pcap);
     INFO("Checking file " << fullPath);
     REQUIRE(stat(fullPath.c_str(), &buffer) == 0);
@@ -41,35 +42,12 @@ auto Tester::readPcap(std::string pcap, std::string bpf, bool advanceTick) -> in
             break;
         }
         i++;
-
-        auto const* pdu = packet.pdu();
-        auto const* ip = pdu->find_pdu<Tins::IP>();
-        auto const* ipv6 = pdu->find_pdu<Tins::IPv6>();
-        if (ip == nullptr && ipv6 == nullptr) {
-            continue;
-        }
-        Tins::PDU const* ipPdu = ip;
-        if (ip == nullptr) {
-            ipPdu = ipv6;
-        }
-        auto const* tcp = ipPdu->find_pdu<Tins::TCP>();
-        Tins::UDP const* udp = nullptr;
-        if (tcp == nullptr) {
-            udp = ipPdu->find_pdu<Tins::UDP>();
-        }
-
-        auto flowId = FlowId(ip, ipv6, tcp, udp);
-        for (auto collector : collectors) {
-            try {
-                collector->processPacket(packet, flowId, ip, ipv6, tcp, udp);
-            } catch (Tins::malformed_packet const&) {
-            }
-        }
+        pktSource->processPacketSource(packet);
     }
     SPDLOG_INFO("Processed {} packets", i);
 
     if (advanceTick) {
-        for (auto collector : collectors) {
+        for (auto *collector : collectors) {
             collector->advanceTick(maxTimeval);
         }
     }

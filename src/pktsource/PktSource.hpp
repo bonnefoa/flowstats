@@ -32,9 +32,9 @@ public:
 
     auto analyzeLiveTraffic() -> int;
     auto analyzePcapFile() -> int;
+    auto processPacketSource(Tins::Packet const& packet) -> void;
 
 private:
-    auto processPacketSource(Tins::Packet const& packet) -> void;
 
     Screen* screen;
     FlowstatsConfiguration const& conf;
