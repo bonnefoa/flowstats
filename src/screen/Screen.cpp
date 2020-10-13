@@ -619,7 +619,7 @@ auto Screen::displayLoop() -> void
     }
 }
 
-auto Screen::StartDisplay() -> int
+auto Screen::startDisplay() -> int
 {
     if (noCurses) {
         return 0;
@@ -628,7 +628,7 @@ auto Screen::StartDisplay() -> int
     return 0;
 }
 
-auto Screen::StopDisplay() -> void
+auto Screen::stopDisplay() -> void
 {
     if (noCurses) {
         return;

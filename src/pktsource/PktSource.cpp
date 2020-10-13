@@ -1,6 +1,7 @@
 #include "PktSource.hpp"
 #include "Utils.hpp"
 #include <cstdint>
+#include <filesystem>
 #include <tins/ipv6.h>
 #include <tins/network_interface.h>
 #include <utility>
@@ -39,7 +40,7 @@ auto PktSource::getCaptureStatus() -> std::optional<CaptureStat>
     if (liveDevice == nullptr) {
         return {};
     }
-    pcap_stat pcapStat;
+    pcap_stat pcapStat = {};
     pcap_stats(liveDevice->get_pcap_handle(), &pcapStat);
     auto captureStat = CaptureStat(pcapStat);
     return captureStat;
@@ -78,7 +79,7 @@ auto PktSource::updateScreen(timeval currentTime) -> void
 auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
 {
     auto const* pdu = packet.pdu();
-    Tins::IP const* ip = pdu->find_pdu<Tins::IP>();
+    auto const* ip = pdu->find_pdu<Tins::IP>();
     Tins::IPv6 const* ipv6 = nullptr;
     Tins::PDU const* ipPdu;
     if (ip == nullptr) {
@@ -118,9 +119,14 @@ auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
 /**
  * analysis pcap file
  */
-auto PktSource::analyzePcapFile()
-    -> int
+auto PktSource::analyzePcapFile() -> int
 {
+    if (std::filesystem::exists(conf.getPcapFileName()) == false) {
+        shouldStop->store(true);
+        screen->stopDisplay();
+        SPDLOG_ERROR("File {} doesn't exist", conf.getPcapFileName());
+        return -1;
+    }
     auto reader = Tins::FileSniffer(conf.getPcapFileName(), conf.getBpfFilter());
 
     int lastSecond = 0;
@@ -146,7 +152,6 @@ auto PktSource::analyzePcapFile()
     while (!shouldStop->load()) {
         sleep(1);
     }
-    screen->StopDisplay();
 
     return 0;
 }
@@ -171,8 +176,6 @@ auto PktSource::analyzeLiveTraffic() -> int
 
     SPDLOG_INFO("Stop capture");
     liveDevice->stop_sniff();
-    SPDLOG_INFO("Stopping screen");
-    screen->StopDisplay();
     return 0;
 }
 } // namespace flowstats

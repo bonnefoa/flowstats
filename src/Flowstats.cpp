@@ -157,13 +157,14 @@ auto main(int argc, char* argv[]) -> int
     flowstats::Screen screen(&shouldStop, &displayConf,
         noCurses, noDisplay, pcapReplay, collectors);
     flowstats::PktSource pktSource(&screen, conf, collectors, &shouldStop);
-    screen.StartDisplay();
+    screen.startDisplay();
     if (pcapReplay) {
         pktSource.analyzePcapFile();
     } else {
         std::vector<Tins::IPv4Address> localIps = pktSource.getLocalIps();
         ipToFqdn.updateFqdn("localhost", localIps, {});
         pktSource.analyzeLiveTraffic();
+        screen.stopDisplay();
     }
 
     for (auto* collector : collectors) {

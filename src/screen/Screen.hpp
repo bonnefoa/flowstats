@@ -25,8 +25,8 @@ public:
         std::vector<Collector*> collectors);
     virtual ~Screen();
 
-    auto StartDisplay() -> int;
-    auto StopDisplay() -> void;
+    auto startDisplay() -> int;
+    auto stopDisplay() -> void;
     auto updateDisplay(timeval tv, bool updateOutput,
         std::optional<CaptureStat> const& captureStatus) -> void;
 
