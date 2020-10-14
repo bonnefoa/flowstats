@@ -165,8 +165,8 @@ auto main(int argc, char* argv[]) -> int
         ipToFqdn.updateFqdn("localhost", localIps, {});
         pktSource.analyzeLiveTraffic();
     }
-    screen.stopDisplay();
 
+    screen.stopDisplay();
     for (auto* collector : collectors) {
         delete collector;
     }

@@ -1,7 +1,7 @@
 #include "PktSource.hpp"
 #include "Utils.hpp"
 #include <cstdint>
-#include <filesystem>
+#include <sys/stat.h>
 #include <tins/ipv6.h>
 #include <tins/network_interface.h>
 #include <utility>
@@ -121,9 +121,8 @@ auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
  */
 auto PktSource::analyzePcapFile() -> int
 {
-    if (std::filesystem::exists(conf.getPcapFileName()) == false) {
-        shouldStop->store(true);
-        screen->stopDisplay();
+    struct stat buffer;
+    if (stat(conf.getPcapFileName().c_str(), &buffer) != 0) {
         SPDLOG_ERROR("File {} doesn't exist", conf.getPcapFileName());
         return -1;
     }
