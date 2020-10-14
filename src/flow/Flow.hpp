@@ -66,8 +66,7 @@ public:
     {
         return std::lexicographical_compare(
             a->fqdn.begin(), a->fqdn.end(),
-            b->fqdn.begin(), b->fqdn.end(),
-            caseInsensitiveComp);
+            b->fqdn.begin(), b->fqdn.end());
     }
 
     [[nodiscard]] static auto sortByIp(Flow const* a, Flow const* b) -> bool

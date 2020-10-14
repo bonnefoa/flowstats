@@ -43,15 +43,37 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
         packet.pdu()->advertised_size());
 }
 
-auto AggregatedTcpFlow::getTopClientIps(std::map<IPAddress, uint64_t> const& srcMap, std::string (*format)(uint64_t)) const -> std::string
+auto AggregatedTcpFlow::getTopClientIps(std::map<IPAddress, TrafficStats> const& srcMap, TrafficStats::TrafficType type) const -> std::string
 {
-    auto topIps = getTopMapPair(srcMap, 5);
+    int size = std::min(5, static_cast<int>(srcMap.size()));
+    std::vector<std::pair<IPAddress, TrafficStats>> topIps(size);
+
+    bool (*sortFun)(std::pair<IPAddress, TrafficStats> const& l,
+            std::pair<IPAddress, TrafficStats> const& r) = [](std::pair<IPAddress, TrafficStats> const& l,
+            std::pair<IPAddress, TrafficStats> const& r) {
+        return l.second.bytes > r.second.bytes;
+    };
+
+    if (type == TrafficStats::PKTS) {
+        sortFun = [](std::pair<IPAddress, TrafficStats> const& l,
+                std::pair<IPAddress, TrafficStats> const& r) {
+            return l.second.pkts > r.second.pkts;
+        };
+    }
+    std::partial_sort_copy(srcMap.begin(), srcMap.end(),
+            topIps.begin(), topIps.end(), sortFun);
+
     std::vector<std::string> topIpsStr;
     topIpsStr.reserve(topIps.size());
     for (auto& pair : topIps) {
-        topIpsStr.push_back(fmt::format("{:<6} {:<" STR(IP_SIZE) "}",
-            format(pair.second),
-            pair.first.getAddrV4().to_string()));
+        std::string val;
+        if (type == TrafficStats::PKTS) {
+            val = prettyFormatNumber(pair.second.pkts);
+        } else {
+            val = prettyFormatBytes(pair.second.bytes);
+        }
+        topIpsStr.push_back(fmt::format("{:<6} {:<" STR(IP_SIZE) "}", val,
+                    pair.first.getAddrV4().to_string()));
     }
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
@@ -143,8 +165,8 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::DS_TOTAL_P99: return prettyFormatBytes(totalRequestSizes.getPercentile(0.99));
             case Field::DS_TOTAL_MAX: return prettyFormatBytes(totalRequestSizes.getPercentile(1));
 
-            case Field::TOP_BYTES_CLIENT_IPS: return getTopClientIps(sourceBytesIps, prettyFormatBytes);
-            case Field::TOP_PKTS_CLIENT_IPS: return getTopClientIps(sourcePktsIps, prettyFormatNumber);
+            case Field::TOP_BYTES_CLIENT_IPS: return getTopClientIps(sourceIpToStats, TrafficStats::BYTES);
+            case Field::TOP_PKTS_CLIENT_IPS: return getTopClientIps(sourceIpToStats, TrafficStats::PKTS);
 
             case Field::FQDN: return getFqdn();
             case Field::IP: return getSrvIp();
@@ -168,12 +190,10 @@ auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
     Flow::addFlow(flow);
 
     auto const* tcpFlow = static_cast<const AggregatedTcpFlow*>(flow);
-    for (auto sourceIt : tcpFlow->sourcePktsIps) {
-        setOrIncreaseMapValue(&sourcePktsIps, sourceIt.first, sourceIt.second);
-    }
-
-    for (auto sourceIt : tcpFlow->sourceBytesIps) {
-        setOrIncreaseMapValue(&sourceBytesIps, sourceIt.first, sourceIt.second);
+    for (auto sourceIt : tcpFlow->sourceIpToStats) {
+        auto *stats = &sourceIpToStats[sourceIt.first];
+        stats->bytes += sourceIt.second.bytes;
+        stats->pkts += sourceIt.second.pkts;
     }
 
     for (int i = 0; i <= FROM_SERVER; ++i) {
@@ -242,8 +262,7 @@ auto AggregatedTcpFlow::resetFlow(bool resetTotal) -> void
         totalConnectionTimes.reset();
         totalRequestSizes.reset();
 
-        sourcePktsIps.clear();
-        sourceBytesIps.clear();
+        sourceIpToStats.clear();
     }
 
     connectionTimes.reset();
@@ -282,8 +301,9 @@ auto AggregatedTcpFlow::openConnection(int connectionTime) -> void
 
 auto AggregatedTcpFlow::addCltPacket(IPv4 cltIp, int numBytes) -> void
 {
-    setOrIncreaseMapValue(&sourcePktsIps, IPAddress(cltIp), 1);
-    setOrIncreaseMapValue(&sourceBytesIps, cltIp, numBytes);
+    auto *stats = &sourceIpToStats[IPAddress(cltIp)];
+    stats->bytes += numBytes;
+    stats->pkts++;
 };
 
 auto AggregatedTcpFlow::addSrt(int srt, int dataSize) -> void

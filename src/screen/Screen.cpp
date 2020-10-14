@@ -94,7 +94,7 @@ auto Screen::updateBody() -> void
 {
     werase(bodyWin);
 
-    auto& values = collectorOutput.getValues();
+    auto const& values = collectorOutput.getValues();
     auto numKeys = values.size();
     int coefficient = displayConf->getMergeDirection() ? 1 : 2;
     numberElements = int(numKeys / coefficient);
@@ -397,7 +397,7 @@ Screen::Screen(std::atomic_bool* shouldStop,
     activeCollector = getActiveCollector();
 }
 
-auto Screen::isEsc(char c) -> bool
+auto Screen::isEsc(int c) -> bool
 {
     if (c != KEY_ESC) {
         return false;

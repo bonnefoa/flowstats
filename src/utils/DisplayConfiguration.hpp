@@ -15,7 +15,7 @@ public:
     auto updateFieldSize(Field field, int delta) -> void;
 
     auto emptyFilter() { filter = ""; };
-    auto addFilterChar(char c) { filter.push_back(c); };
+    auto addFilterChar(int c) { filter.push_back(c); };
     auto removeFilterChar() { filter.pop_back(); };
 
     auto toggleMergedDirection() { mergeDirection = !mergeDirection; };

@@ -164,8 +164,8 @@ auto main(int argc, char* argv[]) -> int
         std::vector<Tins::IPv4Address> localIps = pktSource.getLocalIps();
         ipToFqdn.updateFqdn("localhost", localIps, {});
         pktSource.analyzeLiveTraffic();
-        screen.stopDisplay();
     }
+    screen.stopDisplay();
 
     for (auto* collector : collectors) {
         delete collector;

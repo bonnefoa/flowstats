@@ -50,7 +50,7 @@ private:
     auto updateResizeWin() -> void;
     auto updateRateMode() -> void;
 
-    auto isEsc(char c) -> bool;
+    auto isEsc(int c) -> bool;
 
     WINDOW* headerWin = nullptr;
     WINDOW* bodyWin = nullptr;

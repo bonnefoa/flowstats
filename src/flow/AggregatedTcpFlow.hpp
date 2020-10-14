@@ -8,7 +8,20 @@
 
 namespace flowstats {
 
-struct AggregatedTcpFlow : Flow {
+class TrafficStats {
+public:
+    uint64_t bytes = 0;
+    uint64_t pkts = 0;
+
+    enum TrafficType {
+        BYTES,
+        PKTS,
+    };
+
+};
+
+class AggregatedTcpFlow : public Flow {
+public:
     AggregatedTcpFlow()
         : Flow("Total") {};
 
@@ -318,7 +331,7 @@ struct AggregatedTcpFlow : Flow {
     }
 
 private:
-    auto getTopClientIps(std::map<IPAddress, uint64_t> const& srcMap, std::string (*format)(uint64_t)) const -> std::string;
+    [[nodiscard]] auto getTopClientIps(std::map<IPAddress, TrafficStats> const& srcMap, TrafficStats::TrafficType type) const -> std::string;
 
     std::array<int, 2> syns = {};
     std::array<int, 2> synAcks = {};
@@ -334,8 +347,7 @@ private:
 
     std::array<uint32_t, 2> mtu = {};
 
-    std::map<IPAddress, uint64_t> sourceBytesIps;
-    std::map<IPAddress, uint64_t> sourcePktsIps;
+    std::map<IPAddress, TrafficStats> sourceIpToStats;
 
     int closes = 0;
     int totalCloses = 0;
