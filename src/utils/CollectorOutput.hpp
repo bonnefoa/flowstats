@@ -17,8 +17,8 @@ struct CollectorOutput {
 
     auto print() const -> void;
 
-    [[nodiscard]] auto& getHeaders() const { return headers; };
-    [[nodiscard]] auto& getValues() const { return values; };
+    [[nodiscard]] auto getHeaders() const& -> std::string { return headers; };
+    [[nodiscard]] auto getValues() const& -> std::vector<std::string> { return values; };
 
 private:
     std::string name;

@@ -19,4 +19,4 @@ auto IPAddress::getAddrV6() const -> Tins::IPv6Address
     return stream.read<Tins::IPv6Address>();
 }
 
-} // namespace std
+} // namespace flowstats

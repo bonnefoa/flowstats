@@ -30,7 +30,7 @@ private:
 class CaptureStat {
 public:
     CaptureStat() = default;
-    CaptureStat(pcap_stat pcapStat)
+    explicit CaptureStat(pcap_stat pcapStat)
         : recv(pcapStat.ps_recv)
         , drop(pcapStat.ps_drop)
         , ifDrop(pcapStat.ps_ifdrop) {};
