@@ -92,19 +92,16 @@ auto fieldToHeader(Field field) -> char const*
         case Field::BYTES:
             return "Bytes";
         case Field::BYTES_RATE:
-            return "Bytes/s";
         case Field::BYTES_AVG:
             return "Bytes/s";
         case Field::CLOSE:
             return "Close";
         case Field::CLOSE_RATE:
-            return "Close/s";
         case Field::CLOSE_AVG:
             return "Close/s";
         case Field::CONN:
             return "Conn";
         case Field::CONN_RATE:
-            return "Conn/s";
         case Field::CONN_AVG:
             return "Conn/s";
         case Field::CT_P95:
@@ -122,7 +119,6 @@ auto fieldToHeader(Field field) -> char const*
         case Field::FIN:
             return "FIN";
         case Field::FIN_RATE:
-            return "FIN/s";
         case Field::FIN_AVG:
             return "FIN/s";
         case Field::FQDN:
@@ -134,7 +130,6 @@ auto fieldToHeader(Field field) -> char const*
         case Field::PKTS:
             return "Pkts";
         case Field::PKTS_RATE:
-            return "Pkts/s";
         case Field::PKTS_AVG:
             return "Pkts/s";
         case Field::PORT:
@@ -150,19 +145,16 @@ auto fieldToHeader(Field field) -> char const*
         case Field::REQ:
             return "Req";
         case Field::REQ_RATE:
-            return "Req/s";
         case Field::REQ_AVG:
             return "Req/s";
         case Field::RST:
             return "RST";
         case Field::RST_RATE:
-            return "RST/s";
         case Field::RST_AVG:
             return "RST/s";
         case Field::SRT:
             return "Srt";
         case Field::SRT_RATE:
-            return "Srt/s";
         case Field::SRT_AVG:
             return "Srt/s";
 
@@ -204,19 +196,16 @@ auto fieldToHeader(Field field) -> char const*
         case Field::SYN:
             return "SYN";
         case Field::SYN_RATE:
-            return "SYN/s";
         case Field::SYN_AVG:
             return "SYN/s";
         case Field::SYNACK:
             return "SYNACK";
         case Field::SYNACK_RATE:
-            return "SYNACK/s";
         case Field::SYNACK_AVG:
             return "SYNACK/s";
         case Field::TIMEOUTS:
             return "Tmo";
         case Field::TIMEOUTS_RATE:
-            return "Tmo/s";
         case Field::TIMEOUTS_AVG:
             return "Tmo/s";
         case Field::TRUNC:
@@ -226,7 +215,6 @@ auto fieldToHeader(Field field) -> char const*
         case Field::ZWIN:
             return "0win";
         case Field::ZWIN_RATE:
-            return "0win/s";
         case Field::ZWIN_AVG:
             return "0win/s";
         default:

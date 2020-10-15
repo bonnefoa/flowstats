@@ -6,7 +6,7 @@ namespace flowstats {
 FlowId::FlowId(Tins::IP const* ip, Tins::IPv6 const* ipv6,
     Tins::TCP const* tcp, Tins::UDP const* udp)
 {
-    std::array<Port, 2> pktPorts;
+    std::array<Port, 2> pktPorts = {};
     auto transport = Transport::TCP;
     if (tcp) {
         pktPorts = { tcp->sport(), tcp->dport() };

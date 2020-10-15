@@ -218,7 +218,7 @@ auto Screen::updateTopMenu() -> void
 auto Screen::updateTopLeftStatus(std::optional<CaptureStat> const& captureStat) -> void
 {
     werase(statusLeftWin);
-    auto freezeStr = "";
+    auto const* freezeStr = "";
     if (shouldFreeze) {
         freezeStr = ", Update frozen";
     }
@@ -476,7 +476,7 @@ auto Screen::refreshableAction(int c) -> bool
     }
 
     if (editMode == RESIZE) {
-        auto flowFormatter = activeCollector->getFlowFormatterPtr();
+        auto *flowFormatter = activeCollector->getFlowFormatterPtr();
         if (c == KEY_DOWN) {
             int numFields = flowFormatter->getDisplayFields().size();
             selectedResizeField = std::min(selectedResizeField + 1, numFields - 1);
