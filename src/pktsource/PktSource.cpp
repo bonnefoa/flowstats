@@ -121,7 +121,7 @@ auto PktSource::processPacketSource(Tins::Packet const& packet) -> void
  */
 auto PktSource::analyzePcapFile() -> int
 {
-    struct stat buffer;
+    struct stat buffer = {};
     if (stat(conf.getPcapFileName().c_str(), &buffer) != 0) {
         SPDLOG_ERROR("File {} doesn't exist", conf.getPcapFileName());
         return -1;

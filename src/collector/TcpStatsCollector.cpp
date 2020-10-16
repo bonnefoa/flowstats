@@ -81,15 +81,9 @@ auto TcpStatsCollector::lookupTcpFlow(Tins::TCP const& tcp,
 
     auto srvDir = detectServer(tcp, flowId);
     std::optional<std::string> fqdnOpt = {};
-    if (flowId.getNetwork() == +Network::IPV4) {
-        auto ipSrv = flowId.getIp(srvDir);
-        SPDLOG_DEBUG("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv);
-        fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
-    } else {
-        auto ipSrv = flowId.getIpv6(srvDir);
-        SPDLOG_DEBUG("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv.to_string());
-        fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
-    }
+    auto ipSrv = flowId.getIp(srvDir);
+    SPDLOG_DEBUG("Detected srvDir {}, looking for fqdn of ip {}", srvDir, ipSrv.getAddrStr());
+    fqdnOpt = ipToFqdn->getFlowFqdn(ipSrv);
 
     if (!fqdnOpt.has_value()) {
         return nullptr;
@@ -107,14 +101,13 @@ auto TcpStatsCollector::lookupAggregatedFlows(FlowId const& flowId,
     std::string const& fqdn,
     Direction srvDir) -> std::vector<AggregatedTcpFlow*>
 {
-    Tins::IPv4Address ipSrvInt = {};
+    IPAddress ipSrvInt = {};
     if (getFlowstatsConfiguration().getPerIpAggr()) {
         ipSrvInt = flowId.getIp(srvDir);
     }
     auto srvPort = flowId.getPort(srvDir);
     AggregatedTcpFlow* aggregatedFlow;
-    // TODO Handle ipv6
-    auto tcpKey = AggregatedKey(fqdn, ipSrvInt, {}, srvPort);
+    auto tcpKey = AggregatedKey(fqdn, ipSrvInt, srvPort);
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto* aggregatedMap = getAggregatedMap();
     auto it = aggregatedMap->find(tcpKey);

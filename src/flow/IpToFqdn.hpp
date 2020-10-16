@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Configuration.hpp"
+#include "IPAddress.hpp"
 #include <cstdint> // for uint16_t, uint32_t
 #include <fstream>
 #include <map> // for map
@@ -14,14 +15,13 @@ namespace flowstats {
 
 class IpToFqdn {
 public:
-    IpToFqdn(FlowstatsConfiguration const& flowstatsConfiguration,
+    explicit IpToFqdn(FlowstatsConfiguration const& flowstatsConfiguration,
         std::vector<std::string> const& initialDomains = {},
         std::string const& localhostIp = "");
     virtual ~IpToFqdn() = default;
 
-    auto getFlowFqdn(Tins::IPv4Address ipv4) -> std::optional<std::string>;
-    auto getFlowFqdn(Tins::IPv6Address ipv6) -> std::optional<std::string>;
-    auto updateFqdn(std::string fqdn,
+    auto getFlowFqdn(IPAddress const& addr) -> std::optional<std::string>;
+    auto updateFqdn(std::string const& fqdn,
         std::vector<Tins::IPv4Address> const& ips,
         std::vector<Tins::IPv6Address> const& ipv6) -> void;
 

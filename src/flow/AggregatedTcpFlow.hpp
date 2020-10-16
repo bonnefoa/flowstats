@@ -49,7 +49,7 @@ public:
     auto mergePercentiles() -> void override;
     auto failConnection() -> void;
     auto closeConnection() -> void;
-    auto addCltPacket(IPv4 ipClt, int numBytes) -> void;
+    auto addCltPacket(IPAddress const& ipClt, int numBytes) -> void;
     auto openConnection(int connectionTime) -> void;
     auto ongoingConnection() -> void;
     auto addSrt(int srt, int dataSize) -> void;

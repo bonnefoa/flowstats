@@ -69,7 +69,7 @@ auto DnsStatsCollector::processPacket(Tins::Packet const& packet,
     }
     Tins::DNS dns;
     if (tcp) {
-        auto const payload = rawPdu->payload();
+        auto const& payload = rawPdu->payload();
         Tins::Memory::InputMemoryStream stream(&payload[0], static_cast<uint32_t>(payload.size()));
         auto tcpSize = stream.read_be<uint16_t>();
         if (tcpSize != stream.size()) {

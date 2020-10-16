@@ -6,14 +6,14 @@
 
 namespace flowstats {
 
-auto AggregatedDnsFlow::getTopClientIps() const -> std::vector<std::pair<int, int>>
+auto AggregatedDnsFlow::getTopClientIps() const -> std::vector<std::pair<IPAddress, int>>
 {
     int size = std::min(5, static_cast<int>(sourceIps.size()));
-    std::vector<std::pair<int, int>> topIps(size);
+    std::vector<std::pair<IPAddress, int>> topIps(size);
     std::partial_sort_copy(sourceIps.begin(), sourceIps.end(),
         topIps.begin(), topIps.end(),
-        [](std::pair<int, int> const& l,
-            std::pair<int, int> const& r) {
+        [](std::pair<IPAddress, int> const& l,
+            std::pair<IPAddress, int> const& r) {
             return l.second > r.second;
         });
     return topIps;
@@ -27,7 +27,7 @@ auto AggregatedDnsFlow::getTopClientIpsStr() const -> std::string
     for (auto& pair : topIps) {
         topIpsStr.push_back(fmt::format("{:<3} {:<" STR(IP_SIZE) "}",
             prettyFormatNumber(pair.second),
-            Tins::IPv4Address(pair.first).to_string()));
+            pair.first.getAddrStr()));
     }
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
@@ -54,7 +54,7 @@ auto AggregatedDnsFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::FQDN: return getFqdn();
             case Field::PROTO: return getTransport()._to_string();
             case Field::TYPE: return dnsTypeToString(dnsType);
-            case Field::IP: return getSrvIp();
+            case Field::IP: return getSrvIp().getAddrStr();
             case Field::PORT: return std::to_string(getSrvPort());
             case Field::TOP_CLIENT_IPS: return getTopClientIpsStr();
 
@@ -118,7 +118,7 @@ auto AggregatedDnsFlow::addAggregatedFlow(Flow const* flow) -> void
     records += dnsFlow->records;
     timeouts += dnsFlow->timeouts;
 
-    for (auto it : dnsFlow->sourceIps) {
+    for (auto const& it : dnsFlow->sourceIps) {
         sourceIps[it.first] += it.second;
     }
 

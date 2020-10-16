@@ -17,8 +17,8 @@ TEST_CASE("Ssl connection time", "[ssl]")
 
     auto ipFlows = tester.getSslStatsCollector().getAggregatedMap();
     REQUIRE(ipFlows.size() == 1);
-    AggregatedKey key("google.com", 0, {}, 443);
-    auto flow = ipFlows[key];
+    AggregatedKey key("google.com", {}, 443);
+    auto *flow = ipFlows[key];
     REQUIRE(flow != nullptr);
 
     CHECK(flow->getFieldStr(Field::DOMAIN, FROM_CLIENT, 1) == "google.com");

@@ -52,11 +52,11 @@ auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow*
 auto SslStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedSslFlow*>
 {
     std::vector<AggregatedSslFlow*> subflows;
-    IPv4 ipSrvInt = 0;
+    IPAddress ipSrvInt = {};
     if (getFlowstatsConfiguration().getPerIpAggr()) {
         ipSrvInt = flowId.getIp(srvDir);
     }
-    auto tcpKey = AggregatedKey(fqdn, ipSrvInt, {}, flowId.getPort(srvDir));
+    auto tcpKey = AggregatedKey(fqdn, ipSrvInt, flowId.getPort(srvDir));
     AggregatedSslFlow* aggregatedFlow;
 
     auto* aggregatedMap = getAggregatedMap();

@@ -132,7 +132,7 @@ struct AggregatedDnsFlow : Flow {
     }
 
 private:
-    [[nodiscard]] auto getTopClientIps() const -> std::vector<std::pair<int, int>>;
+    [[nodiscard]] auto getTopClientIps() const -> std::vector<std::pair<IPAddress, int>>;
     [[nodiscard]] auto getTopClientIpsStr() const -> std::string;
 
     enum Tins::DNS::QueryType dnsType = Tins::DNS::QueryType::A;
@@ -150,7 +150,7 @@ private:
 
     int numSrt = 0;
     int totalNumSrt = 0;
-    std::map<int, int> sourceIps;
+    std::map<IPAddress, int> sourceIps;
 
     Percentile srts;
     Percentile totalSrts;

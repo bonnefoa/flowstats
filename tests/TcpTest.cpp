@@ -17,14 +17,14 @@ TEST_CASE("Tcp simple", "[tcp]")
         tester.readPcap("tcp_simple.pcap", "port 53");
         tester.readPcap("tcp_simple.pcap", "port 80", false);
 
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("google.com", 0, 80);
+        auto tcpKey = AggregatedKey("google.com", {}, 80);
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
         auto it = aggregatedMap.find(tcpKey);
         REQUIRE(it != aggregatedMap.end());
 
-        auto aggregatedFlow = it->second;
+        auto const* aggregatedFlow = it->second;
 
         CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1) == "1");
         CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1) == "1");
@@ -40,7 +40,7 @@ TEST_CASE("Tcp simple", "[tcp]")
         CHECK(flows.size() == 1);
         CHECK(flows.begin()->second.getGap() == 0);
 
-        AggregatedKey totalKey = AggregatedKey::aggregatedIpv4TcpKey("Total", 0, 0);
+        AggregatedKey totalKey = AggregatedKey("Total", {}, 0);
         std::map<Field, std::string> totalValues;
         CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1) == "1");
     }
@@ -54,7 +54,7 @@ TEST_CASE("Tcp sort", "[tcp]")
     SECTION("Fqdn sort works")
     {
         tester.readPcap("testcom.pcap");
-        auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
+        auto const*aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap->size() == 4);
 
         auto flows = tcpStatsCollector.getAggregatedFlows();
@@ -86,12 +86,12 @@ TEST_CASE("https pcap", "[tcp]")
 
     SECTION("Active connections are correctly counted")
     {
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 443);
+        auto tcpKey = AggregatedKey("Unknown", {}, 443);
         tester.readPcap("https.pcap", "port 443", false);
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
-        auto aggregatedFlow = aggregatedMap[tcpKey];
+        auto const* aggregatedFlow = aggregatedMap[tcpKey];
 
         CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1)== "1");
         CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1)== "1");
@@ -115,7 +115,7 @@ TEST_CASE("Tcp gap connection", "[tcp]")
     {
         tester.readPcap("connection_with_gap.pcap");
 
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 443);
+        auto tcpKey = AggregatedKey("Unknown", {}, 443);
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
         auto *aggregatedFlow = aggregatedMap[tcpKey];
@@ -132,7 +132,7 @@ TEST_CASE("Tcp reused port", "[tcp]")
     {
         tester.readPcap("reuse_port.pcap");
 
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 1234);
+        auto tcpKey = AggregatedKey("Unknown", {}, 1234);
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
         auto *aggregatedFlow = aggregatedMap[tcpKey];
@@ -156,13 +156,13 @@ TEST_CASE("Ssl stream ack + srt", "[tcp]")
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
     SECTION("Only payload from client starts SRT")
     {
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 443);
+        auto tcpKey = AggregatedKey("Unknown", {}, 443);
         tester.readPcap("ssl_ack_srt.pcap");
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        auto aggregatedFlow = aggregatedMap[tcpKey];
+        auto const* aggregatedFlow = aggregatedMap[tcpKey];
 
         REQUIRE(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "2");
         REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "2ms");
@@ -176,12 +176,12 @@ TEST_CASE("Ssl stream multiple srts", "[tcp]")
     auto const& tcpStatsCollector = tester.getTcpStatsCollector();
     SECTION("Srts are correctly computed from single flow")
     {
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 443);
+        auto tcpKey = AggregatedKey("Unknown", {}, 443);
         tester.readPcap("tls_stream_extract.pcap");
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
-        auto aggregatedFlow = aggregatedMap[tcpKey];
+        auto const* aggregatedFlow = aggregatedMap[tcpKey];
 
         REQUIRE(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "11");
         REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "9ms");
@@ -196,12 +196,12 @@ TEST_CASE("Tcp double", "[tcp]")
 
     SECTION("Srts are correctly computed from multiple flows")
     {
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 3834);
+        auto tcpKey = AggregatedKey("Unknown", {}, 3834);
         tester.readPcap("tcp_double.pcap");
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
-        auto aggregatedFlow = aggregatedMap[tcpKey];
+        auto const* aggregatedFlow = aggregatedMap[tcpKey];
 
         CHECK(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "2");
         CHECK(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "499ms");
@@ -221,8 +221,9 @@ TEST_CASE("Tcp 0 win", "[tcp]")
         auto ipFlows = tcpStatsCollector.getAggregatedMap();
         REQUIRE(ipFlows.size() == 1);
 
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", Tins::IPv4Address("127.0.0.1"), 443);
-        auto flow = ipFlows[tcpKey];
+        auto tcpKey = AggregatedKey("Unknown",
+                IPAddress(Tins::IPv4Address("127.0.0.1")), 443);
+        auto const* flow = ipFlows[tcpKey];
         REQUIRE(flow != nullptr);
 
         CHECK(flow->getFieldStr(Field::ZWIN, FROM_SERVER, 1) == "3");
@@ -247,8 +248,8 @@ TEST_CASE("Tcp rst", "[tcp]")
         auto ipFlows = tcpStatsCollector.getAggregatedMap();
         REQUIRE(ipFlows.size() == 1);
 
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("whatever", ip, 3834);
-        auto flow = ipFlows[tcpKey];
+        auto tcpKey = AggregatedKey("whatever", IPAddress(ip), 3834);
+        auto const* flow = ipFlows[tcpKey];
 
         CHECK(flow->getFieldStr(Field::RST, FROM_CLIENT, 1) == "2");
         CHECK(flow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1) == "1");
@@ -262,15 +263,15 @@ TEST_CASE("Inversed srt", "[tcp]")
 
     SECTION("We correctly detect the server")
     {
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 9000);
+        auto tcpKey = AggregatedKey("Unknown", {}, 9000);
         tester.readPcap("inversed_srv.pcap", "");
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        auto aggregatedFlow = aggregatedMap[tcpKey];
+        auto const* aggregatedFlow = aggregatedMap[tcpKey];
         REQUIRE(aggregatedFlow != NULL);
-        REQUIRE(aggregatedFlow->getSrvIp() == "10.8.109.46");
+        REQUIRE(aggregatedFlow->getSrvIp().getAddrStr() == "10.8.109.46");
     }
 }
 
@@ -281,13 +282,13 @@ TEST_CASE("Request size", "[tcp]")
 
     SECTION("We correctly detect the server")
     {
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 9000);
+        auto tcpKey = AggregatedKey("Unknown", {}, 9000);
         tester.readPcap("6_sec_srt_extract.pcap", "");
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        auto flow = aggregatedMap[tcpKey];
+        auto const* flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
         REQUIRE(flow->getFieldStr(Field::DS_MAX, FROM_CLIENT, 1) == "183 KB");
@@ -301,13 +302,13 @@ TEST_CASE("Srv port detection", "[tcp]")
 
     SECTION("We correctly detect srv port")
     {
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 9000);
+        auto tcpKey = AggregatedKey("Unknown", {}, 9000);
         tester.readPcap("port_detection.pcap", "", false);
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        auto flow = aggregatedMap[tcpKey];
+        auto const* flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
         REQUIRE(flow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1) == "3");
@@ -321,13 +322,13 @@ TEST_CASE("Gap in capture", "[tcp]")
 
     SECTION("We don't compute SRT on gap")
     {
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 80);
+        auto tcpKey = AggregatedKey("Unknown", {}, 80);
         tester.readPcap("tcp_gap.pcap", "", false);
 
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        auto flow = aggregatedMap[tcpKey];
+        auto const* flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
         CHECK(flow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "1");
@@ -350,8 +351,8 @@ TEST_CASE("Mtu is correctly computed", "[tcp]")
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        auto tcpKey = AggregatedKey::aggregatedIpv4TcpKey("Unknown", 0, 80);
-        auto flow = aggregatedMap[tcpKey];
+        auto tcpKey = AggregatedKey("Unknown", {}, 80);
+        auto const* flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
         CHECK(flow->getFieldStr(Field::MTU, FROM_CLIENT, 1) == "15346");
@@ -372,7 +373,7 @@ TEST_CASE("Ipv6", "[tcp]")
         REQUIRE(aggregatedMap.size() == 2);
         auto dnsKey = AggregatedKey::aggregatedDnsKey("google.fr",
             Tins::DNS::AAAA, Transport::UDP);
-        auto flow = aggregatedMap[dnsKey];
+        auto const* flow = aggregatedMap[dnsKey];
         REQUIRE(flow != nullptr);
     }
 
@@ -381,8 +382,8 @@ TEST_CASE("Ipv6", "[tcp]")
         auto aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap.size() == 1);
 
-        auto tcpKey = AggregatedKey::aggregatedIpv6TcpKey("google.fr", {}, 80);
-        auto flow = aggregatedMap[tcpKey];
+        auto tcpKey = AggregatedKey("google.fr", {}, 80);
+        auto const* flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
         CHECK(flow->getFieldStr(Field::BYTES, FROM_CLIENT, 1) == "609 B");

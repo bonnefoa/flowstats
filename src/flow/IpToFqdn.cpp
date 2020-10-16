@@ -60,14 +60,14 @@ auto IpToFqdn::resolveDomains(const std::vector<std::string>& initialDomains,
 
 auto IpToFqdn::updateDnsCache() -> void
 {
-    for (auto i : ipToFqdn) {
+    for (auto const& i : ipToFqdn) {
         fmt::print(ipv4CacheFile, "{} {}",
             i.first,
             i.second);
     }
 }
 
-auto IpToFqdn::updateFqdn(std::string fqdn,
+auto IpToFqdn::updateFqdn(std::string const& fqdn,
     std::vector<Tins::IPv4Address> const& ips,
     std::vector<Tins::IPv6Address> const& ipv6) -> void
 {
@@ -82,35 +82,27 @@ auto IpToFqdn::updateFqdn(std::string fqdn,
     }
 }
 
-auto IpToFqdn::getFlowFqdn(Tins::IPv4Address ipv4) -> std::optional<std::string>
+auto IpToFqdn::getFlowFqdn(IPAddress const& addr) -> std::optional<std::string>
 {
     std::optional<std::string> fqdn;
     const std::lock_guard<std::mutex> lock(mutex);
-    auto it = ipToFqdn.find(ipv4);
-    if (it == ipToFqdn.end()) {
+    if (addr.getIsV6()) {
+        auto it = ipv6ToFqdn.find(addr.getAddrV6());
+        if (it != ipv6ToFqdn.end()) {
+            fqdn = it->second;
+        }
+    } else {
+        auto it = ipToFqdn.find(addr.getAddrV4());
+        if (it != ipToFqdn.end()) {
+            fqdn = it->second;
+        }
+    }
+    if (fqdn->empty()) {
         if (conf.getDisplayUnknownFqdn() == false) {
             return {};
         }
-        fqdn = "Unknown";
-        return fqdn;
+        return "Unknown";
     }
-    fqdn = it->second;
-    return fqdn;
-}
-
-auto IpToFqdn::getFlowFqdn(Tins::IPv6Address ipv6) -> std::optional<std::string>
-{
-    std::optional<std::string> fqdn;
-    const std::lock_guard<std::mutex> lock(mutex);
-    auto it = ipv6ToFqdn.find(ipv6);
-    if (it == ipv6ToFqdn.end()) {
-        if (conf.getDisplayUnknownFqdn() == false) {
-            return {};
-        }
-        fqdn = "Unknown";
-        return fqdn;
-    }
-    fqdn = it->second;
     return fqdn;
 }
 

@@ -169,7 +169,7 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::TOP_PKTS_CLIENT_IPS: return getTopClientIps(sourceIpToStats, TrafficStats::PKTS);
 
             case Field::FQDN: return getFqdn();
-            case Field::IP: return getSrvIp();
+            case Field::IP: return getSrvIp().getAddrStr();
             case Field::PORT: return std::to_string(getSrvPort());
 
             case Field::CONN_RATE: return std::to_string(numConnections);
@@ -190,7 +190,7 @@ auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
     Flow::addFlow(flow);
 
     auto const* tcpFlow = static_cast<const AggregatedTcpFlow*>(flow);
-    for (auto sourceIt : tcpFlow->sourceIpToStats) {
+    for (auto const& sourceIt : tcpFlow->sourceIpToStats) {
         auto *stats = &sourceIpToStats[sourceIt.first];
         stats->bytes += sourceIt.second.bytes;
         stats->pkts += sourceIt.second.pkts;
@@ -299,9 +299,9 @@ auto AggregatedTcpFlow::openConnection(int connectionTime) -> void
     totalConnections++;
 };
 
-auto AggregatedTcpFlow::addCltPacket(IPv4 cltIp, int numBytes) -> void
+auto AggregatedTcpFlow::addCltPacket(IPAddress const& cltIp, int numBytes) -> void
 {
-    auto *stats = &sourceIpToStats[IPAddress(cltIp)];
+    auto *stats = &sourceIpToStats[cltIp];
     stats->bytes += numBytes;
     stats->pkts++;
 };
@@ -326,7 +326,7 @@ auto AggregatedTcpFlow::getStatsdMetrics() const -> std::vector<std::string>
 {
     std::vector<std::string> lst;
     DogFood::Tags tags = DogFood::Tags({ { "fqdn", getFqdn() },
-        { "ip", getSrvIp() },
+        { "ip", getSrvIp().getAddrStr() },
         { "port", std::to_string(getSrvPort()) } });
     for (auto& i : srts.getPoints()) {
         lst.push_back(DogFood::Metric("flowstats.tcp.srt", i,

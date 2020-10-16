@@ -53,12 +53,12 @@ public:
     [[nodiscard]] auto getTotalBytes() const { return totalBytes; };
     [[nodiscard]] auto getTotalPackets() const { return totalPackets; };
 
-    [[nodiscard]] auto getNetwork() const { return flowId.getNetwork(); };
     [[nodiscard]] auto getTransport() const { return flowId.getTransport(); };
     [[nodiscard]] auto getPort(uint8_t pos) const { return flowId.getPort(pos); }
     [[nodiscard]] auto getSrvPort() const { return flowId.getPort(srvPos); }
-    [[nodiscard]] auto getSrvIp() const -> std::string { return ipv4ToString(flowId.getIp(srvPos)); }
-    [[nodiscard]] auto getCltIp() const -> IPv4 { return flowId.getIp(!srvPos); }
+
+    [[nodiscard]] auto getSrvIp() const -> IPAddress { return flowId.getIp(srvPos); }
+    [[nodiscard]] auto getCltIp() const -> IPAddress { return flowId.getIp(!srvPos); }
     [[nodiscard]] auto getCltIpInt() const { return flowId.getIp(!srvPos); }
     [[nodiscard]] auto getSrvIpInt() const { return flowId.getIp(srvPos); }
 

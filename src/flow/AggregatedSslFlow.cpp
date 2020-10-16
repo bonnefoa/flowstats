@@ -22,7 +22,7 @@ auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int durati
     if (direction == FROM_CLIENT || direction == MERGED) {
         switch (field) {
             case Field::FQDN: return getFqdn();
-            case Field::IP: return getSrvIp();
+            case Field::IP: return getSrvIp().getAddrStr();
             case Field::PORT: return std::to_string(getSrvPort());
             case Field::DOMAIN: return domain;
             case Field::TLS_VERSION: return tlsVersion._to_string();
