@@ -84,7 +84,7 @@ auto IpToFqdn::updateFqdn(std::string const& fqdn,
 
 auto IpToFqdn::getFlowFqdn(IPAddress const& addr) -> std::optional<std::string>
 {
-    std::optional<std::string> fqdn;
+    std::optional<std::string> fqdn = {};
     const std::lock_guard<std::mutex> lock(mutex);
     if (addr.getIsV6()) {
         auto it = ipv6ToFqdn.find(addr.getAddrV6());

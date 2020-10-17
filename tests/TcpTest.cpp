@@ -54,6 +54,8 @@ TEST_CASE("Tcp sort", "[tcp]")
     SECTION("Fqdn sort works")
     {
         tester.readPcap("testcom.pcap");
+        auto& ipToFqdn = tester.getIpToFqdn();
+        REQUIRE(ipToFqdn.getFlowFqdn(IPAddress(Tins::IPv4Address("35.155.52.1"))) == "Unknown");
         auto const*aggregatedMap = tcpStatsCollector.getAggregatedMap();
         REQUIRE(aggregatedMap->size() == 4);
 
