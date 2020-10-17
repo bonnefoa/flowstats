@@ -4,6 +4,7 @@
 
 namespace flowstats {
 
+// NOLINTNEXTLINE
 BETTER_ENUM(TLSVersion, uint16_t,
     UNKNOWN = 0x0000,
     SSL2 = 0x0200,
@@ -12,6 +13,7 @@ BETTER_ENUM(TLSVersion, uint16_t,
     TLS1_1 = 0x0302,
     TLS1_2 = 0x0303);
 
+// NOLINTNEXTLINE
 BETTER_ENUM(SSLHandshakeType, uint8_t,
     SSL_HELLO_REQUEST = 0,
     SSL_CLIENT_HELLO = 1,
@@ -26,12 +28,14 @@ BETTER_ENUM(SSLHandshakeType, uint8_t,
     SSL_FINISHED = 20,
     SSL_HANDSHAKE_UNKNOWN = 255);
 
+// NOLINTNEXTLINE
 BETTER_ENUM(SSLContentType, uint8_t,
     SSL_CHANGE_CIPHER_SPEC = 20,
     SSL_ALERT = 21,
     SSL_HANDSHAKE = 22,
     SSL_APPLICATION_DATA = 23);
 
+// NOLINTNEXTLINE
 BETTER_ENUM(SSLCipherSuite, uint16_t,
     NULL_WITH_NULL_NULL = 0x0000,
     RSA_WITH_NULL_MD5 = 0x0001,

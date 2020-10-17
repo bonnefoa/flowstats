@@ -6,10 +6,12 @@ namespace flowstats {
 #define IP_SIZE 16
 #define LEFT_ALIGN(size) "{:<" STR(size) "." STR(size) "} "
 
+// NOLINTNEXTLINE
 BETTER_ENUM(RateMode, uint8_t,
     LAST_SECOND,
     AVG);
 
+// NOLINTNEXTLINE
 BETTER_ENUM(Field, char,
     DIR,
     DOMAIN,

@@ -15,6 +15,7 @@
 
 namespace flowstats {
 
+// NOLINTNEXTLINE
 BETTER_ENUM(CollectorProtocol, char,
     TCP,
     DNS,

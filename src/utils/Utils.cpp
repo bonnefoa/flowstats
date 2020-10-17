@@ -178,16 +178,6 @@ auto getTopMapPair(std::map<IPAddress, uint64_t> const& src, int num) -> std::ve
     return topIps;
 }
 
-auto setOrIncreaseMapValue(std::map<IPAddress, uint64_t>* map, IPAddress key, uint64_t val) -> void
-{
-    auto it = map->find(key);
-    if (it != map->end()) {
-        it->second += val;
-    } else {
-        map->insert(std::make_pair(key, val));
-    }
-}
-
 auto getWithWarparound(int currentValue, int max, int delta) -> int
 {
     if (delta >= 0) {

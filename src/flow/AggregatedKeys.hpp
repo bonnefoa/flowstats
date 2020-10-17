@@ -9,12 +9,12 @@ namespace flowstats {
 
 class AggregatedKey {
 public:
-    AggregatedKey(std::string const& fqdn,
+    AggregatedKey(std::string fqdn,
         IPAddress const& address,
         Port port,
         Tins::DNS::QueryType dnsType = Tins::DNS::A,
         Transport transport = Transport::TCP)
-        : fqdn(fqdn)
+        : fqdn(std::move(fqdn))
         , address(address)
         , port(port)
         , dnsType(dnsType)

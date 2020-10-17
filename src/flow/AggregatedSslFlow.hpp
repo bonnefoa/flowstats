@@ -16,7 +16,6 @@ public:
         : Flow(flowId, fqdn)
         , tlsVersion(TLSVersion::UNKNOWN) {};
 
-    auto getFieldStr(Field field, Direction direction, int duration) const -> std::string override;
     auto resetFlow(bool resetTotal) -> void override;
     auto setTlsVersion(TLSVersion tlsVers) -> void;
     auto setDomain(std::string _domain) -> void { domain = std::move(_domain); }
@@ -24,6 +23,7 @@ public:
     auto addConnection(int delta) -> void;
     auto merge() -> void { connectionTimes.merge(); };
 
+    [[nodiscard]] auto getFieldStr(Field field, Direction direction, int duration) const -> std::string override;
     [[nodiscard]] auto getDomain() const { return domain; }
 
     [[nodiscard]] static auto sortByConnections(Flow const* a, Flow const* b) -> bool

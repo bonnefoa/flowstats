@@ -11,6 +11,7 @@
 namespace flowstats {
 
 using Port = uint16_t;
+// NOLINTNEXTLINE
 BETTER_ENUM(Transport, char, TCP, UDP);
 
 struct FlowId {
