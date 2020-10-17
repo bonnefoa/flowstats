@@ -18,7 +18,7 @@ public:
         : Flow(flowId, fqdn)
         , aggregatedFlows(std::move(_aggregatedFlows)) {};
 
-    void updateFlow(Tins::Packet const& packet, Direction direction,
+    void updateFlow(Tins::Packet const& packet,
         Tins::TCP const& sslLayer);
 
     auto addPacket(Tins::Packet const& packet, Direction const direction) -> void override;

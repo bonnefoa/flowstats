@@ -14,7 +14,7 @@ public:
     TcpFlow(FlowId flowId,
         uint8_t srvPos,
         std::vector<AggregatedTcpFlow*> _aggregatedFlows)
-        : Flow(flowId, "", srvPos)
+        : Flow(std::move(flowId), "", srvPos)
         , aggregatedFlows(std::move(_aggregatedFlows))
     {
     }

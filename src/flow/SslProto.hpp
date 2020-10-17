@@ -358,35 +358,40 @@ BETTER_ENUM(SSLCipherSuite, uint16_t,
     DHE_PSK_WITH_CHACHA20_POLY1305_SHA256 = 0xCCAD,
     RSA_PSK_WITH_CHACHA20_POLY1305_SHA256 = 0xCCAE);
 
-struct TlsHeader {
-    TlsHeader(SSLContentType contentType, TLSVersion version, uint16_t length)
+class TlsHeader {
+public:
+    TlsHeader(SSLContentType contentType, TLSVersion version)
         : contentType(contentType)
         , version(version)
-        , length(length) {};
+        {};
+    [[nodiscard]] static auto parse(Cursor* cursor) -> std::optional<TlsHeader>;
+    [[nodiscard]] auto getContentType() const { return contentType; }
+    [[nodiscard]] auto getVersion() const { return version; }
 
+private:
     SSLContentType contentType;
     TLSVersion version;
-    uint16_t length;
-
-    static auto parse(Cursor* cursor) -> std::optional<TlsHeader>;
 };
 
-struct TlsHandshake {
+class TlsHandshake {
 public:
     TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSVersion version, Cursor* cursor);
 
-    SSLHandshakeType handshakeType;
-    uint16_t length;
-    TLSVersion version;
-
-    std::string domain;
-    SSLCipherSuite sslCipherSuite = SSLCipherSuite::NULL_WITH_NULL_NULL;
-
     [[nodiscard]] static auto parse(Cursor* cursor) -> std::optional<TlsHandshake>;
+    [[nodiscard]] auto getVersion() const { return version; }
+    [[nodiscard]] auto getDomain() const { return domain; }
+    [[nodiscard]] auto getSslCipherSuite() const { return sslCipherSuite; }
+    [[nodiscard]] auto getHandshakeType() const { return handshakeType; }
 
 private:
     auto processClientHello(Cursor* cursor) -> void;
     [[nodiscard]] auto getSslDomainFromExtension(Cursor* cursor) -> std::optional<std::string>;
+
+    SSLHandshakeType handshakeType;
+    uint16_t length;
+    TLSVersion version;
+    std::string domain;
+    SSLCipherSuite sslCipherSuite = SSLCipherSuite::NULL_WITH_NULL_NULL;
 };
 
 [[nodiscard]] auto checkSslChangeCipherSpec(Cursor* cursor) -> bool;

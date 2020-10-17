@@ -6,7 +6,7 @@ namespace flowstats {
 #define SSL_SNI_HOST_NAME 0
 
 #define RETURN_EMPTY_IF_EMPTY(VAR) \
-    if (!VAR) {                    \
+    if (!(VAR)) {                  \
         return {};                 \
     }
 
@@ -91,7 +91,7 @@ auto TlsHeader::parse(Cursor* cursor) -> std::optional<TlsHeader>
     if (cursor->remainingBytes() < length) {
         return {};
     }
-    return TlsHeader(mbContentType.value(), mbVersion.value(), length);
+    return TlsHeader(mbContentType.value(), mbVersion.value());
 }
 
 auto TlsHandshake::parse(Cursor* cursor) -> std::optional<TlsHandshake>
@@ -151,8 +151,9 @@ TlsHandshake::TlsHandshake(SSLHandshakeType handshakeType, uint16_t length, TLSV
         }
     } else if (handshakeType == +SSLHandshakeType::SSL_SERVER_HELLO) {
         auto mbCipherSuite = cursor->read_be<uint16_t>();
-        if (!mbCipherSuite)
+        if (!mbCipherSuite) {
             return;
+        }
         auto mbSslCipherSuite = SSLCipherSuite::_from_integral_nothrow(mbCipherSuite.value());
         if (mbSslCipherSuite) {
             sslCipherSuite = mbSslCipherSuite.value();

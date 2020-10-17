@@ -12,8 +12,7 @@ auto SslFlow::addPacket(Tins::Packet const& packet, Direction const direction) -
     }
 }
 
-void SslFlow::updateFlow(Tins::Packet const& packet, Direction direction,
-    Tins::TCP const& tcp)
+auto SslFlow::updateFlow(Tins::Packet const& packet, Tins::TCP const& tcp) -> void
 {
     if (connectionEstablished) {
         return;
@@ -33,20 +32,20 @@ void SslFlow::updateFlow(Tins::Packet const& packet, Direction direction,
     }
     auto tlsHeader = mbTlsHeader.value();
 
-    if (tlsHeader.contentType == +SSLContentType::SSL_APPLICATION_DATA) {
+    if (tlsHeader.getContentType() == +SSLContentType::SSL_APPLICATION_DATA) {
         connectionEstablished = true;
-        tlsVersion = tlsHeader.version;
+        tlsVersion = tlsHeader.getVersion();
         for (auto* aggregatedSslFlow : aggregatedFlows) {
             aggregatedSslFlow->setTlsVersion(tlsVersion);
         }
         return;
-    } else if (tlsHeader.contentType == +SSLContentType::SSL_HANDSHAKE) {
+    } else if (tlsHeader.getContentType() == +SSLContentType::SSL_HANDSHAKE) {
         processHandshake(packet, &cursor);
         return;
-    } else if (tlsHeader.contentType == +SSLContentType::SSL_CHANGE_CIPHER_SPEC) {
+    } else if (tlsHeader.getContentType() == +SSLContentType::SSL_CHANGE_CIPHER_SPEC) {
         processChangeCipherSpec(packet, &cursor);
 
-        tlsVersion = tlsHeader.version;
+        tlsVersion = tlsHeader.getVersion();
         for (auto* aggregatedSslFlow : aggregatedFlows) {
             aggregatedSslFlow->setTlsVersion(tlsVersion);
         }
@@ -63,17 +62,17 @@ void SslFlow::processHandshake(Tins::Packet const& packet,
     }
     auto tlsHandshake = mbTlsHandshake.value();
 
-    if (tlsHandshake.handshakeType == +SSLHandshakeType::SSL_CLIENT_HELLO) {
+    if (tlsHandshake.getHandshakeType() == +SSLHandshakeType::SSL_CLIENT_HELLO) {
         startHandshake = packetToTimeval(packet);
         SPDLOG_DEBUG("Start ssl connection at {}", timevalInMs(startHandshake));
 
         for (auto* aggregatedSslFlow : aggregatedFlows) {
-            aggregatedSslFlow->setDomain(tlsHandshake.domain);
+            aggregatedSslFlow->setDomain(tlsHandshake.getDomain());
         }
-    } else if (tlsHandshake.handshakeType == +SSLHandshakeType::SSL_SERVER_HELLO) {
+    } else if (tlsHandshake.getHandshakeType() == +SSLHandshakeType::SSL_SERVER_HELLO) {
         for (auto* aggregatedSslFlow : aggregatedFlows) {
-            if (tlsHandshake.sslCipherSuite) {
-                aggregatedSslFlow->setSslCipherSuite(tlsHandshake.sslCipherSuite);
+            if (tlsHandshake.getSslCipherSuite()) {
+                aggregatedSslFlow->setSslCipherSuite(tlsHandshake.getSslCipherSuite());
             }
         }
     }

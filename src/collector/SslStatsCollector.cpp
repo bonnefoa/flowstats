@@ -101,7 +101,7 @@ auto SslStatsCollector::processPacket(Tins::Packet const& packet,
     auto direction = flowId.getDirection();
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     sslFlow->addPacket(packet, direction);
-    sslFlow->updateFlow(packet, direction, *tcp);
+    sslFlow->updateFlow(packet, *tcp);
 }
 
 auto SslStatsCollector::getSortFun(Field field) const -> sortFlowFun
