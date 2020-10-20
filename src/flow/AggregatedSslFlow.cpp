@@ -2,7 +2,7 @@
 
 namespace flowstats {
 
-auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
+auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
 {
     auto fqdn = getFqdn();
     if (fqdn == "Total") {

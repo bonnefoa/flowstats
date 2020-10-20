@@ -72,6 +72,10 @@ BETTER_ENUM(Field, char,
     BYTES_RATE,
     BYTES_AVG,
 
+    SUBFIELD_CLT_IP,
+    SUBFIELD_PKTS,
+    SUBFIELD_BYTES,
+
     SYN,
     SYN_RATE,
     SYN_AVG,
@@ -97,6 +101,7 @@ BETTER_ENUM(Field, char,
 auto fieldToSortable(Field field) -> bool;
 auto fieldToHeader(Field field) -> char const*;
 auto fieldWithRateMode(RateMode rateMode, Field field) -> Field;
+auto fieldWithSubfields(Field field) -> bool;
 auto rateModeToDescription(RateMode rateMode) -> std::string;
 
 } // namespace flowstats

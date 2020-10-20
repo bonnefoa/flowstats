@@ -202,11 +202,11 @@ auto Screen::updateTopMenu() -> void
     int i = 0;
     int displayIndex;
     displayIndex = protocolToDisplayIndex[selectedProtocolIndex];
-    for (const auto& displayPair : activeCollector->getDisplayPairs()) {
+    for (const auto& displayFieldValues : activeCollector->getDisplayFieldValues()) {
         if (i == displayIndex) {
             wattron(topMenuWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
-        waddstr(topMenuWin, fmt::format("{:<14}", displayTypeToString(displayPair.first)).c_str());
+        waddstr(topMenuWin, fmt::format("{:<14}", displayFieldValues.getDisplayTypeStr()).c_str());
         if (i == displayIndex) {
             wattroff(topMenuWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
@@ -532,12 +532,12 @@ auto Screen::refreshableAction(int c) -> bool
         return true;
     } else if (c == KEY_LEFT) {
         protocolToDisplayIndex[selectedProtocolIndex] = getWithWarparound(protocolToDisplayIndex[selectedProtocolIndex],
-            static_cast<int>(activeCollector->getDisplayPairs().size()), -1);
+            static_cast<int>(activeCollector->getDisplayFieldValues().size()), -1);
         activeCollector->updateDisplayType(protocolToDisplayIndex[selectedProtocolIndex]);
         return true;
     } else if (c == KEY_RIGHT) {
         protocolToDisplayIndex[selectedProtocolIndex] = getWithWarparound(protocolToDisplayIndex[selectedProtocolIndex],
-            static_cast<int>(activeCollector->getDisplayPairs().size()), 1);
+            static_cast<int>(activeCollector->getDisplayFieldValues().size()), 1);
         activeCollector->updateDisplayType(protocolToDisplayIndex[selectedProtocolIndex]);
         return true;
     } else if (c == KEY_SUP) {

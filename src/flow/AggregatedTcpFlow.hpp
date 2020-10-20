@@ -17,7 +17,6 @@ public:
         BYTES,
         PKTS,
     };
-
 };
 
 class AggregatedTcpFlow : public Flow {
@@ -54,7 +53,7 @@ public:
     auto ongoingConnection() -> void;
     auto addSrt(int srt, int dataSize) -> void;
 
-    [[nodiscard]] auto getFieldStr(Field field, Direction direction, int duration) const -> std::string override;
+    [[nodiscard]] auto getFieldStr(Field field, Direction direction, int duration, int index = 0) const -> std::string override;
     [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string> override;
 
     [[nodiscard]] static auto sortByMtu(Flow const* a, Flow const* b) -> bool

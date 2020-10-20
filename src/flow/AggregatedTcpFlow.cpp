@@ -78,7 +78,7 @@ auto AggregatedTcpFlow::getTopClientIps(std::map<IPAddress, TrafficStats> const&
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
 
-auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
+auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
 {
     auto fqdn = getFqdn();
     if (fqdn == "Total") {

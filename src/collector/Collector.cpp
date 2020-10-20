@@ -33,8 +33,8 @@ auto Collector::buildTotalFlow(std::vector<Flow const*> const& aggregatedFlows) 
 
 auto Collector::fillSortFields() -> void
 {
-    for (auto const& pair : displayPairs) {
-        for (auto const& field : pair.second) {
+    for (auto const& pair : displayFieldValues) {
+        for (auto const& field : pair.getFields()) {
             if (fieldToSortable(field)) {
                 sortFields.push_back(field);
             }

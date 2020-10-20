@@ -45,14 +45,14 @@ public:
     [[nodiscard]] virtual auto toString() const -> std::string = 0;
     [[nodiscard]] virtual auto getProtocol() const -> CollectorProtocol = 0;
 
-    [[nodiscard]] auto getDisplayPairs() const { return displayPairs; };
+    [[nodiscard]] auto getDisplayFieldValues() const { return displayFieldValues; };
     [[nodiscard]] auto getSortFields() const { return sortFields; };
     typedef bool (*sortFlowFun)(Flow const*, Flow const*);
     [[nodiscard]] virtual auto getSortFun(Field field) const -> sortFlowFun;
 
     [[nodiscard]] auto outputStatus(time_t duration) -> CollectorOutput;
 
-    auto updateDisplayType(int displayIndex) -> void { flowFormatter.setDisplayValues(displayPairs[displayIndex].second); };
+    auto updateDisplayType(int displayIndex) -> void { flowFormatter.setDisplayValues(displayFieldValues[displayIndex]); };
 
     auto updateSort(int sortIndex, bool reversed) -> void
     {
@@ -81,7 +81,7 @@ protected:
     [[nodiscard]] auto getDisplayConf() const -> DisplayConfiguration const& { return displayConf; };
     [[nodiscard]] auto getFlowstatsConfiguration() const -> FlowstatsConfiguration const& { return conf; };
 
-    auto setDisplayPairs(std::vector<DisplayPair> pairs) -> void { displayPairs = std::move(pairs); };
+    auto setDisplayPairs(std::vector<DisplayFieldValues> pairs) -> void { displayFieldValues = std::move(pairs); };
     auto fillSortFields() -> void;
     auto setTotalFlow(Flow* flow) -> void { totalFlow = flow; };
 
@@ -91,7 +91,7 @@ private:
     FlowstatsConfiguration const& conf;
     DisplayConfiguration const& displayConf;
     Flow* totalFlow = nullptr;
-    std::vector<DisplayPair> displayPairs;
+    std::vector<DisplayFieldValues> displayFieldValues;
     std::vector<Field> sortFields;
     Field selectedSortField = Field::FQDN;
     bool reversedSort = false;

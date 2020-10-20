@@ -17,7 +17,7 @@ auto Flow::addPacket(Tins::Packet const& packet,
     end = tv;
 }
 
-auto Flow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
+auto Flow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
 {
     if (direction == MERGED) {
         switch (field) {

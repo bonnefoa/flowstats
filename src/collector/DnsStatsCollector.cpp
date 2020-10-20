@@ -14,10 +14,10 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
 {
     getFlowFormatter().setDisplayKeys({ Field::FQDN, Field::IP, Field::PORT, Field::PROTO, Field::TYPE, Field::DIR });
     setDisplayPairs({
-        DisplayPair(DisplayRequests, { Field::REQ, Field::REQ_AVG, Field::TIMEOUTS, Field::TIMEOUTS_AVG }),
-        DisplayPair(DisplayResponses, { Field::SRT, Field::SRT_AVG, Field::SRT_P95, Field::SRT_TOTAL_P95, Field::SRT_P99, Field::SRT_TOTAL_P99, Field::RCRD_AVG }),
-        DisplayPair(DisplayClients, { Field::TOP_CLIENT_IPS }),
-        DisplayPair(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
+        DisplayFieldValues(DisplayRequests, { Field::REQ, Field::REQ_AVG, Field::TIMEOUTS, Field::TIMEOUTS_AVG }),
+        DisplayFieldValues(DisplayResponses, { Field::SRT, Field::SRT_AVG, Field::SRT_P95, Field::SRT_TOTAL_P95, Field::SRT_P99, Field::SRT_TOTAL_P99, Field::RCRD_AVG }),
+        DisplayFieldValues(DisplayClients, { Field::TOP_CLIENT_IPS }),
+        DisplayFieldValues(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
     setTotalFlow(new AggregatedDnsFlow());
     updateDisplayType(0);

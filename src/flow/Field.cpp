@@ -26,6 +26,10 @@ auto fieldToSortable(Field field) -> bool
         case Field::DS_P95:
         case Field::DS_P99:
 
+        case Field::SUBFIELD_BYTES:
+        case Field::SUBFIELD_PKTS:
+        case Field::SUBFIELD_CLT_IP:
+
         case Field::REQ_AVG:
         case Field::FIN_AVG:
         case Field::RST_AVG:
@@ -80,6 +84,18 @@ auto fieldWithRateMode(RateMode rateMode, Field field) -> Field
         }
     }
     return field;
+}
+
+auto fieldWithSubfields(Field field) -> bool
+{
+    switch (field) {
+        case Field::SUBFIELD_CLT_IP:
+        case Field::SUBFIELD_PKTS:
+        case Field::SUBFIELD_BYTES:
+            return true;
+        default:
+            return false;
+    }
 }
 
 auto fieldToHeader(Field field) -> char const*
@@ -192,6 +208,13 @@ auto fieldToHeader(Field field) -> char const*
             return "Ds99";
         case Field::DS_TOTAL_MAX:
             return "DsMax";
+
+        case Field::SUBFIELD_CLT_IP:
+            return "CltIP";
+        case Field::SUBFIELD_PKTS:
+            return "CltPkts";
+        case Field::SUBFIELD_BYTES:
+            return "CltBytes";
 
         case Field::SYN:
             return "SYN";

@@ -2,6 +2,7 @@
 
 #include "Configuration.hpp"
 #include "DisplayConfiguration.hpp"
+#include "DisplayType.hpp"
 #include "Field.hpp"
 #include "Flow.hpp"
 #include "Utils.hpp"
@@ -19,14 +20,19 @@ public:
 
     auto outputBody(Flow const* flow, std::vector<std::string>* accumulator,
         int duration, DisplayConfiguration const& displayConf) const -> void;
+    auto outputBodyWithSubfields(Flow const* flow, std::vector<std::string>* accumulator,
+            int duration, DisplayConfiguration const& displayConf) const -> void;
+
     [[nodiscard]] auto outputHeaders(DisplayConfiguration const& displayConf) const -> std::string;
 
     [[nodiscard]] auto getDisplayFields() const& { return displayFields; };
     auto setDisplayKeys(std::vector<Field> const& keys) { displayKeys = keys; };
-    auto setDisplayValues(std::vector<Field> const& values)
+    auto setDisplayValues(DisplayFieldValues const& values)
     {
         displayFields = displayKeys;
-        displayFields.insert(displayFields.end(), values.begin(), values.end());
+        auto const& fields = values.getFields();
+        displayFields.insert(displayFields.end(), fields.begin(), fields.end());
+        hasSubfields = values.getHasSubfields();
     };
 
     auto outputFlow(Flow const* totalFlow,
@@ -37,6 +43,7 @@ private:
     std::vector<Field> displayKeys;
     // Combine Keys and values in in a single vector
     std::vector<Field> displayFields;
+    bool hasSubfields = false;
 };
 
 } // namespace flowstats

@@ -23,7 +23,7 @@ public:
     auto addConnection(int delta) -> void;
     auto merge() -> void { connectionTimes.merge(); };
 
-    [[nodiscard]] auto getFieldStr(Field field, Direction direction, int duration) const -> std::string override;
+    [[nodiscard]] auto getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string override;
     [[nodiscard]] auto getDomain() const { return domain; }
 
     [[nodiscard]] static auto sortByConnections(Flow const* a, Flow const* b) -> bool

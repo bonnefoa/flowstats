@@ -32,7 +32,7 @@ auto AggregatedDnsFlow::getTopClientIpsStr() const -> std::string
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
 
-auto AggregatedDnsFlow::getFieldStr(Field field, Direction direction, int duration) const -> std::string
+auto AggregatedDnsFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
 {
     auto fqdn = getFqdn();
     if (fqdn == "Total") {
