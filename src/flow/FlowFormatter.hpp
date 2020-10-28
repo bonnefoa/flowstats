@@ -26,13 +26,19 @@ public:
     [[nodiscard]] auto outputHeaders(DisplayConfiguration const& displayConf) const -> std::string;
 
     [[nodiscard]] auto getDisplayFields() const& { return displayFields; };
+    [[nodiscard]] auto getSubFields() const& { return displayFields; };
     auto setDisplayKeys(std::vector<Field> const& keys) { displayKeys = keys; };
     auto setDisplayValues(DisplayFieldValues const& values)
     {
         displayFields = displayKeys;
         auto const& fields = values.getFields();
         displayFields.insert(displayFields.end(), fields.begin(), fields.end());
-        hasSubfields = values.getHasSubfields();
+        subfields.clear();
+        for (auto field : fields) {
+            if (fieldWithSubfields(field)) {
+                subfields.push_back(field);
+            }
+        }
     };
 
     auto outputFlow(Flow const* totalFlow,
@@ -43,7 +49,7 @@ private:
     std::vector<Field> displayKeys;
     // Combine Keys and values in in a single vector
     std::vector<Field> displayFields;
-    bool hasSubfields = false;
+    std::vector<Field> subfields;
 };
 
 } // namespace flowstats

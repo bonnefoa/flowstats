@@ -5,18 +5,26 @@
 namespace flowstats {
 
 auto FlowFormatter::outputBodyWithSubfields(Flow const* flow,
-        std::vector<std::string>* accumulator, int duration,
-        DisplayConfiguration const& displayConf) const -> void
+    std::vector<std::string>* accumulator, int duration,
+    DisplayConfiguration const& displayConf) const -> void
 {
-    fmt::memory_buffer mergedBuf;
+    int numSubfields = 0;
     for (auto const& field : displayFields) {
-        auto fieldSize = displayConf.getFieldToSize()[field];
-
-        fmt::format_to(mergedBuf, "{:<{}.{}} ", flow->getFieldStr(field, MERGED, duration), fieldSize, fieldSize);
+        auto size = flow->getSubfieldSize(field);
+        if (size > numSubfields) {
+            numSubfields = size;
+        }
     }
-    accumulator->push_back(to_string(mergedBuf));
-    return;
 
+    for (int i = 0; i < numSubfields; ++i) {
+        fmt::memory_buffer mergedBuf;
+        for (auto const& field : displayFields) {
+            auto fieldSize = displayConf.getFieldToSize()[field];
+            fmt::format_to(mergedBuf, "{:<{}.{}} ",
+                    flow->getFieldStr(field, MERGED, duration, i), fieldSize, fieldSize);
+        }
+        accumulator->push_back(to_string(mergedBuf));
+    }
 }
 
 auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accumulator,
@@ -88,10 +96,10 @@ auto FlowFormatter::outputFlow(Flow const* totalFlow,
         if (i++ > displayConf.getMaxResults()) {
             break;
         };
-        if (hasSubfields) {
-            outputBodyWithSubfields(flow, &res, duration, displayConf);
-        } else {
+        if (subfields.empty()) {
             outputBody(flow, &res, duration, displayConf);
+        } else {
+            outputBodyWithSubfields(flow, &res, duration, displayConf);
         }
     }
     return res;

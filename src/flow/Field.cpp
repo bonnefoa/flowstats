@@ -26,10 +26,6 @@ auto fieldToSortable(Field field) -> bool
         case Field::DS_P95:
         case Field::DS_P99:
 
-        case Field::SUBFIELD_BYTES:
-        case Field::SUBFIELD_PKTS:
-        case Field::SUBFIELD_CLT_IP:
-
         case Field::REQ_AVG:
         case Field::FIN_AVG:
         case Field::RST_AVG:
@@ -43,8 +39,8 @@ auto fieldToSortable(Field field) -> bool
         case Field::SYNACK_AVG:
         case Field::TIMEOUTS_AVG:
         case Field::TOP_CLIENT_IPS:
-        case Field::TOP_PKTS_CLIENT_IPS:
-        case Field::TOP_BYTES_CLIENT_IPS:
+        case Field::TOP_CLIENT_IPS_PKTS:
+        case Field::TOP_CLIENT_IPS_BYTES:
             return false;
         default:
             return true;
@@ -89,9 +85,9 @@ auto fieldWithRateMode(RateMode rateMode, Field field) -> Field
 auto fieldWithSubfields(Field field) -> bool
 {
     switch (field) {
-        case Field::SUBFIELD_CLT_IP:
-        case Field::SUBFIELD_PKTS:
-        case Field::SUBFIELD_BYTES:
+        case Field::TOP_CLIENT_IPS_IP:
+        case Field::TOP_CLIENT_IPS_PKTS:
+        case Field::TOP_CLIENT_IPS_BYTES:
             return true;
         default:
             return false;
@@ -174,12 +170,14 @@ auto fieldToHeader(Field field) -> char const*
         case Field::SRT_AVG:
             return "Srt/s";
 
-        case Field::TOP_PKTS_CLIENT_IPS:
-            return "TopPktsClientIps";
-        case Field::TOP_BYTES_CLIENT_IPS:
-            return "TopBytesClientIps";
         case Field::TOP_CLIENT_IPS:
             return "TopClientIps";
+        case Field::TOP_CLIENT_IPS_IP:
+            return "ClientIP";
+        case Field::TOP_CLIENT_IPS_PKTS:
+            return "ClientPackets";
+        case Field::TOP_CLIENT_IPS_BYTES:
+            return "ClientBytes";
 
         case Field::SRT_P95:
             return "Srt95 (1s)";
@@ -208,13 +206,6 @@ auto fieldToHeader(Field field) -> char const*
             return "Ds99";
         case Field::DS_TOTAL_MAX:
             return "DsMax";
-
-        case Field::SUBFIELD_CLT_IP:
-            return "CltIP";
-        case Field::SUBFIELD_PKTS:
-            return "CltPkts";
-        case Field::SUBFIELD_BYTES:
-            return "CltBytes";
 
         case Field::SYN:
             return "SYN";

@@ -26,7 +26,7 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
         DisplayFieldValues(DisplayConnections, { Field::ACTIVE_CONNECTIONS, Field::FAILED_CONNECTIONS, Field::CONN, Field::CONN_RATE, Field::CLOSE, Field::CLOSE_RATE }),
         DisplayFieldValues(DisplayConnectionTimes, { Field::CT_P95, Field::CT_TOTAL_P95, Field::CT_P99, Field::CT_TOTAL_P99 }),
         DisplayFieldValues(DisplayResponses, { Field::SRT, Field::SRT_RATE, Field::SRT_P95, Field::SRT_TOTAL_P95, Field::SRT_P99, Field::SRT_TOTAL_P99 }),
-        DisplayFieldValues(DisplayClients, { Field::TOP_BYTES_CLIENT_IPS }),
+        DisplayFieldValues(DisplayClients, { Field::TOP_CLIENT_IPS_IP, Field::TOP_CLIENT_IPS_PKTS, Field::TOP_CLIENT_IPS_BYTES }, true),
         DisplayFieldValues(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
     setTotalFlow(new AggregatedTcpFlow());
@@ -143,7 +143,7 @@ auto TcpStatsCollector::processPacket(Tins::Packet const& packet,
     auto direction = flowId.getDirection();
     tcpFlow->addPacket(packet, direction);
 
-    for (auto* subflow : tcpFlow->getAggregatedFlows()) {
+    for (auto* subflow : tcpFlow->getTcpAggregatedFlows()) {
         subflow->addPacket(packet, direction);
         subflow->updateFlow(packet, flowId, *tcp);
     }

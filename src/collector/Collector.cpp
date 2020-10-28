@@ -92,7 +92,6 @@ auto Collector::getStatsdMetrics() const -> std::vector<std::string>
 
 auto Collector::outputStatus(time_t duration) -> CollectorOutput
 {
-    auto flowFormatter = getFlowFormatter();
     auto headers = flowFormatter.outputHeaders(displayConf);
 
     const std::lock_guard<std::mutex> lock(dataMutex);
@@ -100,6 +99,14 @@ auto Collector::outputStatus(time_t duration) -> CollectorOutput
     std::vector<Flow const*> aggregatedFlows = getAggregatedFlows();
 
     buildTotalFlow(aggregatedFlows);
+
+    auto const& subfields = flowFormatter.getSubFields();
+    if (subfields.size() > 0) {
+        for (auto field : subfields) {
+            totalFlow->prepareSubfield(field);
+        }
+    }
+
     auto bodyLines = flowFormatter.outputFlow(totalFlow,
         aggregatedFlows, duration, displayConf);
     return CollectorOutput(toString(), headers, bodyLines);
@@ -118,6 +125,14 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
                 continue;
             }
         }
+
+        auto const& subfields = flowFormatter.getSubFields();
+        if (subfields.size() > 0) {
+            for (auto field : subfields) {
+                    pair.second->prepareSubfield(field);
+            }
+        }
+
         tempVector.push_back(pair.second);
     }
 

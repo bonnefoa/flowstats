@@ -26,7 +26,7 @@ public:
     auto closeConnection() -> void;
     auto timeoutFlow() -> void;
 
-    [[nodiscard]] auto getAggregatedFlows() const { return aggregatedFlows; }
+    [[nodiscard]] auto getTcpAggregatedFlows() const { return aggregatedFlows; }
     [[nodiscard]] auto getLastPacketTime() const { return lastPacketTime; }
     [[nodiscard]] auto getGap() const { return gap; }
 

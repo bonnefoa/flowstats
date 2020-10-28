@@ -42,10 +42,10 @@ public:
         Tins::TCP const& tcpLayer) -> void;
 
     auto resetFlow(bool resetTotal) -> void override;
-
     auto addAggregatedFlow(Flow const* flow) -> void override;
-
     auto mergePercentiles() -> void override;
+    auto prepareSubfield(Field field) -> void override;
+
     auto failConnection() -> void;
     auto closeConnection() -> void;
     auto addCltPacket(IPAddress const& ipClt, int numBytes) -> void;
@@ -54,6 +54,7 @@ public:
     auto addSrt(int srt, int dataSize) -> void;
 
     [[nodiscard]] auto getFieldStr(Field field, Direction direction, int duration, int index = 0) const -> std::string override;
+    [[nodiscard]] auto getSubfieldSize(Field field) const -> int override;
     [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string> override;
 
     [[nodiscard]] static auto sortByMtu(Flow const* a, Flow const* b) -> bool
@@ -330,7 +331,10 @@ public:
     }
 
 private:
-    [[nodiscard]] auto getTopClientIps(std::map<IPAddress, TrafficStats> const& srcMap, TrafficStats::TrafficType type) const -> std::string;
+    auto computeTopClientIps(TrafficStats::TrafficType type) -> void;
+    [[nodiscard]] auto getTopClientIpsStr(TrafficStats::TrafficType type, int index) const -> std::string;
+    [[nodiscard]] auto getTopClientIpsIpStr(int index) const -> std::string;
+    std::vector<std::pair<IPAddress, TrafficStats>> topClientIps;
 
     std::array<int, 2> syns = {};
     std::array<int, 2> synAcks = {};

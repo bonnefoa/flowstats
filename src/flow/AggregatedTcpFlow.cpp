@@ -43,43 +43,77 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
         packet.pdu()->advertised_size());
 }
 
-auto AggregatedTcpFlow::getTopClientIps(std::map<IPAddress, TrafficStats> const& srcMap, TrafficStats::TrafficType type) const -> std::string
+auto AggregatedTcpFlow::getSubfieldSize(Field field) const -> int
 {
-    int size = std::min(5, static_cast<int>(srcMap.size()));
-    std::vector<std::pair<IPAddress, TrafficStats>> topIps(size);
+    switch (field) {
+        case Field::TOP_CLIENT_IPS_IP:
+        case Field::TOP_CLIENT_IPS_BYTES:
+        case Field::TOP_CLIENT_IPS_PKTS:
+            return std::min(5, static_cast<int>(sourceIpToStats.size()));
+        default:
+            return 0;
+    }
+    return 0;
+}
+
+auto AggregatedTcpFlow::prepareSubfield(Field field) -> void
+{
+    if (field == +Field::TOP_CLIENT_IPS_IP) {
+        computeTopClientIps(TrafficStats::PKTS);
+    }
+}
+
+auto AggregatedTcpFlow::computeTopClientIps(TrafficStats::TrafficType type) -> void
+{
+    int size = std::min(5, static_cast<int>(sourceIpToStats.size()));
+    topClientIps = std::vector<std::pair<IPAddress, TrafficStats>>(size);
 
     bool (*sortFun)(std::pair<IPAddress, TrafficStats> const& l,
-            std::pair<IPAddress, TrafficStats> const& r) = [](std::pair<IPAddress, TrafficStats> const& l,
-            std::pair<IPAddress, TrafficStats> const& r) {
-        return l.second.bytes > r.second.bytes;
-    };
+        std::pair<IPAddress, TrafficStats> const& r)
+        = [](std::pair<IPAddress, TrafficStats> const& l,
+              std::pair<IPAddress, TrafficStats> const& r) {
+              return l.second.bytes > r.second.bytes;
+          };
 
     if (type == TrafficStats::PKTS) {
         sortFun = [](std::pair<IPAddress, TrafficStats> const& l,
-                std::pair<IPAddress, TrafficStats> const& r) {
+                      std::pair<IPAddress, TrafficStats> const& r) {
             return l.second.pkts > r.second.pkts;
         };
     }
-    std::partial_sort_copy(srcMap.begin(), srcMap.end(),
-            topIps.begin(), topIps.end(), sortFun);
+    std::partial_sort_copy(sourceIpToStats.begin(), sourceIpToStats.end(),
+        topClientIps.begin(), topClientIps.end(), sortFun);
+}
 
-    std::vector<std::string> topIpsStr;
-    topIpsStr.reserve(topIps.size());
-    for (auto& pair : topIps) {
-        std::string val;
-        if (type == TrafficStats::PKTS) {
-            val = prettyFormatNumber(pair.second.pkts);
-        } else {
-            val = prettyFormatBytes(pair.second.bytes);
-        }
-        topIpsStr.push_back(fmt::format("{:<6} {:<" STR(IP_SIZE) "}", val,
-                    pair.first.getAddrV4().to_string()));
+auto AggregatedTcpFlow::getTopClientIpsIpStr(int index) const -> std::string
+{
+    return topClientIps[index].first.getAddrStr();
+}
+
+auto AggregatedTcpFlow::getTopClientIpsStr(TrafficStats::TrafficType type, int index) const -> std::string
+{
+    std::string val;
+    auto const& stat = topClientIps[index].second;
+    if (type == TrafficStats::PKTS) {
+        val = prettyFormatNumber(stat.pkts);
+    } else {
+        val = prettyFormatBytes(stat.bytes);
     }
-    return fmt::format("{}", fmt::join(topIpsStr, " "));
+    return val;
 }
 
 auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
 {
+
+    if (index > 0) {
+        switch (field) {
+            case Field::TOP_CLIENT_IPS_IP: return getTopClientIpsIpStr(index);
+            case Field::TOP_CLIENT_IPS_BYTES: return getTopClientIpsStr(TrafficStats::BYTES, index);
+            case Field::TOP_CLIENT_IPS_PKTS: return getTopClientIpsStr(TrafficStats::PKTS, index);
+            default: return "";
+        }
+    }
+
     auto fqdn = getFqdn();
     if (fqdn == "Total") {
         if (direction == FROM_CLIENT || direction == MERGED) {
@@ -165,8 +199,9 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::DS_TOTAL_P99: return prettyFormatBytes(totalRequestSizes.getPercentile(0.99));
             case Field::DS_TOTAL_MAX: return prettyFormatBytes(totalRequestSizes.getPercentile(1));
 
-            case Field::TOP_BYTES_CLIENT_IPS: return getTopClientIps(sourceIpToStats, TrafficStats::BYTES);
-            case Field::TOP_PKTS_CLIENT_IPS: return getTopClientIps(sourceIpToStats, TrafficStats::PKTS);
+            case Field::TOP_CLIENT_IPS_IP: return getTopClientIpsIpStr(index);
+            case Field::TOP_CLIENT_IPS_BYTES: return getTopClientIpsStr(TrafficStats::BYTES, index);
+            case Field::TOP_CLIENT_IPS_PKTS: return getTopClientIpsStr(TrafficStats::PKTS, index);
 
             case Field::FQDN: return getFqdn();
             case Field::IP: return getSrvIp().getAddrStr();
@@ -191,7 +226,7 @@ auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
 
     auto const* tcpFlow = static_cast<const AggregatedTcpFlow*>(flow);
     for (auto const& sourceIt : tcpFlow->sourceIpToStats) {
-        auto *stats = &sourceIpToStats[sourceIt.first];
+        auto* stats = &sourceIpToStats[sourceIt.first];
         stats->bytes += sourceIt.second.bytes;
         stats->pkts += sourceIt.second.pkts;
     }
@@ -301,7 +336,7 @@ auto AggregatedTcpFlow::openConnection(int connectionTime) -> void
 
 auto AggregatedTcpFlow::addCltPacket(IPAddress const& cltIp, int numBytes) -> void
 {
-    auto *stats = &sourceIpToStats[cltIp];
+    auto* stats = &sourceIpToStats[cltIp];
     stats->bytes += numBytes;
     stats->pkts++;
 };
