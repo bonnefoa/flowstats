@@ -56,10 +56,12 @@ auto TcpAggregatedFlow::getSubfieldSize(Field field) const -> int
     return 0;
 }
 
-auto TcpAggregatedFlow::prepareSubfield(Field field) -> void
+auto TcpAggregatedFlow::prepareSubfields(std::vector<Field> subfields) -> void
 {
-    if (field == +Field::TOP_CLIENT_IPS_IP) {
-        computeTopClientIps(TrafficStats::PKTS);
+    for (auto field : subfields) {
+        if (field == +Field::TOP_CLIENT_IPS_IP) {
+            computeTopClientIps(TrafficStats::PKTS);
+        }
     }
 }
 

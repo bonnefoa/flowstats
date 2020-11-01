@@ -29,6 +29,7 @@ auto Collector::buildTotalFlow(std::vector<Flow const*> const& aggregatedFlows) 
     for (auto const* flow : aggregatedFlows) {
         totalFlow->addAggregatedFlow(flow);
     }
+    totalFlow->prepareSubfields(flowFormatter.getSubFields());
 }
 
 auto Collector::fillSortFields() -> void
@@ -96,19 +97,12 @@ auto Collector::outputStatus(time_t duration) -> CollectorOutput
 
     const std::lock_guard<std::mutex> lock(dataMutex);
     mergePercentiles();
+
     std::vector<Flow const*> aggregatedFlows = getAggregatedFlows();
-
     buildTotalFlow(aggregatedFlows);
+    aggregatedFlows.insert(aggregatedFlows.begin(), totalFlow);
 
-    auto const& subfields = flowFormatter.getSubFields();
-    if (subfields.size() > 0) {
-        for (auto field : subfields) {
-            totalFlow->prepareSubfield(field);
-        }
-    }
-
-    auto bodyLines = flowFormatter.outputFlow(totalFlow,
-        aggregatedFlows, duration, displayConf);
+    auto bodyLines = flowFormatter.outputFlow(aggregatedFlows, duration, displayConf);
     return CollectorOutput(toString(), headers, bodyLines);
 }
 
@@ -127,11 +121,7 @@ auto Collector::getAggregatedFlows() const -> std::vector<Flow const*>
         }
 
         auto const& subfields = flowFormatter.getSubFields();
-        if (subfields.size() > 0) {
-            for (auto field : subfields) {
-                    pair.second->prepareSubfield(field);
-            }
-        }
+        pair.second->prepareSubfields(subfields);
 
         tempVector.push_back(pair.second);
     }

@@ -20,8 +20,6 @@ public:
 
     auto outputBody(Flow const* flow, std::vector<std::string>* accumulator,
         int duration, DisplayConfiguration const& displayConf) const -> void;
-    auto outputBodyWithSubfields(Flow const* flow, std::vector<std::string>* accumulator,
-            int duration, DisplayConfiguration const& displayConf) const -> void;
 
     [[nodiscard]] auto outputHeaders(DisplayConfiguration const& displayConf) const -> std::string;
 
@@ -41,11 +39,17 @@ public:
         }
     };
 
-    auto outputFlow(Flow const* totalFlow,
-        std::vector<Flow const*> const& aggregatedFlows,
+    auto outputFlow(std::vector<Flow const*> const& aggregatedFlows,
         int duration, DisplayConfiguration const& displayConf) const -> std::vector<std::string>;
 
 private:
+    auto outputBodyWithSubfields(Flow const* flow, std::vector<std::string>* accumulator,
+            int duration, DisplayConfiguration const& displayConf) const -> void;
+    auto outputLine(Flow const* flow,
+            int duration, DisplayConfiguration const& displayConf,
+            int index, std::vector<Field> const& displayFields,
+            Direction direction) const -> std::string;
+
     std::vector<Field> displayKeys;
     // Combine Keys and values in in a single vector
     std::vector<Field> displayFields;

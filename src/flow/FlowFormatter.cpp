@@ -4,6 +4,24 @@
 
 namespace flowstats {
 
+auto FlowFormatter::outputLine(Flow const* flow,
+    int duration, DisplayConfiguration const& displayConf,
+    int index, std::vector<Field> const& displayFields,
+    Direction direction) const -> std::string
+{
+    fmt::memory_buffer mergedBuf;
+    for (auto const& displayField : displayFields) {
+        auto field = fieldWithRateMode(displayConf.getRateMode(), displayField);
+        if (displayConf.isFieldHidden(field)) {
+            continue;
+        }
+        auto fieldSize = displayConf.getFieldToSize()[field];
+        fmt::format_to(mergedBuf, "| {:<{}.{}}",
+                flow->getFieldStr(field, direction, duration, index), fieldSize, fieldSize);
+    }
+    return to_string(mergedBuf);
+}
+
 auto FlowFormatter::outputBodyWithSubfields(Flow const* flow,
     std::vector<std::string>* accumulator, int duration,
     DisplayConfiguration const& displayConf) const -> void
@@ -15,18 +33,9 @@ auto FlowFormatter::outputBodyWithSubfields(Flow const* flow,
             numSubfields = size;
         }
     }
-
     for (int i = 0; i < numSubfields; ++i) {
-        fmt::memory_buffer mergedBuf;
-        for (auto const& field : displayFields) {
-            if (displayConf.isFieldHidden(field)) {
-                continue;
-            }
-            auto fieldSize = displayConf.getFieldToSize()[field];
-            fmt::format_to(mergedBuf, "| {:<{}.{}}",
-                    flow->getFieldStr(field, MERGED, duration, i), fieldSize, fieldSize);
-        }
-        accumulator->push_back(to_string(mergedBuf));
+        auto line = outputLine(flow, duration, displayConf, i, displayFields, MERGED);
+        accumulator->push_back(line);
     }
 }
 
@@ -34,41 +43,14 @@ auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accum
     int duration, DisplayConfiguration const& displayConf) const -> void
 {
     if (displayConf.getMergeDirection()) {
-        fmt::memory_buffer mergedBuf;
-        for (auto const& displayField : displayFields) {
-            auto field = fieldWithRateMode(displayConf.getRateMode(), displayField);
-            if (displayConf.isFieldHidden(field)) {
-                continue;
-            }
-            auto fieldSize = displayConf.getFieldToSize()[field];
-            fmt::format_to(mergedBuf, "| {:<{}.{}}", flow->getFieldStr(field, MERGED, duration), fieldSize, fieldSize);
-        }
-        accumulator->push_back(to_string(mergedBuf));
+        auto line = outputLine(flow, duration, displayConf, 0, displayFields, MERGED);
+        accumulator->push_back(line);
         return;
     }
-
-    fmt::memory_buffer clientBuf;
-    fmt::memory_buffer serverBuf;
-    for (auto const& displayField : displayFields) {
-        auto field = fieldWithRateMode(displayConf.getRateMode(), displayField);
-        if (displayConf.isFieldHidden(field)) {
-            continue;
-        }
-        std::string clientContent = flow->getFieldStr(field, FROM_CLIENT, duration);
-        std::string serverContent = flow->getFieldStr(field, FROM_SERVER, duration);
-        auto fieldSize = displayConf.getFieldToSize()[field];
-
-        fmt::format_to(clientBuf, "| {:<{}.{}}", clientContent, fieldSize, fieldSize);
-
-        if (serverContent == "" && clientContent.size() > fieldSize) {
-            fmt::format_to(serverBuf, "| {:<{}.{}}", clientContent.substr(fieldSize), fieldSize, fieldSize);
-        } else {
-            fmt::format_to(serverBuf, "| {:<{}.{}}", serverContent, fieldSize, fieldSize);
-        }
-    }
-
-    accumulator->push_back(to_string(clientBuf));
-    accumulator->push_back(to_string(serverBuf));
+    auto clientLine = outputLine(flow, duration, displayConf, 0, displayFields, FROM_CLIENT);
+    auto serverLine = outputLine(flow, duration, displayConf, 0, displayFields, FROM_SERVER);
+    accumulator->push_back(clientLine);
+    accumulator->push_back(serverLine);
 }
 
 auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const -> std::string
@@ -85,16 +67,10 @@ auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const
     return to_string(headersBuf);
 }
 
-auto FlowFormatter::outputFlow(Flow const* totalFlow,
-    std::vector<Flow const*> const& aggregatedFlows,
+auto FlowFormatter::outputFlow(std::vector<Flow const*> const& aggregatedFlows,
     int duration, DisplayConfiguration const& displayConf) const -> std::vector<std::string>
 {
     std::vector<std::string> res;
-    if (subfields.empty()) {
-        outputBody(totalFlow, &res, duration, displayConf);
-    } else {
-        outputBodyWithSubfields(totalFlow, &res, duration, displayConf);
-    }
     int i = 0;
     for (auto const* flow : aggregatedFlows) {
         if (i++ > displayConf.getMaxResults()) {
