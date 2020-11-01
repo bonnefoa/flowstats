@@ -1,5 +1,5 @@
 #include "TcpStatsCollector.hpp"
-#include "AggregatedTcpFlow.hpp"
+#include "TcpAggregatedFlow.hpp"
 #include "Collector.hpp"
 #include "TcpFlow.hpp"
 #include <fmt/format.h>
@@ -29,7 +29,7 @@ TcpStatsCollector::TcpStatsCollector(FlowstatsConfiguration const& conf,
         DisplayFieldValues(DisplayClients, { Field::TOP_CLIENT_IPS_IP, Field::TOP_CLIENT_IPS_PKTS, Field::TOP_CLIENT_IPS_BYTES }, true),
         DisplayFieldValues(DisplayTraffic, { Field::MTU, Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
-    setTotalFlow(new AggregatedTcpFlow());
+    setTotalFlow(new TcpAggregatedFlow());
     updateDisplayType(0);
     fillSortFields();
 };
@@ -99,26 +99,26 @@ auto TcpStatsCollector::lookupTcpFlow(Tins::TCP const& tcp,
 
 auto TcpStatsCollector::lookupAggregatedFlows(FlowId const& flowId,
     std::string const& fqdn,
-    Direction srvDir) -> std::vector<AggregatedTcpFlow*>
+    Direction srvDir) -> std::vector<TcpAggregatedFlow*>
 {
     IPAddress ipSrvInt = {};
     if (getFlowstatsConfiguration().getPerIpAggr()) {
         ipSrvInt = flowId.getIp(srvDir);
     }
     auto srvPort = flowId.getPort(srvDir);
-    AggregatedTcpFlow* aggregatedFlow;
+    TcpAggregatedFlow* aggregatedFlow;
     auto tcpKey = AggregatedKey(fqdn, ipSrvInt, srvPort);
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto* aggregatedMap = getAggregatedMap();
     auto it = aggregatedMap->find(tcpKey);
     if (it == aggregatedMap->end()) {
-        aggregatedFlow = new AggregatedTcpFlow(flowId, fqdn, srvDir);
+        aggregatedFlow = new TcpAggregatedFlow(flowId, fqdn, srvDir);
         aggregatedMap->emplace(tcpKey, aggregatedFlow);
         SPDLOG_DEBUG("Create aggregated tcp flow for {}", flowId.toString());
     } else {
-        aggregatedFlow = dynamic_cast<AggregatedTcpFlow*>(it->second);
+        aggregatedFlow = dynamic_cast<TcpAggregatedFlow*>(it->second);
     }
-    std::vector<AggregatedTcpFlow*> aggregatedFlows;
+    std::vector<TcpAggregatedFlow*> aggregatedFlows;
     aggregatedFlows.push_back(aggregatedFlow);
     return aggregatedFlows;
 }
@@ -198,83 +198,83 @@ auto TcpStatsCollector::getSortFun(Field field) const -> sortFlowFun
     }
     switch (field) {
         case Field::SRT:
-            return &AggregatedTcpFlow::sortBySrt;
+            return &TcpAggregatedFlow::sortBySrt;
         case Field::SRT_RATE:
-            return &AggregatedTcpFlow::sortBySrtRate;
+            return &TcpAggregatedFlow::sortBySrtRate;
         case Field::REQ:
-            return &AggregatedTcpFlow::sortByRequest;
+            return &TcpAggregatedFlow::sortByRequest;
         case Field::REQ_RATE:
-            return &AggregatedTcpFlow::sortByRequestRate;
+            return &TcpAggregatedFlow::sortByRequestRate;
         case Field::SYN:
-            return &AggregatedTcpFlow::sortBySyn;
+            return &TcpAggregatedFlow::sortBySyn;
         case Field::SYN_RATE:
-            return &AggregatedTcpFlow::sortBySynRate;
+            return &TcpAggregatedFlow::sortBySynRate;
         case Field::SYNACK:
-            return &AggregatedTcpFlow::sortBySynAck;
+            return &TcpAggregatedFlow::sortBySynAck;
         case Field::SYNACK_RATE:
-            return &AggregatedTcpFlow::sortBySynAckRate;
+            return &TcpAggregatedFlow::sortBySynAckRate;
         case Field::ZWIN:
-            return &AggregatedTcpFlow::sortByZwin;
+            return &TcpAggregatedFlow::sortByZwin;
         case Field::ZWIN_RATE:
-            return &AggregatedTcpFlow::sortByZwinRate;
+            return &TcpAggregatedFlow::sortByZwinRate;
         case Field::RST:
-            return &AggregatedTcpFlow::sortByRst;
+            return &TcpAggregatedFlow::sortByRst;
         case Field::RST_RATE:
-            return &AggregatedTcpFlow::sortByRstRate;
+            return &TcpAggregatedFlow::sortByRstRate;
         case Field::FIN:
-            return &AggregatedTcpFlow::sortByFin;
+            return &TcpAggregatedFlow::sortByFin;
         case Field::FIN_RATE:
-            return &AggregatedTcpFlow::sortByFinRate;
+            return &TcpAggregatedFlow::sortByFinRate;
         case Field::ACTIVE_CONNECTIONS:
-            return &AggregatedTcpFlow::sortByActiveConnections;
+            return &TcpAggregatedFlow::sortByActiveConnections;
         case Field::FAILED_CONNECTIONS:
-            return &AggregatedTcpFlow::sortByFailedConnections;
+            return &TcpAggregatedFlow::sortByFailedConnections;
         case Field::CONN:
-            return &AggregatedTcpFlow::sortByConnections;
+            return &TcpAggregatedFlow::sortByConnections;
         case Field::CONN_RATE:
-            return &AggregatedTcpFlow::sortByConnectionRate;
+            return &TcpAggregatedFlow::sortByConnectionRate;
         case Field::CLOSE:
-            return &AggregatedTcpFlow::sortByClose;
+            return &TcpAggregatedFlow::sortByClose;
         case Field::CLOSE_RATE:
-            return &AggregatedTcpFlow::sortByCloseRate;
+            return &TcpAggregatedFlow::sortByCloseRate;
 
         case Field::MTU:
-            return &AggregatedTcpFlow::sortByMtu;
+            return &TcpAggregatedFlow::sortByMtu;
 
         case Field::CT_P95:
-            return &AggregatedTcpFlow::sortByCtP95;
+            return &TcpAggregatedFlow::sortByCtP95;
         case Field::CT_TOTAL_P95:
-            return &AggregatedTcpFlow::sortByCtTotalP95;
+            return &TcpAggregatedFlow::sortByCtTotalP95;
         case Field::CT_P99:
-            return &AggregatedTcpFlow::sortByCtP99;
+            return &TcpAggregatedFlow::sortByCtP99;
         case Field::CT_TOTAL_P99:
-            return &AggregatedTcpFlow::sortByCtTotalP99;
+            return &TcpAggregatedFlow::sortByCtTotalP99;
 
         case Field::SRT_P95:
-            return &AggregatedTcpFlow::sortBySrtP95;
+            return &TcpAggregatedFlow::sortBySrtP95;
         case Field::SRT_TOTAL_P95:
-            return &AggregatedTcpFlow::sortBySrtTotalP95;
+            return &TcpAggregatedFlow::sortBySrtTotalP95;
         case Field::SRT_P99:
-            return &AggregatedTcpFlow::sortBySrtP99;
+            return &TcpAggregatedFlow::sortBySrtP99;
         case Field::SRT_TOTAL_P99:
-            return &AggregatedTcpFlow::sortBySrtTotalP99;
+            return &TcpAggregatedFlow::sortBySrtTotalP99;
         case Field::SRT_MAX:
-            return &AggregatedTcpFlow::sortBySrtMax;
+            return &TcpAggregatedFlow::sortBySrtMax;
         case Field::SRT_TOTAL_MAX:
-            return &AggregatedTcpFlow::sortBySrtTotalMax;
+            return &TcpAggregatedFlow::sortBySrtTotalMax;
 
         case Field::DS_P95:
-            return &AggregatedTcpFlow::sortByDsP95;
+            return &TcpAggregatedFlow::sortByDsP95;
         case Field::DS_TOTAL_P95:
-            return &AggregatedTcpFlow::sortByDsTotalP95;
+            return &TcpAggregatedFlow::sortByDsTotalP95;
         case Field::DS_P99:
-            return &AggregatedTcpFlow::sortByDsP99;
+            return &TcpAggregatedFlow::sortByDsP99;
         case Field::DS_TOTAL_P99:
-            return &AggregatedTcpFlow::sortByDsTotalP99;
+            return &TcpAggregatedFlow::sortByDsTotalP99;
         case Field::DS_MAX:
-            return &AggregatedTcpFlow::sortByDsMax;
+            return &TcpAggregatedFlow::sortByDsMax;
         case Field::DS_TOTAL_MAX:
-            return &AggregatedTcpFlow::sortByDsTotalMax;
+            return &TcpAggregatedFlow::sortByDsTotalMax;
         default:
             return nullptr;
     }

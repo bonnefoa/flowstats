@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AggregatedKeys.hpp"
-#include "AggregatedSslFlow.hpp"
+#include "SslAggregatedFlow.hpp"
 #include "Collector.hpp"
 #include "IpToFqdn.hpp"
 #include "PrintHelper.hpp"
@@ -34,7 +34,7 @@ private:
     std::unordered_map<FlowId, SslFlow, std::hash<FlowId>> hashToSslFlow;
     [[nodiscard]] auto getSortFun(Field field) const -> sortFlowFun override;
     auto lookupSslFlow(FlowId const& flowId) -> SslFlow*;
-    auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedSslFlow*>;
+    auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<SslAggregatedFlow*>;
     IpToFqdn* ipToFqdn;
 };
 } // namespace flowstats

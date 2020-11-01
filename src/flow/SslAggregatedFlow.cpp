@@ -1,8 +1,8 @@
-#include "AggregatedSslFlow.hpp"
+#include "SslAggregatedFlow.hpp"
 
 namespace flowstats {
 
-auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
+auto SslAggregatedFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
 {
     auto fqdn = getFqdn();
     if (fqdn == "Total") {
@@ -46,7 +46,7 @@ auto AggregatedSslFlow::getFieldStr(Field field, Direction direction, int durati
     return Flow::getFieldStr(field, direction, duration);
 }
 
-void AggregatedSslFlow::resetFlow(bool resetTotal)
+void SslAggregatedFlow::resetFlow(bool resetTotal)
 {
     Flow::resetFlow(resetTotal);
     connectionTimes.reset();
@@ -58,12 +58,12 @@ void AggregatedSslFlow::resetFlow(bool resetTotal)
     }
 }
 
-auto AggregatedSslFlow::setTlsVersion(TLSVersion tlsVers) -> void
+auto SslAggregatedFlow::setTlsVersion(TLSVersion tlsVers) -> void
 {
     tlsVersion = tlsVers;
 }
 
-auto AggregatedSslFlow::addConnection(int delta) -> void
+auto SslAggregatedFlow::addConnection(int delta) -> void
 {
     connectionTimes.addPoint(delta);
     totalConnectionTimes.addPoint(delta);

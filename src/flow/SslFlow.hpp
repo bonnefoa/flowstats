@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AggregatedSslFlow.hpp"
+#include "SslAggregatedFlow.hpp"
 #include "Flow.hpp"
 #include "PduUtils.hpp"
 #include "SslProto.hpp"
@@ -14,7 +14,7 @@ public:
         : Flow() {};
     SslFlow(FlowId const& flowId,
         std::string const& fqdn,
-        std::vector<AggregatedSslFlow*> _aggregatedFlows)
+        std::vector<SslAggregatedFlow*> _aggregatedFlows)
         : Flow(flowId, fqdn)
         , aggregatedFlows(std::move(_aggregatedFlows)) {};
 
@@ -28,7 +28,7 @@ private:
     void processChangeCipherSpec(Tins::Packet const& packet,
         Cursor* cursor);
 
-    std::vector<AggregatedSslFlow*> aggregatedFlows;
+    std::vector<SslAggregatedFlow*> aggregatedFlows;
     TLSVersion tlsVersion = TLSVersion::UNKNOWN;
     timeval startHandshake = {};
     bool connectionEstablished = false;

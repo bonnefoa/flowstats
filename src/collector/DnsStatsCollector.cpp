@@ -19,7 +19,7 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
         DisplayFieldValues(DisplayClients, { Field::TOP_CLIENT_IPS }),
         DisplayFieldValues(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
-    setTotalFlow(new AggregatedDnsFlow());
+    setTotalFlow(new DnsAggregatedFlow());
     updateDisplayType(0);
     fillSortFields();
 };
@@ -143,14 +143,14 @@ auto DnsStatsCollector::addFlowToAggregation(DnsFlow const* flow) -> void
     const std::lock_guard<std::mutex> lock(*getDataMutex());
     auto* aggregatedMap = getAggregatedMap();
     auto it = aggregatedMap->find(key);
-    AggregatedDnsFlow* aggregatedFlow;
+    DnsAggregatedFlow* aggregatedFlow;
     if (it == aggregatedMap->end()) {
         SPDLOG_DEBUG("Create new dns aggregation for {} {} {}", fqdn,
             dnsTypeToString(dnsType), flow->getTransport()._to_string());
-        aggregatedFlow = new AggregatedDnsFlow(flow->getFlowId(), fqdn, dnsType);
+        aggregatedFlow = new DnsAggregatedFlow(flow->getFlowId(), fqdn, dnsType);
         aggregatedMap->emplace(key, aggregatedFlow);
     } else {
-        aggregatedFlow = dynamic_cast<AggregatedDnsFlow*>(it->second);
+        aggregatedFlow = dynamic_cast<DnsAggregatedFlow*>(it->second);
     }
     aggregatedFlow->addFlow(flow);
 }
@@ -188,35 +188,35 @@ auto DnsStatsCollector::getSortFun(Field field) const -> sortFlowFun
     }
     switch (field) {
         case Field::PROTO:
-            return &AggregatedDnsFlow::sortByProto;
+            return &DnsAggregatedFlow::sortByProto;
         case Field::TYPE:
-            return &AggregatedDnsFlow::sortByType;
+            return &DnsAggregatedFlow::sortByType;
         case Field::REQ:
-            return &AggregatedDnsFlow::sortByRequest;
+            return &DnsAggregatedFlow::sortByRequest;
         case Field::REQ_RATE:
-            return &AggregatedDnsFlow::sortByRequestRate;
+            return &DnsAggregatedFlow::sortByRequestRate;
         case Field::TIMEOUTS:
-            return &AggregatedDnsFlow::sortByTimeout;
+            return &DnsAggregatedFlow::sortByTimeout;
         case Field::TIMEOUTS_RATE:
-            return &AggregatedDnsFlow::sortByTimeoutRate;
+            return &DnsAggregatedFlow::sortByTimeoutRate;
         case Field::SRT:
-            return &AggregatedDnsFlow::sortBySrt;
+            return &DnsAggregatedFlow::sortBySrt;
         case Field::SRT_RATE:
-            return &AggregatedDnsFlow::sortBySrtRate;
+            return &DnsAggregatedFlow::sortBySrtRate;
         case Field::SRT_TOTAL_P95:
-            return &AggregatedDnsFlow::sortBySrtTotalP95;
+            return &DnsAggregatedFlow::sortBySrtTotalP95;
         case Field::SRT_P95:
-            return &AggregatedDnsFlow::sortBySrtP95;
+            return &DnsAggregatedFlow::sortBySrtP95;
         case Field::SRT_P99:
-            return &AggregatedDnsFlow::sortBySrtP99;
+            return &DnsAggregatedFlow::sortBySrtP99;
         case Field::SRT_TOTAL_P99:
-            return &AggregatedDnsFlow::sortBySrtTotalP99;
+            return &DnsAggregatedFlow::sortBySrtTotalP99;
         case Field::SRT_MAX:
-            return &AggregatedDnsFlow::sortBySrtMax;
+            return &DnsAggregatedFlow::sortBySrtMax;
         case Field::SRT_TOTAL_MAX:
-            return &AggregatedDnsFlow::sortBySrtTotalMax;
+            return &DnsAggregatedFlow::sortBySrtTotalMax;
         case Field::RCRD_AVG:
-            return &AggregatedDnsFlow::sortByRcrdAvg;
+            return &DnsAggregatedFlow::sortByRcrdAvg;
         default:
             return nullptr;
     }

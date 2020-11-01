@@ -41,7 +41,7 @@ TEST_CASE("Ssl port detection", "[ssl]")
 
     //REQUIRE(ipFlows.size() == 1);
     //AggregatedKey key("Unknown", 0, 4433);
-    //AggregatedSslFlow* flow = ipFlows[key];
+    //SslAggregatedFlow* flow = ipFlows[key];
     //REQUIRE(flow->domain == "google.com");
     //REQUIRE(flow->packets[FROM_CLIENT] == 8);
     //REQUIRE(flow->packets[FROM_SERVER] == 7);

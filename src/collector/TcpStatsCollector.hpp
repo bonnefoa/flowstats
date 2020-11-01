@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AggregatedTcpFlow.hpp"
+#include "TcpAggregatedFlow.hpp"
 #include "Collector.hpp"
 #include "IpToFqdn.hpp"
 #include "TcpFlow.hpp"
@@ -32,10 +32,10 @@ private:
     std::unordered_map<FlowId, TcpFlow, std::hash<FlowId>> hashToTcpFlow;
     portArray srvPortsCounter = {};
 
-    std::vector<std::pair<TcpFlow*, std::vector<AggregatedTcpFlow*>>> openingTcpFlow;
+    std::vector<std::pair<TcpFlow*, std::vector<TcpAggregatedFlow*>>> openingTcpFlow;
     auto lookupTcpFlow(Tins::TCP const& tcpLayer,
         FlowId const& flowId) -> TcpFlow*;
-    auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedTcpFlow*>;
+    auto lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<TcpAggregatedFlow*>;
     [[nodiscard]] auto detectServer(Tins::TCP const& tcp, FlowId const& flowId) -> Direction;
     [[nodiscard]] auto getSortFun(Field field) const -> sortFlowFun override;
 

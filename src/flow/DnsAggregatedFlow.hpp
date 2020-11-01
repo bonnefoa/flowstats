@@ -7,18 +7,18 @@
 
 namespace flowstats {
 
-struct AggregatedDnsFlow : Flow {
+struct DnsAggregatedFlow : Flow {
 
-    AggregatedDnsFlow()
+    DnsAggregatedFlow()
         : Flow("Total") {};
 
-    AggregatedDnsFlow(FlowId const& flowId, std::string const& fqdn,
+    DnsAggregatedFlow(FlowId const& flowId, std::string const& fqdn,
         enum Tins::DNS::QueryType dnsType)
         : Flow(flowId, fqdn)
         , dnsType(dnsType) {};
 
     auto resetFlow(bool resetTotal) -> void override;
-    auto operator<(AggregatedDnsFlow const& b) { return queries < b.queries; }
+    auto operator<(DnsAggregatedFlow const& b) { return queries < b.queries; }
     auto addFlow(Flow const* flow) -> void override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
     auto mergePercentiles() -> void override { srts.merge(); }
@@ -28,106 +28,106 @@ struct AggregatedDnsFlow : Flow {
 
     [[nodiscard]] static auto sortByRequest(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->totalQueries < bCast->totalQueries;
     }
 
     [[nodiscard]] static auto sortByRequestRate(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->srts.getCount() < bCast->srts.getCount();
     }
 
     [[nodiscard]] static auto sortByTimeout(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->totalTimeouts < bCast->totalTimeouts;
     }
 
     [[nodiscard]] static auto sortByTimeoutRate(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->timeouts < bCast->timeouts;
     }
 
     [[nodiscard]] static auto sortByProto(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->getFlowId().getTransport() < bCast->getFlowId().getTransport();
     }
 
     [[nodiscard]] static auto sortByType(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->dnsType < bCast->dnsType;
     }
 
     [[nodiscard]] static auto sortBySrt(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->totalNumSrt < bCast->totalNumSrt;
     }
 
     [[nodiscard]] static auto sortBySrtRate(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->numSrt < bCast->numSrt;
     }
 
     [[nodiscard]] static auto sortBySrtP95(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->srts.getPercentile(0.95) < bCast->srts.getPercentile(0.95);
     }
 
     [[nodiscard]] static auto sortBySrtTotalP95(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->totalSrts.getPercentile(0.95) < bCast->totalSrts.getPercentile(0.95);
     }
 
     [[nodiscard]] static auto sortBySrtP99(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->srts.getPercentile(0.99) < bCast->srts.getPercentile(0.99);
     }
 
     [[nodiscard]] static auto sortBySrtTotalP99(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->totalSrts.getPercentile(0.99) < bCast->totalSrts.getPercentile(0.99);
     }
 
     [[nodiscard]] static auto sortBySrtMax(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->srts.getPercentile(1) < bCast->srts.getPercentile(1);
     }
 
     [[nodiscard]] static auto sortBySrtTotalMax(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->totalSrts.getPercentile(1) < bCast->totalSrts.getPercentile(1);
     }
 
     [[nodiscard]] static auto sortByRcrdAvg(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedDnsFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedDnsFlow const*>(b);
+        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
         return aCast->totalRecords / aCast->totalQueries < bCast->totalRecords / bCast->totalQueries;
     }
 

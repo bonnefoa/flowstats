@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AggregatedTcpFlow.hpp"
+#include "TcpAggregatedFlow.hpp"
 #include "Flow.hpp"
 #include "Stats.hpp"
 
@@ -13,7 +13,7 @@ public:
         : Flow() {};
     TcpFlow(FlowId flowId,
         uint8_t srvPos,
-        std::vector<AggregatedTcpFlow*> _aggregatedFlows)
+        std::vector<TcpAggregatedFlow*> _aggregatedFlows)
         : Flow(std::move(flowId), "", srvPos)
         , aggregatedFlows(std::move(_aggregatedFlows))
     {
@@ -31,7 +31,7 @@ public:
     [[nodiscard]] auto getGap() const { return gap; }
 
 private:
-    std::vector<AggregatedTcpFlow*> aggregatedFlows;
+    std::vector<TcpAggregatedFlow*> aggregatedFlows;
     auto tcpToString(Tins::TCP const& hdr) -> std::string;
     auto nextSeqnum(Tins::TCP const& tcp, int payloadSize) -> uint32_t;
 

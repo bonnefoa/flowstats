@@ -23,7 +23,7 @@ SslStatsCollector::SslStatsCollector(FlowstatsConfiguration const& conf, Display
         DisplayFieldValues(DisplaySsl, { Field::DOMAIN, Field::TLS_VERSION, Field::CIPHER_SUITE }),
         DisplayFieldValues(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
-    setTotalFlow(new AggregatedSslFlow());
+    setTotalFlow(new SslAggregatedFlow());
     updateDisplayType(0);
     fillSortFields();
 };
@@ -49,23 +49,23 @@ auto SslStatsCollector::lookupSslFlow(FlowId const& flowId) -> SslFlow*
     return &res.first->second;
 }
 
-auto SslStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<AggregatedSslFlow*>
+auto SslStatsCollector::lookupAggregatedFlows(FlowId const& flowId, std::string const& fqdn, Direction srvDir) -> std::vector<SslAggregatedFlow*>
 {
-    std::vector<AggregatedSslFlow*> subflows;
+    std::vector<SslAggregatedFlow*> subflows;
     IPAddress ipSrvInt = {};
     if (getFlowstatsConfiguration().getPerIpAggr()) {
         ipSrvInt = flowId.getIp(srvDir);
     }
     auto tcpKey = AggregatedKey(fqdn, ipSrvInt, flowId.getPort(srvDir));
-    AggregatedSslFlow* aggregatedFlow;
+    SslAggregatedFlow* aggregatedFlow;
 
     auto* aggregatedMap = getAggregatedMap();
     auto it = aggregatedMap->find(tcpKey);
     if (it == aggregatedMap->end()) {
-        aggregatedFlow = new AggregatedSslFlow(flowId, fqdn);
+        aggregatedFlow = new SslAggregatedFlow(flowId, fqdn);
         aggregatedMap->insert({ tcpKey, aggregatedFlow });
     } else {
-        aggregatedFlow = dynamic_cast<AggregatedSslFlow*>(it->second);
+        aggregatedFlow = dynamic_cast<SslAggregatedFlow*>(it->second);
     }
     subflows.push_back(aggregatedFlow);
 
@@ -112,23 +112,23 @@ auto SslStatsCollector::getSortFun(Field field) const -> sortFlowFun
     }
     switch (field) {
         case Field::CONN:
-            return AggregatedSslFlow::sortByConnections;
+            return SslAggregatedFlow::sortByConnections;
         case Field::CONN_RATE:
-            return AggregatedSslFlow::sortByConnectionRate;
+            return SslAggregatedFlow::sortByConnectionRate;
         case Field::DOMAIN:
-            return AggregatedSslFlow::sortByDomain;
+            return SslAggregatedFlow::sortByDomain;
         case Field::CIPHER_SUITE:
-            return AggregatedSslFlow::sortByCipherSuite;
+            return SslAggregatedFlow::sortByCipherSuite;
         case Field::TLS_VERSION:
-            return AggregatedSslFlow::sortByTlsVersion;
+            return SslAggregatedFlow::sortByTlsVersion;
         case Field::CT_P95:
-            return AggregatedSslFlow::sortByConnectionP95;
+            return SslAggregatedFlow::sortByConnectionP95;
         case Field::CT_TOTAL_P95:
-            return AggregatedSslFlow::sortByConnectionTotalP95;
+            return SslAggregatedFlow::sortByConnectionTotalP95;
         case Field::CT_P99:
-            return AggregatedSslFlow::sortByConnectionP99;
+            return SslAggregatedFlow::sortByConnectionP99;
         case Field::CT_TOTAL_P99:
-            return AggregatedSslFlow::sortByConnectionTotalP99;
+            return SslAggregatedFlow::sortByConnectionTotalP99;
         default:
             return nullptr;
     }

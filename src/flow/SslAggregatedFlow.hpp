@@ -6,13 +6,13 @@
 
 namespace flowstats {
 
-class AggregatedSslFlow : public Flow {
+class SslAggregatedFlow : public Flow {
 public:
-    AggregatedSslFlow()
+    SslAggregatedFlow()
         : Flow("Total")
         , tlsVersion(TLSVersion::UNKNOWN) {};
 
-    AggregatedSslFlow(FlowId const& flowId, std::string const& fqdn)
+    SslAggregatedFlow(FlowId const& flowId, std::string const& fqdn)
         : Flow(flowId, fqdn)
         , tlsVersion(TLSVersion::UNKNOWN) {};
 
@@ -28,64 +28,64 @@ public:
 
     [[nodiscard]] static auto sortByConnections(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
         return aCast->totalConnections < bCast->totalConnections;
     }
 
     [[nodiscard]] static auto sortByConnectionRate(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
         return aCast->numConnections < bCast->numConnections;
     }
 
     [[nodiscard]] static auto sortByConnectionP95(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
         return aCast->connectionTimes.getPercentile(.95) < bCast->connectionTimes.getPercentile(.95);
     }
 
     [[nodiscard]] static auto sortByConnectionTotalP95(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
         return aCast->totalConnectionTimes.getPercentile(.95) < bCast->totalConnectionTimes.getPercentile(.95);
     }
 
     [[nodiscard]] static auto sortByConnectionP99(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
         return aCast->connectionTimes.getPercentile(.99) < bCast->connectionTimes.getPercentile(.99);
     }
 
     [[nodiscard]] static auto sortByConnectionTotalP99(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
         return aCast->totalConnectionTimes.getPercentile(.99) < bCast->totalConnectionTimes.getPercentile(.99);
     }
 
     [[nodiscard]] static auto sortByDomain(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
         return aCast->domain < bCast->domain;
     }
 
     [[nodiscard]] static auto sortByCipherSuite(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
         return aCast->sslCipherSuite < bCast->sslCipherSuite;
     }
 
     [[nodiscard]] static auto sortByTlsVersion(Flow const* a, Flow const* b) -> bool
     {
-        auto const* aCast = static_cast<AggregatedSslFlow const*>(a);
-        auto const* bCast = static_cast<AggregatedSslFlow const*>(b);
+        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
+        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
         return aCast->tlsVersion < bCast->tlsVersion;
     }
 

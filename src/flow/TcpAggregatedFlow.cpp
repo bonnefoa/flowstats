@@ -1,10 +1,10 @@
-#include "AggregatedTcpFlow.hpp"
+#include "TcpAggregatedFlow.hpp"
 #include "Utils.hpp"
 #include <algorithm>
 
 namespace flowstats {
 
-AggregatedTcpFlow::~AggregatedTcpFlow()
+TcpAggregatedFlow::~TcpAggregatedFlow()
 {
     connectionTimes.resetAndShrink();
     totalConnectionTimes.resetAndShrink();
@@ -14,7 +14,7 @@ AggregatedTcpFlow::~AggregatedTcpFlow()
     totalRequestSizes.resetAndShrink();
 }
 
-auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
+auto TcpAggregatedFlow::updateFlow(Tins::Packet const& packet,
     FlowId const& flowId,
     Tins::TCP const& tcp) -> void
 {
@@ -43,7 +43,7 @@ auto AggregatedTcpFlow::updateFlow(Tins::Packet const& packet,
         packet.pdu()->advertised_size());
 }
 
-auto AggregatedTcpFlow::getSubfieldSize(Field field) const -> int
+auto TcpAggregatedFlow::getSubfieldSize(Field field) const -> int
 {
     switch (field) {
         case Field::TOP_CLIENT_IPS_IP:
@@ -56,14 +56,14 @@ auto AggregatedTcpFlow::getSubfieldSize(Field field) const -> int
     return 0;
 }
 
-auto AggregatedTcpFlow::prepareSubfield(Field field) -> void
+auto TcpAggregatedFlow::prepareSubfield(Field field) -> void
 {
     if (field == +Field::TOP_CLIENT_IPS_IP) {
         computeTopClientIps(TrafficStats::PKTS);
     }
 }
 
-auto AggregatedTcpFlow::computeTopClientIps(TrafficStats::TrafficType type) -> void
+auto TcpAggregatedFlow::computeTopClientIps(TrafficStats::TrafficType type) -> void
 {
     int size = std::min(5, static_cast<int>(sourceIpToStats.size()));
     topClientIps = std::vector<std::pair<IPAddress, TrafficStats>>(size);
@@ -85,12 +85,12 @@ auto AggregatedTcpFlow::computeTopClientIps(TrafficStats::TrafficType type) -> v
         topClientIps.begin(), topClientIps.end(), sortFun);
 }
 
-auto AggregatedTcpFlow::getTopClientIpsIpStr(int index) const -> std::string
+auto TcpAggregatedFlow::getTopClientIpsIpStr(int index) const -> std::string
 {
     return topClientIps[index].first.getAddrStr();
 }
 
-auto AggregatedTcpFlow::getTopClientIpsStr(TrafficStats::TrafficType type, int index) const -> std::string
+auto TcpAggregatedFlow::getTopClientIpsStr(TrafficStats::TrafficType type, int index) const -> std::string
 {
     std::string val;
     auto const& stat = topClientIps[index].second;
@@ -102,7 +102,7 @@ auto AggregatedTcpFlow::getTopClientIpsStr(TrafficStats::TrafficType type, int i
     return val;
 }
 
-auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
+auto TcpAggregatedFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
 {
 
     if (index > 0) {
@@ -220,11 +220,11 @@ auto AggregatedTcpFlow::getFieldStr(Field field, Direction direction, int durati
     return Flow::getFieldStr(field, direction, duration);
 }
 
-auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
+auto TcpAggregatedFlow::addAggregatedFlow(Flow const* flow) -> void
 {
     Flow::addFlow(flow);
 
-    auto const* tcpFlow = static_cast<const AggregatedTcpFlow*>(flow);
+    auto const* tcpFlow = static_cast<const TcpAggregatedFlow*>(flow);
     for (auto const& sourceIt : tcpFlow->sourceIpToStats) {
         auto* stats = &sourceIpToStats[sourceIt.first];
         stats->bytes += sourceIt.second.bytes;
@@ -264,7 +264,7 @@ auto AggregatedTcpFlow::addAggregatedFlow(Flow const* flow) -> void
     requestSizes.addPoints(tcpFlow->requestSizes);
 }
 
-auto AggregatedTcpFlow::resetFlow(bool resetTotal) -> void
+auto TcpAggregatedFlow::resetFlow(bool resetTotal) -> void
 {
     Flow::resetFlow(resetTotal);
 
@@ -305,12 +305,12 @@ auto AggregatedTcpFlow::resetFlow(bool resetTotal) -> void
     requestSizes.reset();
 }
 
-auto AggregatedTcpFlow::failConnection() -> void
+auto TcpAggregatedFlow::failConnection() -> void
 {
     failedConnections++;
 };
 
-auto AggregatedTcpFlow::mergePercentiles() -> void
+auto TcpAggregatedFlow::mergePercentiles() -> void
 {
     srts.merge();
     totalSrts.merge();
@@ -320,12 +320,12 @@ auto AggregatedTcpFlow::mergePercentiles() -> void
     totalRequestSizes.merge();
 }
 
-auto AggregatedTcpFlow::ongoingConnection() -> void
+auto TcpAggregatedFlow::ongoingConnection() -> void
 {
     activeConnections++;
 };
 
-auto AggregatedTcpFlow::openConnection(int connectionTime) -> void
+auto TcpAggregatedFlow::openConnection(int connectionTime) -> void
 {
     connectionTimes.addPoint(connectionTime);
     totalConnectionTimes.addPoint(connectionTime);
@@ -334,14 +334,14 @@ auto AggregatedTcpFlow::openConnection(int connectionTime) -> void
     totalConnections++;
 };
 
-auto AggregatedTcpFlow::addCltPacket(IPAddress const& cltIp, int numBytes) -> void
+auto TcpAggregatedFlow::addCltPacket(IPAddress const& cltIp, int numBytes) -> void
 {
     auto* stats = &sourceIpToStats[cltIp];
     stats->bytes += numBytes;
     stats->pkts++;
 };
 
-auto AggregatedTcpFlow::addSrt(int srt, int dataSize) -> void
+auto TcpAggregatedFlow::addSrt(int srt, int dataSize) -> void
 {
     srts.addPoint(srt);
     totalSrts.addPoint(srt);
@@ -350,14 +350,14 @@ auto AggregatedTcpFlow::addSrt(int srt, int dataSize) -> void
     totalNumSrts++;
 };
 
-auto AggregatedTcpFlow::closeConnection() -> void
+auto TcpAggregatedFlow::closeConnection() -> void
 {
     closes++;
     totalCloses++;
     activeConnections--;
 };
 
-auto AggregatedTcpFlow::getStatsdMetrics() const -> std::vector<std::string>
+auto TcpAggregatedFlow::getStatsdMetrics() const -> std::vector<std::string>
 {
     std::vector<std::string> lst;
     DogFood::Tags tags = DogFood::Tags({ { "fqdn", getFqdn() },

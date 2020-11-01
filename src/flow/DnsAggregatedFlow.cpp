@@ -1,4 +1,4 @@
-#include "AggregatedDnsFlow.hpp"
+#include "DnsAggregatedFlow.hpp"
 #include "Field.hpp"
 #include "FlowFormatter.hpp"
 #include <algorithm>
@@ -6,7 +6,7 @@
 
 namespace flowstats {
 
-auto AggregatedDnsFlow::getTopClientIps() const -> std::vector<std::pair<IPAddress, int>>
+auto DnsAggregatedFlow::getTopClientIps() const -> std::vector<std::pair<IPAddress, int>>
 {
     int size = std::min(5, static_cast<int>(sourceIps.size()));
     std::vector<std::pair<IPAddress, int>> topIps(size);
@@ -19,7 +19,7 @@ auto AggregatedDnsFlow::getTopClientIps() const -> std::vector<std::pair<IPAddre
     return topIps;
 }
 
-auto AggregatedDnsFlow::getTopClientIpsStr() const -> std::string
+auto DnsAggregatedFlow::getTopClientIpsStr() const -> std::string
 {
     auto topIps = getTopClientIps();
     std::vector<std::string> topIpsStr;
@@ -32,7 +32,7 @@ auto AggregatedDnsFlow::getTopClientIpsStr() const -> std::string
     return fmt::format("{}", fmt::join(topIpsStr, " "));
 }
 
-auto AggregatedDnsFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
+auto DnsAggregatedFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
 {
     auto fqdn = getFqdn();
     if (fqdn == "Total") {
@@ -83,7 +83,7 @@ auto AggregatedDnsFlow::getFieldStr(Field field, Direction direction, int durati
     return Flow::getFieldStr(field, direction, duration);
 }
 
-auto AggregatedDnsFlow::addFlow(Flow const* flow) -> void
+auto DnsAggregatedFlow::addFlow(Flow const* flow) -> void
 {
     Flow::addFlow(flow);
 
@@ -108,11 +108,11 @@ auto AggregatedDnsFlow::addFlow(Flow const* flow) -> void
     }
 }
 
-auto AggregatedDnsFlow::addAggregatedFlow(Flow const* flow) -> void
+auto DnsAggregatedFlow::addAggregatedFlow(Flow const* flow) -> void
 {
     Flow::addFlow(flow);
 
-    auto const* dnsFlow = dynamic_cast<const AggregatedDnsFlow*>(flow);
+    auto const* dnsFlow = dynamic_cast<const DnsAggregatedFlow*>(flow);
     queries += dnsFlow->queries;
     truncated += dnsFlow->truncated;
     records += dnsFlow->records;
@@ -133,7 +133,7 @@ auto AggregatedDnsFlow::addAggregatedFlow(Flow const* flow) -> void
     numSrt += dnsFlow->numSrt;
 }
 
-auto AggregatedDnsFlow::getStatsdMetrics() const -> std::vector<std::string>
+auto DnsAggregatedFlow::getStatsdMetrics() const -> std::vector<std::string>
 {
     std::vector<std::string> lst;
     DogFood::Tags tags = DogFood::Tags({
@@ -157,7 +157,7 @@ auto AggregatedDnsFlow::getStatsdMetrics() const -> std::vector<std::string>
     return lst;
 }
 
-void AggregatedDnsFlow::resetFlow(bool resetTotal)
+void DnsAggregatedFlow::resetFlow(bool resetTotal)
 {
     Flow::resetFlow(resetTotal);
     srts.reset();
