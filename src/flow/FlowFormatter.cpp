@@ -19,8 +19,11 @@ auto FlowFormatter::outputBodyWithSubfields(Flow const* flow,
     for (int i = 0; i < numSubfields; ++i) {
         fmt::memory_buffer mergedBuf;
         for (auto const& field : displayFields) {
+            if (displayConf.isFieldHidden(field)) {
+                continue;
+            }
             auto fieldSize = displayConf.getFieldToSize()[field];
-            fmt::format_to(mergedBuf, "{:<{}.{}} ",
+            fmt::format_to(mergedBuf, "| {:<{}.{}}",
                     flow->getFieldStr(field, MERGED, duration, i), fieldSize, fieldSize);
         }
         accumulator->push_back(to_string(mergedBuf));
@@ -38,10 +41,7 @@ auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accum
                 continue;
             }
             auto fieldSize = displayConf.getFieldToSize()[field];
-            if (fieldWithSubfields(field)) {
-            } else {
-                fmt::format_to(mergedBuf, "{:<{}.{}} ", flow->getFieldStr(field, MERGED, duration), fieldSize, fieldSize);
-            }
+            fmt::format_to(mergedBuf, "| {:<{}.{}}", flow->getFieldStr(field, MERGED, duration), fieldSize, fieldSize);
         }
         accumulator->push_back(to_string(mergedBuf));
         return;
@@ -58,12 +58,12 @@ auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accum
         std::string serverContent = flow->getFieldStr(field, FROM_SERVER, duration);
         auto fieldSize = displayConf.getFieldToSize()[field];
 
-        fmt::format_to(clientBuf, "{:<{}.{}} ", clientContent, fieldSize, fieldSize);
+        fmt::format_to(clientBuf, "| {:<{}.{}}", clientContent, fieldSize, fieldSize);
 
         if (serverContent == "" && clientContent.size() > fieldSize) {
-            fmt::format_to(serverBuf, "{:<{}.{}} ", clientContent.substr(fieldSize), fieldSize, fieldSize);
+            fmt::format_to(serverBuf, "| {:<{}.{}}", clientContent.substr(fieldSize), fieldSize, fieldSize);
         } else {
-            fmt::format_to(serverBuf, "{:<{}.{}} ", serverContent, fieldSize, fieldSize);
+            fmt::format_to(serverBuf, "| {:<{}.{}}", serverContent, fieldSize, fieldSize);
         }
     }
 
@@ -80,7 +80,7 @@ auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const
         if (displayConf.isFieldHidden(field)) {
             continue;
         }
-        fmt::format_to(headersBuf, "{:<{}.{}} ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
+        fmt::format_to(headersBuf, "| {:<{}.{}}", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
     }
     return to_string(headersBuf);
 }
@@ -90,7 +90,11 @@ auto FlowFormatter::outputFlow(Flow const* totalFlow,
     int duration, DisplayConfiguration const& displayConf) const -> std::vector<std::string>
 {
     std::vector<std::string> res;
-    outputBody(totalFlow, &res, duration, displayConf);
+    if (subfields.empty()) {
+        outputBody(totalFlow, &res, duration, displayConf);
+    } else {
+        outputBodyWithSubfields(totalFlow, &res, duration, displayConf);
+    }
     int i = 0;
     for (auto const* flow : aggregatedFlows) {
         if (i++ > displayConf.getMaxResults()) {
