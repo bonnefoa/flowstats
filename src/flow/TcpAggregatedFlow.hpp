@@ -44,7 +44,7 @@ public:
     auto resetFlow(bool resetTotal) -> void override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
     auto mergePercentiles() -> void override;
-    auto prepareSubfields(std::vector<Field> fields) -> void override;
+    auto prepareSubfields(std::vector<Field> const& fields) -> void override;
 
     auto failConnection() -> void;
     auto closeConnection() -> void;

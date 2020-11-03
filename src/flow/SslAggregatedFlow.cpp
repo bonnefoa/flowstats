@@ -43,7 +43,7 @@ auto SslAggregatedFlow::getFieldStr(Field field, Direction direction, int durati
             default: break;
         }
     }
-    return Flow::getFieldStr(field, direction, duration);
+    return Flow::getFieldStr(field, direction, duration, index);
 }
 
 void SslAggregatedFlow::resetFlow(bool resetTotal)

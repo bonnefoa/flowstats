@@ -26,15 +26,15 @@ TEST_CASE("Tcp simple", "[tcp]")
 
         auto const* aggregatedFlow = it->second;
 
-        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1) == "1");
-        CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1) == "1");
-        CHECK(aggregatedFlow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1) == "1");
-        CHECK(aggregatedFlow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1) == "0");
-        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1) == "1");
-        CHECK(aggregatedFlow->getFieldStr(Field::CONN_RATE, FROM_CLIENT, 1) == "1");
-        CHECK(aggregatedFlow->getFieldStr(Field::CT_P99, FROM_CLIENT, 1) == "50ms");
-        CHECK(aggregatedFlow->getFieldStr(Field::MTU, FROM_CLIENT, 1) == "140");
-        CHECK(aggregatedFlow->getFieldStr(Field::MTU, FROM_SERVER, 1) == "594");
+        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1, 0) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1, 0) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1, 0) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1, 0) == "0");
+        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1, 0) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::CONN_RATE, FROM_CLIENT, 1, 0) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::CT_P99, FROM_CLIENT, 1, 0) == "50ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::MTU, FROM_CLIENT, 1, 0) == "140");
+        CHECK(aggregatedFlow->getFieldStr(Field::MTU, FROM_SERVER, 1, 0) == "594");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         CHECK(flows.size() == 1);
@@ -42,7 +42,7 @@ TEST_CASE("Tcp simple", "[tcp]")
 
         AggregatedKey totalKey = AggregatedKey("Total", {}, 0);
         std::map<Field, std::string> totalValues;
-        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1) == "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1, 0) == "1");
     }
 }
 
@@ -95,12 +95,12 @@ TEST_CASE("https pcap", "[tcp]")
         REQUIRE(aggregatedMap.size() == 1);
         auto const* aggregatedFlow = aggregatedMap[tcpKey];
 
-        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1)== "1");
-        CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1)== "1");
-        CHECK(aggregatedFlow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1)== "1");
-        CHECK(aggregatedFlow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1)== "0");
-        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1)== "1");
-        CHECK(aggregatedFlow->getFieldStr(Field::CT_P99, FROM_CLIENT, 1)== "1ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1, 0)== "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1, 0)== "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1, 0)== "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1, 0)== "0");
+        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1, 0)== "1");
+        CHECK(aggregatedFlow->getFieldStr(Field::CT_P99, FROM_CLIENT, 1, 0)== "1ms");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         REQUIRE(flows.size() == 1);
@@ -122,7 +122,7 @@ TEST_CASE("Tcp gap connection", "[tcp]")
         REQUIRE(aggregatedMap.size() == 1);
         auto *aggregatedFlow = aggregatedMap[tcpKey];
 
-        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1)== "0");
+        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1, 0)== "0");
     }
 }
 
@@ -139,13 +139,13 @@ TEST_CASE("Tcp reused port", "[tcp]")
         REQUIRE(aggregatedMap.size() == 1);
         auto *aggregatedFlow = aggregatedMap[tcpKey];
 
-        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1) == "6");
-        CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1) == "5");
-        CHECK(aggregatedFlow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1) == "5");
-        CHECK(aggregatedFlow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1) == "0");
-        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1) == "5");
-        CHECK(aggregatedFlow->getFieldStr(Field::CT_P99, FROM_CLIENT, 1) == "0ms");
-        CHECK(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "0ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::SYN, FROM_CLIENT, 1, 0) == "6");
+        CHECK(aggregatedFlow->getFieldStr(Field::FIN, FROM_CLIENT, 1, 0) == "5");
+        CHECK(aggregatedFlow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1, 0) == "5");
+        CHECK(aggregatedFlow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1, 0) == "0");
+        CHECK(aggregatedFlow->getFieldStr(Field::CONN, FROM_CLIENT, 1, 0) == "5");
+        CHECK(aggregatedFlow->getFieldStr(Field::CT_P99, FROM_CLIENT, 1, 0) == "0ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1, 0) == "0ms");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         REQUIRE(flows.size() == 0);
@@ -166,9 +166,9 @@ TEST_CASE("Ssl stream ack + srt", "[tcp]")
 
         auto const* aggregatedFlow = aggregatedMap[tcpKey];
 
-        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "2");
-        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "2ms");
-        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P95, FROM_CLIENT, 1) == "2ms");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1, 0) == "2");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1, 0) == "2ms");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P95, FROM_CLIENT, 1, 0) == "2ms");
     }
 }
 
@@ -185,9 +185,9 @@ TEST_CASE("Ssl stream multiple srts", "[tcp]")
         REQUIRE(aggregatedMap.size() == 1);
         auto const* aggregatedFlow = aggregatedMap[tcpKey];
 
-        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "11");
-        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "9ms");
-        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P95, FROM_CLIENT, 1) == "3ms");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1, 0) == "11");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1, 0) == "9ms");
+        REQUIRE(aggregatedFlow->getFieldStr(Field::SRT_P95, FROM_CLIENT, 1, 0) == "3ms");
     }
 }
 
@@ -205,9 +205,9 @@ TEST_CASE("Tcp double", "[tcp]")
         REQUIRE(aggregatedMap.size() == 1);
         auto const* aggregatedFlow = aggregatedMap[tcpKey];
 
-        CHECK(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "2");
-        CHECK(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "499ms");
-        CHECK(aggregatedFlow->getFieldStr(Field::SRT_P95, FROM_CLIENT, 1) == "499ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::SRT, FROM_CLIENT, 1, 0) == "2");
+        CHECK(aggregatedFlow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1, 0) == "499ms");
+        CHECK(aggregatedFlow->getFieldStr(Field::SRT_P95, FROM_CLIENT, 1, 0) == "499ms");
     }
 }
 
@@ -228,8 +228,8 @@ TEST_CASE("Tcp 0 win", "[tcp]")
         auto const* flow = ipFlows[tcpKey];
         REQUIRE(flow != nullptr);
 
-        CHECK(flow->getFieldStr(Field::ZWIN, FROM_SERVER, 1) == "3");
-        CHECK(flow->getFieldStr(Field::RST, FROM_SERVER, 1) == "1");
+        CHECK(flow->getFieldStr(Field::ZWIN, FROM_SERVER, 1, 0) == "3");
+        CHECK(flow->getFieldStr(Field::RST, FROM_SERVER, 1, 0) == "1");
     }
 }
 
@@ -253,8 +253,8 @@ TEST_CASE("Tcp rst", "[tcp]")
         auto tcpKey = AggregatedKey("whatever", IPAddress(ip), 3834);
         auto const* flow = ipFlows[tcpKey];
 
-        CHECK(flow->getFieldStr(Field::RST, FROM_CLIENT, 1) == "2");
-        CHECK(flow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1) == "1");
+        CHECK(flow->getFieldStr(Field::RST, FROM_CLIENT, 1, 0) == "2");
+        CHECK(flow->getFieldStr(Field::CLOSE, FROM_CLIENT, 1, 0) == "1");
     }
 }
 
@@ -293,7 +293,7 @@ TEST_CASE("Request size", "[tcp]")
         auto const* flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        REQUIRE(flow->getFieldStr(Field::DS_MAX, FROM_CLIENT, 1) == "183 KB");
+        REQUIRE(flow->getFieldStr(Field::DS_MAX, FROM_CLIENT, 1, 0) == "183 KB");
     }
 }
 
@@ -313,7 +313,7 @@ TEST_CASE("Srv port detection", "[tcp]")
         auto const* flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        REQUIRE(flow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1) == "3");
+        REQUIRE(flow->getFieldStr(Field::ACTIVE_CONNECTIONS, FROM_CLIENT, 1, 0) == "3");
     }
 }
 
@@ -333,8 +333,8 @@ TEST_CASE("Gap in capture", "[tcp]")
         auto const* flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        CHECK(flow->getFieldStr(Field::SRT, FROM_CLIENT, 1) == "1");
-        CHECK(flow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1) == "26ms");
+        CHECK(flow->getFieldStr(Field::SRT, FROM_CLIENT, 1, 0) == "1");
+        CHECK(flow->getFieldStr(Field::SRT_P99, FROM_CLIENT, 1, 0) == "26ms");
 
         auto flows = tcpStatsCollector.getTcpFlow();
         CHECK(flows.size() == 1);
@@ -357,8 +357,8 @@ TEST_CASE("Mtu is correctly computed", "[tcp]")
         auto const* flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        CHECK(flow->getFieldStr(Field::MTU, FROM_CLIENT, 1) == "15346");
-        CHECK(flow->getFieldStr(Field::MTU, FROM_SERVER, 1) == "413");
+        CHECK(flow->getFieldStr(Field::MTU, FROM_CLIENT, 1, 0) == "15346");
+        CHECK(flow->getFieldStr(Field::MTU, FROM_SERVER, 1, 0) == "413");
     }
 }
 
@@ -388,7 +388,7 @@ TEST_CASE("Ipv6", "[tcp]")
         auto const* flow = aggregatedMap[tcpKey];
         REQUIRE(flow != nullptr);
 
-        CHECK(flow->getFieldStr(Field::BYTES, FROM_CLIENT, 1) == "609 B");
-        CHECK(flow->getFieldStr(Field::BYTES, FROM_SERVER, 1) == "886 B");
+        CHECK(flow->getFieldStr(Field::BYTES, FROM_CLIENT, 1, 0) == "609 B");
+        CHECK(flow->getFieldStr(Field::BYTES, FROM_SERVER, 1, 0) == "886 B");
     }
 }

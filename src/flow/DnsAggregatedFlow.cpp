@@ -80,7 +80,7 @@ auto DnsAggregatedFlow::getFieldStr(Field field, Direction direction, int durati
                 break;
         }
     }
-    return Flow::getFieldStr(field, direction, duration);
+    return Flow::getFieldStr(field, direction, duration, index);
 }
 
 auto DnsAggregatedFlow::addFlow(Flow const* flow) -> void

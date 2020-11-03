@@ -21,11 +21,11 @@ TEST_CASE("Ssl connection time", "[ssl]")
     auto *flow = ipFlows[key];
     REQUIRE(flow != nullptr);
 
-    CHECK(flow->getFieldStr(Field::DOMAIN, FROM_CLIENT, 1) == "google.com");
-    CHECK(flow->getFieldStr(Field::PKTS, FROM_CLIENT, 1) == "8");
-    CHECK(flow->getFieldStr(Field::PKTS, FROM_SERVER, 1) == "7");
-    CHECK(flow->getFieldStr(Field::CONN, FROM_CLIENT, 1) == "1");
-    CHECK(flow->getFieldStr(Field::CT_P95, FROM_CLIENT, 1) == "38ms");
+    CHECK(flow->getFieldStr(Field::DOMAIN, FROM_CLIENT, 1, 0) == "google.com");
+    CHECK(flow->getFieldStr(Field::PKTS, FROM_CLIENT, 1, 0) == "8");
+    CHECK(flow->getFieldStr(Field::PKTS, FROM_SERVER, 1, 0) == "7");
+    CHECK(flow->getFieldStr(Field::CONN, FROM_CLIENT, 1, 0) == "1");
+    CHECK(flow->getFieldStr(Field::CT_P95, FROM_CLIENT, 1, 0) == "38ms");
 }
 
 TEST_CASE("Ssl port detection", "[ssl]")
