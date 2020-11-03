@@ -1,8 +1,8 @@
 #pragma once
 
-#include "TcpAggregatedFlow.hpp"
 #include "Collector.hpp"
 #include "IpToFqdn.hpp"
+#include "TcpAggregatedFlow.hpp"
 #include "TcpFlow.hpp"
 
 namespace flowstats {

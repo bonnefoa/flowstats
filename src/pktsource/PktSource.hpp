@@ -35,7 +35,6 @@ public:
     auto processPacketSource(Tins::Packet const& packet) -> void;
 
 private:
-
     Screen* screen;
     FlowstatsConfiguration const& conf;
     std::vector<Collector*> const& collectors;

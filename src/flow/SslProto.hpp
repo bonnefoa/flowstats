@@ -366,8 +366,7 @@ class TlsHeader {
 public:
     TlsHeader(SSLContentType contentType, TLSVersion version)
         : contentType(contentType)
-        , version(version)
-        {};
+        , version(version) {};
     [[nodiscard]] static auto parse(Cursor* cursor) -> std::optional<TlsHeader>;
     [[nodiscard]] auto getContentType() const { return contentType; }
     [[nodiscard]] auto getVersion() const { return version; }

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "TcpAggregatedFlow.hpp"
 #include "Flow.hpp"
 #include "Stats.hpp"
+#include "TcpAggregatedFlow.hpp"
 
 namespace flowstats {
 

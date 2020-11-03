@@ -28,7 +28,7 @@ struct FlowId {
         Tins::TCP const* tcp, Tins::UDP const* udp);
 
     FlowId(std::array<uint16_t, 2> ports,
-            IPAddressPair const& pair, Transport transport);
+        IPAddressPair const& pair, Transport transport);
     FlowId(IPAddressPair const& pair, Tins::TCP const& tcp);
     FlowId(IPAddressPair const& pair, Tins::UDP const& udp);
 
@@ -44,8 +44,7 @@ struct FlowId {
 
     [[nodiscard]] auto hash() const
     {
-        return std::hash<IPAddress>()(addressPair[0]) + std::hash<IPAddress>()(addressPair[1]) +
-            + std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1])
+        return std::hash<IPAddress>()(addressPair[0]) + std::hash<IPAddress>()(addressPair[1]) + +std::hash<uint16_t>()(ports[0]) + std::hash<uint16_t>()(ports[1])
             + std::hash<uint8_t>()(transport);
     };
 

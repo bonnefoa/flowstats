@@ -88,7 +88,7 @@ FlowId::FlowId(std::array<uint16_t, 2> pktPorts,
 auto FlowId::toString() const -> std::string
 {
     return fmt::format("{}:{} -> {}:{}",
-            addressPair[direction].getAddrStr(), ports[direction],
-            addressPair[!direction].getAddrStr(), ports[!direction]);
+        addressPair[direction].getAddrStr(), ports[direction],
+        addressPair[!direction].getAddrStr(), ports[!direction]);
 }
 } // namespace flowstats

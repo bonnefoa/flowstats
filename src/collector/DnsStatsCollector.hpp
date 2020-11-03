@@ -1,9 +1,9 @@
 #pragma once
 
-#include "DnsAggregatedFlow.hpp"
 #include "AggregatedKeys.hpp"
 #include "Collector.hpp"
 #include "Configuration.hpp"
+#include "DnsAggregatedFlow.hpp"
 #include "DnsFlow.hpp"
 #include "IpToFqdn.hpp"
 #include "Utils.hpp"

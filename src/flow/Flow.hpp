@@ -42,9 +42,9 @@ public:
     virtual auto addAggregatedFlow(Flow const* flow) -> void;
     virtual auto resetFlow(bool resetTotal) -> void;
     virtual auto mergePercentiles() -> void {};
-    virtual auto prepareSubfields(std::vector<Field> subfields) -> void {};
+    virtual auto prepareSubfields(std::vector<Field> const& subfields) -> void {};
 
-    [[nodiscard]] virtual auto getSubfieldSize(Field field) const -> int { return 0; };
+    [[nodiscard]] virtual auto getSubfieldSize(Field field) const -> int;
     [[nodiscard]] virtual auto getFieldStr(Field field, Direction direction, int duration, int index = 0) const -> std::string;
     [[nodiscard]] virtual auto getStatsdMetrics() const -> std::vector<std::string> { return {}; };
 

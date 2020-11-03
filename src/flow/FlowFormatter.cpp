@@ -16,8 +16,8 @@ auto FlowFormatter::outputLine(Flow const* flow,
             continue;
         }
         auto fieldSize = displayConf.getFieldToSize()[field];
-        fmt::format_to(mergedBuf, "| {:<{}.{}}",
-                flow->getFieldStr(field, direction, duration, index), fieldSize, fieldSize);
+        fmt::format_to(mergedBuf, "{:<{}.{}}| ",
+            flow->getFieldStr(field, direction, duration, index), fieldSize, fieldSize);
     }
     return to_string(mergedBuf);
 }
@@ -62,7 +62,7 @@ auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const
         if (displayConf.isFieldHidden(field)) {
             continue;
         }
-        fmt::format_to(headersBuf, "| {:<{}.{}}", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
+        fmt::format_to(headersBuf, "{:<{}.{}}| ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
     }
     return to_string(headersBuf);
 }

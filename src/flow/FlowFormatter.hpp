@@ -44,11 +44,11 @@ public:
 
 private:
     auto outputBodyWithSubfields(Flow const* flow, std::vector<std::string>* accumulator,
-            int duration, DisplayConfiguration const& displayConf) const -> void;
+        int duration, DisplayConfiguration const& displayConf) const -> void;
     auto outputLine(Flow const* flow,
-            int duration, DisplayConfiguration const& displayConf,
-            int index, std::vector<Field> const& displayFields,
-            Direction direction) const -> std::string;
+        int duration, DisplayConfiguration const& displayConf,
+        int index, std::vector<Field> const& displayFields,
+        Direction direction) const -> std::string;
 
     std::vector<Field> displayKeys;
     // Combine Keys and values in in a single vector
