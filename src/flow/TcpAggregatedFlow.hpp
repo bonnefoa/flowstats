@@ -53,7 +53,7 @@ public:
     auto ongoingConnection() -> void;
     auto addSrt(int srt, int dataSize) -> void;
 
-    [[nodiscard]] auto getFieldStr(Field field, Direction direction, int duration, int index = 0) const -> std::string override;
+    [[nodiscard]] auto getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string override;
     [[nodiscard]] auto getSubfieldSize(Field field) const -> int override;
     [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string> override;
 

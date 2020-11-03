@@ -39,7 +39,7 @@ public:
         }
     };
 
-    auto outputFlow(std::vector<Flow const*> const& aggregatedFlows,
+    [[nodiscard]] auto outputFlow(std::vector<Flow const*> const& aggregatedFlows,
         int duration, DisplayConfiguration const& displayConf) const -> std::vector<std::string>;
 
 private:
