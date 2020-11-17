@@ -191,7 +191,7 @@ auto Screen::updateTopMenu() -> void
         if (selectedProtocolIndex == i) {
             wattron(topMenuWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }
-        waddstr(topMenuWin, fmt::format("{}: {:<10} ", i + 1, proto._to_string()).c_str());
+        waddstr(topMenuWin, fmt::format("{}: {:<11}", i + 1, proto._to_string()).c_str());
         if (selectedProtocolIndex == i) {
             wattroff(topMenuWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }
