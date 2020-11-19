@@ -139,7 +139,6 @@ auto main(int argc, char* argv[]) -> int
         EXIT_WITH_ERROR("Neither interface nor input pcap file were provided");
     }
 
-    conf.setAgentConf(DogFood::Configure(agentAddr));
     pcapReplay = conf.getPcapFileName() != "";
     std::vector<flowstats::Collector*> collectors;
     conf.setDomainToServerPort(flowstats::getDomainToServerPort(initialServerPorts));

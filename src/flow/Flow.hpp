@@ -46,7 +46,6 @@ public:
 
     [[nodiscard]] virtual auto getSubfieldSize(Field field) const -> int { return 0; };
     [[nodiscard]] virtual auto getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string;
-    [[nodiscard]] virtual auto getStatsdMetrics() const -> std::vector<std::string> { return {}; };
 
     [[nodiscard]] auto getFlowId() const { return flowId; };
     [[nodiscard]] auto getFqdn() const { return fqdn; };

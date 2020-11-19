@@ -1,6 +1,5 @@
 #pragma once
 
-#include <DogFood.hpp> // for Configuration
 #include <cstdint> // for uint16_t, uint32_t
 #include <map> // for map
 #include <mutex> // for mutex
@@ -32,7 +31,6 @@ public:
     [[nodiscard]] auto getDomainToServerPort() const -> std::map<std::string, uint16_t> const& { return domainToServerPort; };
     [[nodiscard]] auto getPerIpAggr() const -> bool const& { return perIpAggr; };
     [[nodiscard]] auto getDisplayUnknownFqdn() const -> bool const& { return displayUnknownFqdn; };
-    [[nodiscard]] auto getAgentConf() const -> std::optional<DogFood::Configuration> const& { return agentConf; };
     [[nodiscard]] auto getTimeoutFlow() const -> int const& { return timeoutFlow; };
 
     auto setBpfFilter(std::string b) { bpfFilter = std::move(b); };
@@ -40,7 +38,6 @@ public:
     auto setIface(std::string i) { iface = std::move(i); };
     auto setDisplayUnknownFqdn(bool d) { displayUnknownFqdn = d; };
     auto setPerIpAggr(bool p) { perIpAggr = p; };
-    auto setAgentConf(std::optional<DogFood::Configuration> a) { agentConf = std::move(a); };
     auto setDomainToServerPort(std::map<std::string, uint16_t> d) { domainToServerPort = std::move(d); };
 
 private:
@@ -52,7 +49,6 @@ private:
     bool perIpAggr = false;
 
     bool displayUnknownFqdn = false;
-    std::optional<DogFood::Configuration> agentConf;
     int timeoutFlow = 15;
 };
 

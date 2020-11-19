@@ -4,7 +4,6 @@
 #include "CollectorOutput.hpp"
 #include "Configuration.hpp"
 #include "DisplayType.hpp"
-#include "DogFood.hpp"
 #include "Flow.hpp"
 #include "FlowFormatter.hpp"
 #include "Utils.hpp"
@@ -38,8 +37,6 @@ public:
     virtual auto advanceTick(timeval now) -> void {};
     auto resetMetrics() -> void;
 
-    [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string>;
-    auto sendMetrics() -> void;
     auto mergePercentiles() -> void;
 
     [[nodiscard]] virtual auto toString() const -> std::string = 0;

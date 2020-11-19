@@ -69,10 +69,6 @@ auto PktSource::updateScreen(timeval currentTime) -> void
         lastUpdate = currentTime;
         auto captureStatus = getCaptureStatus();
         screen->updateDisplay(currentTime, true, captureStatus);
-        for (auto* collector : collectors) {
-            collector->sendMetrics();
-            collector->resetMetrics();
-        }
     }
 }
 

@@ -205,30 +205,6 @@ auto DnsAggregatedFlow::addAggregatedFlow(Flow const* flow) -> void
     numSrt += dnsFlow->numSrt;
 }
 
-auto DnsAggregatedFlow::getStatsdMetrics() const -> std::vector<std::string>
-{
-    std::vector<std::string> lst;
-    DogFood::Tags tags = DogFood::Tags({
-        { "fqdn", getFqdn() },
-        { "proto", getTransport()._to_string() },
-        { "type", dnsTypeToString(dnsType) },
-    });
-    if (queries) {
-        lst.push_back(DogFood::Metric("flowstats.dns.queries", queries,
-            DogFood::Counter, 1, tags));
-    }
-    if (timeouts) {
-        lst.push_back(DogFood::Metric("flowstats.dns.timeouts", timeouts, DogFood::Counter, 1, tags));
-    }
-    if (records) {
-        lst.push_back(DogFood::Metric("flowstats.dns.records", int(totalRecords / totalQueries), DogFood::Counter, 1, tags));
-    }
-    if (truncated) {
-        lst.push_back(DogFood::Metric("flowstats.dns.truncated", truncated, DogFood::Counter, 1, tags));
-    }
-    return lst;
-}
-
 void DnsAggregatedFlow::resetFlow(bool resetTotal)
 {
     Flow::resetFlow(resetTotal);

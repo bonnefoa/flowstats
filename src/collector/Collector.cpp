@@ -10,19 +10,6 @@
 
 namespace flowstats {
 
-void Collector::sendMetrics()
-{
-    auto agentConf = conf.getAgentConf();
-    if (!agentConf.has_value()) {
-        return;
-    }
-    std::vector<std::string> metrics = getStatsdMetrics();
-    for (auto& metric : metrics) {
-        SPDLOG_DEBUG("Sending {}", metric);
-        DogFood::Send(metric, agentConf.value());
-    }
-}
-
 auto Collector::buildTotalFlow(std::vector<Flow const*> const& aggregatedFlows) -> void
 {
     totalFlow->resetFlow(true);
@@ -78,17 +65,6 @@ auto Collector::resetMetrics() -> void
     for (auto& pair : aggregatedMap) {
         pair.second->resetFlow(false);
     }
-}
-
-auto Collector::getStatsdMetrics() const -> std::vector<std::string>
-{
-    std::vector<std::string> res;
-    for (auto const& pair : aggregatedMap) {
-        auto const* val = pair.second;
-        auto statsdMetrics = val->getStatsdMetrics();
-        res.insert(res.end(), statsdMetrics.begin(), statsdMetrics.end());
-    }
-    return res;
 }
 
 auto Collector::outputStatus(time_t duration) -> CollectorOutput

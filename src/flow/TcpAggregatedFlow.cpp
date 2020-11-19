@@ -359,28 +359,4 @@ auto TcpAggregatedFlow::closeConnection() -> void
     activeConnections--;
 };
 
-auto TcpAggregatedFlow::getStatsdMetrics() const -> std::vector<std::string>
-{
-    std::vector<std::string> lst;
-    DogFood::Tags tags = DogFood::Tags({ { "fqdn", getFqdn() },
-        { "ip", getSrvIp().getAddrStr() },
-        { "port", std::to_string(getSrvPort()) } });
-    for (auto& i : srts.getPoints()) {
-        lst.push_back(DogFood::Metric("flowstats.tcp.srt", i,
-            DogFood::Histogram, 1, tags));
-    }
-    for (auto& i : connectionTimes.getPoints()) {
-        lst.push_back(DogFood::Metric("flowstats.tcp.ct", i,
-            DogFood::Histogram, 1, tags));
-    }
-    if (activeConnections) {
-        lst.push_back(DogFood::Metric("flowstats.tcp.activeConnections", activeConnections, DogFood::Counter, 1, tags));
-    }
-    if (failedConnections) {
-        lst.push_back(DogFood::Metric("flowstats.tcp.failedConnections", failedConnections,
-            DogFood::Counter, 1, tags));
-    }
-    return lst;
-}
-
 } // namespace flowstats
