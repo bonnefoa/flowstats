@@ -4,6 +4,16 @@
 
 namespace flowstats {
 
+auto FlowFormatter::isFieldHidden(bool isMerged, Field field) const -> bool {
+    if (isMerged && field == +Field::DIR) {
+        return true;
+    }
+    if (!subfields.empty() && field == +Field::DIR) {
+        return true;
+    }
+    return false;
+}
+
 auto FlowFormatter::outputLine(Flow const* flow,
     int duration, DisplayConfiguration const& displayConf,
     int index, std::vector<Field> const& displayFields,
@@ -12,7 +22,7 @@ auto FlowFormatter::outputLine(Flow const* flow,
     fmt::memory_buffer mergedBuf;
     for (auto const& displayField : displayFields) {
         auto field = fieldWithRateMode(displayConf.getRateMode(), displayField);
-        if (displayConf.isFieldHidden(field)) {
+        if (isFieldHidden(displayConf.getMergeDirection(), field)) {
             continue;
         }
         auto fieldSize = displayConf.getFieldToSize()[field];
@@ -59,7 +69,7 @@ auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const
     auto fieldToSize = displayConf.getFieldToSize();
     for (auto const& displayField : displayFields) {
         auto field = fieldWithRateMode(displayConf.getRateMode(), displayField);
-        if (displayConf.isFieldHidden(field)) {
+        if (isFieldHidden(displayConf.getMergeDirection(), field)) {
             continue;
         }
         fmt::format_to(headersBuf, "{:<{}.{}}| ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);

@@ -49,6 +49,7 @@ private:
         int duration, DisplayConfiguration const& displayConf,
         int index, std::vector<Field> const& displayFields,
         Direction direction) const -> std::string;
+    auto isFieldHidden(bool isMerged, Field field) const -> bool;
 
     std::vector<Field> displayKeys;
     // Combine Keys and values in in a single vector

@@ -29,7 +29,6 @@ public:
     [[nodiscard]] auto getMaxResults() const { return maxResults; };
     [[nodiscard]] auto getMergeDirection() const { return mergeDirection; };
     [[nodiscard]] auto getRateMode() const { return rateMode; };
-    [[nodiscard]] auto isFieldHidden(Field field) const -> bool;
 
 private:
     std::vector<int> fieldToSize;
