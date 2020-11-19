@@ -19,12 +19,10 @@ DisplayConfiguration::DisplayConfiguration()
 
     fieldToSize[Field::BYTES] = 12;
 
-    // To delete
-    fieldToSize[Field::TOP_CLIENT_IPS] = 60;
-
     fieldToSize[Field::TOP_CLIENT_IPS_IP] = 24;
     fieldToSize[Field::TOP_CLIENT_IPS_PKTS] = 18;
     fieldToSize[Field::TOP_CLIENT_IPS_BYTES] = 18;
+    fieldToSize[Field::TOP_CLIENT_IPS_REQUESTS] = 18;
 
     fieldToSize[Field::IP] = 16;
 

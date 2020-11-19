@@ -38,9 +38,9 @@ auto fieldToSortable(Field field) -> bool
         case Field::CLOSE_AVG:
         case Field::SYNACK_AVG:
         case Field::TIMEOUTS_AVG:
-        case Field::TOP_CLIENT_IPS:
         case Field::TOP_CLIENT_IPS_PKTS:
         case Field::TOP_CLIENT_IPS_BYTES:
+        case Field::TOP_CLIENT_IPS_REQUESTS:
             return false;
         default:
             return true;
@@ -88,6 +88,7 @@ auto fieldWithSubfields(Field field) -> bool
         case Field::TOP_CLIENT_IPS_IP:
         case Field::TOP_CLIENT_IPS_PKTS:
         case Field::TOP_CLIENT_IPS_BYTES:
+        case Field::TOP_CLIENT_IPS_REQUESTS:
             return true;
         default:
             return false;
@@ -170,14 +171,14 @@ auto fieldToHeader(Field field) -> char const*
         case Field::SRT_AVG:
             return "Srt/s";
 
-        case Field::TOP_CLIENT_IPS:
-            return "TopClientIps";
         case Field::TOP_CLIENT_IPS_IP:
             return "ClientIP";
         case Field::TOP_CLIENT_IPS_PKTS:
             return "ClientPackets";
         case Field::TOP_CLIENT_IPS_BYTES:
             return "ClientBytes";
+        case Field::TOP_CLIENT_IPS_REQUESTS:
+            return "ClientRequests";
 
         case Field::SRT_P95:
             return "Srt95 (1s)";

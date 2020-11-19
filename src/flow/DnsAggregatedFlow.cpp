@@ -6,34 +6,95 @@
 
 namespace flowstats {
 
-auto DnsAggregatedFlow::getTopClientIps() const -> std::vector<std::pair<IPAddress, int>>
+auto DnsAggregatedFlow::getTopClientIpsKey(int index) const -> std::string
 {
-    int size = std::min(5, static_cast<int>(sourceIps.size()));
-    std::vector<std::pair<IPAddress, int>> topIps(size);
-    std::partial_sort_copy(sourceIps.begin(), sourceIps.end(),
-        topIps.begin(), topIps.end(),
-        [](std::pair<IPAddress, int> const& l,
-            std::pair<IPAddress, int> const& r) {
-            return l.second > r.second;
-        });
-    return topIps;
+    return topClientIps[index].first.getAddrStr();
 }
 
-auto DnsAggregatedFlow::getTopClientIpsStr() const -> std::string
+auto DnsAggregatedFlow::getTopClientIpsValue(TrafficStatsDns::TrafficType type, int index) const -> std::string
 {
-    auto topIps = getTopClientIps();
-    std::vector<std::string> topIpsStr;
-    topIpsStr.reserve(topIps.size());
-    for (auto& pair : topIps) {
-        topIpsStr.push_back(fmt::format("{:<3} {:<" STR(IP_SIZE) "}",
-            prettyFormatNumber(pair.second),
-            pair.first.getAddrStr()));
+    std::string val;
+    auto const& stat = topClientIps[index].second;
+    switch (type) {
+        case TrafficStatsDns::PKTS:
+            return prettyFormatNumber(stat.pkts);
+        case TrafficStatsDns::BYTES:
+            return prettyFormatNumber(stat.bytes);
+        case TrafficStatsDns::REQUESTS:
+            return prettyFormatNumber(stat.requests);
+        default:
+            return "Error";
     }
-    return fmt::format("{}", fmt::join(topIpsStr, " "));
+}
+
+auto DnsAggregatedFlow::getSubfieldSize(Field field) const -> int
+{
+    switch (field) {
+        case Field::TOP_CLIENT_IPS_IP:
+        case Field::TOP_CLIENT_IPS_BYTES:
+        case Field::TOP_CLIENT_IPS_PKTS:
+        case Field::TOP_CLIENT_IPS_REQUESTS:
+            return std::min(5, static_cast<int>(sourceIpToStats.size()));
+        default:
+            return 0;
+    }
+    return 0;
+}
+
+auto DnsAggregatedFlow::prepareSubfields(std::vector<Field> const& subfields) -> void
+{
+    for (auto field : subfields) {
+        if (field == +Field::TOP_CLIENT_IPS_IP) {
+            computeTopClientIps(TrafficStatsDns::REQUESTS);
+        }
+    }
+}
+
+auto DnsAggregatedFlow::computeTopClientIps(TrafficStatsDns::TrafficType type) -> void
+{
+    int size = std::min(5, static_cast<int>(sourceIpToStats.size()));
+    topClientIps = std::vector<std::pair<IPAddress, TrafficStatsDns>>(size);
+
+    bool (*sortFun)(std::pair<IPAddress, TrafficStatsDns> const& l,
+        std::pair<IPAddress, TrafficStatsDns> const& r)
+        = nullptr;
+    switch (type) {
+        case TrafficStatsDns::PKTS:
+            sortFun = [](std::pair<IPAddress, TrafficStatsDns> const& l,
+                          std::pair<IPAddress, TrafficStatsDns> const& r) {
+                return l.second.pkts > r.second.pkts;
+            };
+            break;
+        case TrafficStatsDns::BYTES:
+            sortFun = [](std::pair<IPAddress, TrafficStatsDns> const& l,
+                          std::pair<IPAddress, TrafficStatsDns> const& r) {
+                return l.second.bytes > r.second.bytes;
+            };
+            break;
+        case TrafficStatsDns::REQUESTS:
+            sortFun = [](std::pair<IPAddress, TrafficStatsDns> const& l,
+                          std::pair<IPAddress, TrafficStatsDns> const& r) {
+                return l.second.requests > r.second.requests;
+            };
+            break;
+    }
+
+    std::partial_sort_copy(sourceIpToStats.begin(), sourceIpToStats.end(),
+        topClientIps.begin(), topClientIps.end(), sortFun);
 }
 
 auto DnsAggregatedFlow::getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string
 {
+    if (index > 0) {
+        switch (field) {
+            case Field::TOP_CLIENT_IPS_IP: return getTopClientIpsKey(index);
+            case Field::TOP_CLIENT_IPS_BYTES: return getTopClientIpsValue(TrafficStatsDns::BYTES, index);
+            case Field::TOP_CLIENT_IPS_PKTS: return getTopClientIpsValue(TrafficStatsDns::PKTS, index);
+            case Field::TOP_CLIENT_IPS_REQUESTS: return getTopClientIpsValue(TrafficStatsDns::REQUESTS, index);
+            default: return "";
+        }
+    }
+
     auto fqdn = getFqdn();
     if (fqdn == "Total") {
         if (direction == FROM_CLIENT || direction == MERGED) {
@@ -56,7 +117,11 @@ auto DnsAggregatedFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::TYPE: return dnsTypeToString(dnsType);
             case Field::IP: return getSrvIp().getAddrStr();
             case Field::PORT: return std::to_string(getSrvPort());
-            case Field::TOP_CLIENT_IPS: return getTopClientIpsStr();
+
+            case Field::TOP_CLIENT_IPS_IP: return getTopClientIpsKey(index);
+            case Field::TOP_CLIENT_IPS_BYTES: return getTopClientIpsValue(TrafficStatsDns::BYTES, index);
+            case Field::TOP_CLIENT_IPS_PKTS: return getTopClientIpsValue(TrafficStatsDns::PKTS, index);
+            case Field::TOP_CLIENT_IPS_REQUESTS: return getTopClientIpsValue(TrafficStatsDns::REQUESTS, index);
 
             case Field::TIMEOUTS: return std::to_string(totalTimeouts);
             case Field::REQ: return prettyFormatNumber(totalQueries);
@@ -93,7 +158,11 @@ auto DnsAggregatedFlow::addFlow(Flow const* flow) -> void
     records += dnsFlow->getNumberRecords();
     timeouts += !dnsFlow->getHasResponse();
 
-    sourceIps[dnsFlow->getCltIp()]++;
+    auto* stats = &sourceIpToStats[dnsFlow->getCltIp()];
+    auto cltPos = !flow->getSrvPos();
+    stats->bytes += flow->getTotalBytes()[cltPos];
+    stats->pkts += flow->getTotalPackets()[cltPos];
+    stats->requests++;
 
     totalQueries++;
     totalTimeouts += !dnsFlow->getHasResponse();
@@ -118,8 +187,11 @@ auto DnsAggregatedFlow::addAggregatedFlow(Flow const* flow) -> void
     records += dnsFlow->records;
     timeouts += dnsFlow->timeouts;
 
-    for (auto const& it : dnsFlow->sourceIps) {
-        sourceIps[it.first] += it.second;
+    for (auto const& sourceIt : dnsFlow->sourceIpToStats) {
+        auto* stats = &sourceIpToStats[sourceIt.first];
+        stats->bytes += sourceIt.second.bytes;
+        stats->pkts += sourceIt.second.pkts;
+        stats->requests += sourceIt.second.requests;
     }
 
     totalQueries += dnsFlow->totalQueries;
@@ -169,7 +241,7 @@ void DnsAggregatedFlow::resetFlow(bool resetTotal)
 
     if (resetTotal) {
         totalSrts.reset();
-        sourceIps.clear();
+        sourceIpToStats.clear();
         totalQueries = 0;
         totalTimeouts = 0;
         totalTruncated = 0;

@@ -7,6 +7,19 @@
 
 namespace flowstats {
 
+class TrafficStatsDns {
+public:
+    uint64_t bytes = 0;
+    uint64_t pkts = 0;
+    uint64_t requests = 0;
+
+    enum TrafficType {
+        BYTES,
+        PKTS,
+        REQUESTS,
+    };
+};
+
 struct DnsAggregatedFlow : Flow {
 
     DnsAggregatedFlow()
@@ -22,8 +35,10 @@ struct DnsAggregatedFlow : Flow {
     auto addFlow(Flow const* flow) -> void override;
     auto addAggregatedFlow(Flow const* flow) -> void override;
     auto mergePercentiles() -> void override { srts.merge(); }
+    auto prepareSubfields(std::vector<Field> const& fields) -> void override;
 
     [[nodiscard]] auto getFieldStr(Field field, Direction direction, int duration, int index) const -> std::string override;
+    [[nodiscard]] auto getSubfieldSize(Field field) const -> int override;
     [[nodiscard]] auto getStatsdMetrics() const -> std::vector<std::string> override;
 
     [[nodiscard]] static auto sortByRequest(Flow const* a, Flow const* b) -> bool
@@ -132,8 +147,10 @@ struct DnsAggregatedFlow : Flow {
     }
 
 private:
-    [[nodiscard]] auto getTopClientIps() const -> std::vector<std::pair<IPAddress, int>>;
-    [[nodiscard]] auto getTopClientIpsStr() const -> std::string;
+    auto computeTopClientIps(TrafficStatsDns::TrafficType type) -> void;
+    [[nodiscard]] auto getTopClientIpsKey(int index) const -> std::string;
+    [[nodiscard]] auto getTopClientIpsValue(TrafficStatsDns::TrafficType type, int index) const -> std::string;
+    std::vector<std::pair<IPAddress, TrafficStatsDns>> topClientIps;
 
     enum Tins::DNS::QueryType dnsType = Tins::DNS::QueryType::A;
 
@@ -150,7 +167,7 @@ private:
 
     int numSrt = 0;
     int totalNumSrt = 0;
-    std::map<IPAddress, int> sourceIps;
+    std::map<IPAddress, TrafficStatsDns> sourceIpToStats;
 
     Percentile srts;
     Percentile totalSrts;

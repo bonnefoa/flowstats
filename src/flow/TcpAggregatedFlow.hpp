@@ -8,7 +8,7 @@
 
 namespace flowstats {
 
-class TrafficStats {
+class TrafficStatsTcp {
 public:
     uint64_t bytes = 0;
     uint64_t pkts = 0;
@@ -331,10 +331,10 @@ public:
     }
 
 private:
-    auto computeTopClientIps(TrafficStats::TrafficType type) -> void;
-    [[nodiscard]] auto getTopClientIpsStr(TrafficStats::TrafficType type, int index) const -> std::string;
-    [[nodiscard]] auto getTopClientIpsIpStr(int index) const -> std::string;
-    std::vector<std::pair<IPAddress, TrafficStats>> topClientIps;
+    auto computeTopClientIps(TrafficStatsTcp::TrafficType type) -> void;
+    [[nodiscard]] auto getTopClientIpsKey(int index) const -> std::string;
+    [[nodiscard]] auto getTopClientIpsValue(TrafficStatsTcp::TrafficType type, int index) const -> std::string;
+    std::vector<std::pair<IPAddress, TrafficStatsTcp>> topClientIps;
 
     std::array<int, 2> syns = {};
     std::array<int, 2> synAcks = {};
@@ -350,7 +350,7 @@ private:
 
     std::array<uint32_t, 2> mtu = {};
 
-    std::map<IPAddress, TrafficStats> sourceIpToStats;
+    std::map<IPAddress, TrafficStatsTcp> sourceIpToStats;
 
     int closes = 0;
     int totalCloses = 0;
