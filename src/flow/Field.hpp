@@ -73,10 +73,6 @@ BETTER_ENUM(Field, char,
     BYTES_RATE,
     BYTES_AVG,
 
-    SUBFIELD_CLT_IP,
-    SUBFIELD_PKTS,
-    SUBFIELD_BYTES,
-
     SYN,
     SYN_RATE,
     SYN_AVG,
