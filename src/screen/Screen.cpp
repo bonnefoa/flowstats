@@ -103,10 +103,7 @@ auto Screen::updateBody() -> void
         if (line == selectedLine) {
             wattron(bodyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
         }
-        mvwprintw(bodyWin, i, 0,
-            fmt::format("{:<" STR(DEFAULT_COLUMNS) "}",
-                values[i].c_str())
-                .c_str());
+        mvwprintw(bodyWin, i, 0, fmt::format("{:<" STR(DEFAULT_COLUMNS) "}", values[i]).c_str());
         if (line == selectedLine) {
             wattroff(bodyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
         }
@@ -356,6 +353,7 @@ Screen::Screen(std::atomic_bool* shouldStop,
     if (noCurses) {
         return;
     }
+    setlocale(LC_ALL, "");
     initscr();
 
     use_default_colors();
