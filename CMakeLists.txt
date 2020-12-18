@@ -10,7 +10,7 @@ SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fPIE -fno-omit-frame-pointer")
 find_package(PkgConfig)
 find_package(fmt REQUIRED)
 find_package(libtins REQUIRED)
-pkg_check_modules (NCURSES REQUIRED ncurses)
+pkg_check_modules (NCURSES REQUIRED ncursesw)
 pkg_check_modules (SPDLOG REQUIRED spdlog )
 pkg_check_modules (PCAP REQUIRED libpcap)
 
