@@ -1,10 +1,12 @@
 #include "FlowFormatter.hpp"
 #include <fmt/format.h>
 #include <utility>
+#include <wchar.h>
 
 namespace flowstats {
 
-auto FlowFormatter::isFieldHidden(bool isMerged, Field field) const -> bool {
+auto FlowFormatter::isFieldHidden(bool isMerged, Field field) const -> bool
+{
     if (isMerged && field == +Field::DIR) {
         return true;
     }
@@ -16,7 +18,8 @@ auto FlowFormatter::isFieldHidden(bool isMerged, Field field) const -> bool {
 
 auto FlowFormatter::outputLine(Flow const* flow,
     int duration, DisplayConfiguration const& displayConf,
-    int index, std::vector<Field> const& displayFields,
+    int index, int numSubfields,
+    std::vector<Field> const& displayFields,
     Direction direction) const -> std::string
 {
     fmt::memory_buffer mergedBuf;
@@ -26,8 +29,27 @@ auto FlowFormatter::outputLine(Flow const* flow,
             continue;
         }
         auto fieldSize = displayConf.getFieldToSize()[field];
-        fmt::format_to(mergedBuf, "{:<{}.{}}| ",
-            flow->getFieldStr(field, direction, duration, index), fieldSize, fieldSize);
+        std::string prefix = "";
+        int lengthPrefix = 0;
+        if (field == +Field::TOP_CLIENT_IPS_IP && numSubfields > 0) {
+            if (numSubfields == 1) {
+                prefix = " ";
+                lengthPrefix = 1;
+            } else if (index == 0) {
+                prefix = "┌";
+                lengthPrefix = 1;
+            } else if (index > 0 && index == numSubfields - 1) {
+                prefix = "└";
+                lengthPrefix = 1;
+            } else {
+                prefix = "|";
+                lengthPrefix = 1;
+            }
+        }
+        auto lengthField = fieldSize - lengthPrefix - 1;
+
+        fmt::format_to(mergedBuf, "{}{:<{}.{}} | ", prefix,
+            flow->getFieldStr(field, direction, duration, index), lengthField, lengthField);
     }
     return to_string(mergedBuf);
 }
@@ -44,7 +66,7 @@ auto FlowFormatter::outputBodyWithSubfields(Flow const* flow,
         }
     }
     for (int i = 0; i < numSubfields; ++i) {
-        auto line = outputLine(flow, duration, displayConf, i, displayFields, MERGED);
+        auto line = outputLine(flow, duration, displayConf, i, numSubfields, displayFields, MERGED);
         accumulator->push_back(line);
     }
 }
@@ -53,12 +75,12 @@ auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accum
     int duration, DisplayConfiguration const& displayConf) const -> void
 {
     if (displayConf.getMergeDirection()) {
-        auto line = outputLine(flow, duration, displayConf, 0, displayFields, MERGED);
+        auto line = outputLine(flow, duration, displayConf, 0, 0, displayFields, MERGED);
         accumulator->push_back(line);
         return;
     }
-    auto clientLine = outputLine(flow, duration, displayConf, 0, displayFields, FROM_CLIENT);
-    auto serverLine = outputLine(flow, duration, displayConf, 0, displayFields, FROM_SERVER);
+    auto clientLine = outputLine(flow, duration, displayConf, 0, 0, displayFields, FROM_CLIENT);
+    auto serverLine = outputLine(flow, duration, displayConf, 0, 0, displayFields, FROM_SERVER);
     accumulator->push_back(clientLine);
     accumulator->push_back(serverLine);
 }

@@ -112,7 +112,7 @@ auto DnsAggregatedFlow::getFieldStr(Field field, Direction direction, int durati
 
     if (direction == FROM_CLIENT || direction == MERGED) {
         switch (field) {
-            case Field::FQDN: return getFqdn();
+            case Field::FQDN: return fqdn;
             case Field::PROTO: return getTransport()._to_string();
             case Field::TYPE: return dnsTypeToString(dnsType);
             case Field::IP: return getSrvIp().getAddrStr();

@@ -45,9 +45,8 @@ public:
 private:
     auto outputBodyWithSubfields(Flow const* flow, std::vector<std::string>* accumulator,
         int duration, DisplayConfiguration const& displayConf) const -> void;
-    auto outputLine(Flow const* flow,
-        int duration, DisplayConfiguration const& displayConf,
-        int index, std::vector<Field> const& displayFields,
+    auto outputLine(Flow const* flow, int duration, DisplayConfiguration const& displayConf,
+        int index, int numSubfields, std::vector<Field> const& displayFields,
         Direction direction) const -> std::string;
     auto isFieldHidden(bool isMerged, Field field) const -> bool;
 
