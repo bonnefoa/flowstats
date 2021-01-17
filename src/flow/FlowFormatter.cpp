@@ -29,27 +29,8 @@ auto FlowFormatter::outputLine(Flow const* flow,
             continue;
         }
         auto fieldSize = displayConf.getFieldToSize()[field];
-        std::string prefix = "";
-        int lengthPrefix = 0;
-        if (field == +Field::TOP_CLIENT_IPS_IP && numSubfields > 0) {
-            if (numSubfields == 1) {
-                prefix = " ";
-                lengthPrefix = 1;
-            } else if (index == 0) {
-                prefix = "┌";
-                lengthPrefix = 1;
-            } else if (index > 0 && index == numSubfields - 1) {
-                prefix = "└";
-                lengthPrefix = 1;
-            } else {
-                prefix = "|";
-                lengthPrefix = 1;
-            }
-        }
-        auto lengthField = fieldSize - lengthPrefix - 1;
-
-        fmt::format_to(mergedBuf, "{}{:<{}.{}} | ", prefix,
-            flow->getFieldStr(field, direction, duration, index), lengthField, lengthField);
+        fmt::format_to(mergedBuf, "{:<{}.{}} | ",
+            flow->getFieldStr(field, direction, duration, index), fieldSize, fieldSize);
     }
     return to_string(mergedBuf);
 }
@@ -94,7 +75,7 @@ auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const
         if (isFieldHidden(displayConf.getMergeDirection(), field)) {
             continue;
         }
-        fmt::format_to(headersBuf, "{:<{}.{}}| ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
+        fmt::format_to(headersBuf, "{:<{}.{}} | ", fieldToHeader(field), fieldToSize[field], fieldToSize[field]);
     }
     return to_string(headersBuf);
 }
