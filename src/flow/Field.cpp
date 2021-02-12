@@ -98,138 +98,95 @@ auto fieldWithSubfields(Field field) -> bool
 auto fieldToHeader(Field field) -> char const*
 {
     switch (field) {
-        case Field::ACTIVE_CONNECTIONS:
-            return "ActConn";
-        case Field::FAILED_CONNECTIONS:
-            return "FailConn";
-        case Field::BYTES:
-            return "Bytes";
+        case Field::ACTIVE_CONNECTIONS: return "ActConn";
+        case Field::FAILED_CONNECTIONS: return "FailConn";
+        case Field::BYTES: return "Bytes";
         case Field::BYTES_RATE:
-        case Field::BYTES_AVG:
-            return "Bytes/s";
-        case Field::CLOSE:
-            return "Close";
+        case Field::BYTES_AVG: return "Bytes/s";
+        case Field::CLOSE: return "Close";
         case Field::CLOSE_RATE:
-        case Field::CLOSE_AVG:
-            return "Close/s";
-        case Field::CONN:
-            return "Conn";
+        case Field::CLOSE_AVG: return "Close/s";
+        case Field::CONN: return "Conn";
         case Field::CONN_RATE:
-        case Field::CONN_AVG:
-            return "Conn/s";
-        case Field::CT_P95:
-            return "CTp95 (1s)";
-        case Field::CT_P99:
-            return "CTp99 (1s)";
-        case Field::CT_TOTAL_P95:
-            return "CTp95";
-        case Field::CT_TOTAL_P99:
-            return "CTp99";
-        case Field::DIR:
-            return "Dir";
-        case Field::DOMAIN:
-            return "Domain";
-        case Field::FIN:
-            return "FIN";
+        case Field::CONN_AVG: return "Conn/s";
+        case Field::CT_P95: return "CTp95 (1s)";
+        case Field::CT_P99: return "CTp99 (1s)";
+        case Field::CT_TOTAL_P95: return "CTp95";
+        case Field::CT_TOTAL_P99: return "CTp99";
+        case Field::DIR: return "Dir";
+        case Field::DOMAIN: return "Domain";
+        case Field::FIN: return "FIN";
         case Field::FIN_RATE:
-        case Field::FIN_AVG:
-            return "FIN/s";
-        case Field::FQDN:
-            return "Fqdn";
-        case Field::IP:
-            return "Ip";
-        case Field::MTU:
-            return "Mtu";
-        case Field::PKTS:
-            return "Pkts";
+        case Field::FIN_AVG: return "FIN/s";
+        case Field::FQDN: return "Fqdn";
+        case Field::IP: return "Ip";
+        case Field::MTU: return "Mtu";
+        case Field::PKTS: return "Pkts";
         case Field::PKTS_RATE:
-        case Field::PKTS_AVG:
-            return "Pkts/s";
-        case Field::PORT:
-            return "Port";
-        case Field::PROTO:
-            return "Proto";
-        case Field::TLS_VERSION:
-            return "TLS Version";
-        case Field::CIPHER_SUITE:
-            return "Cipher Suite";
-        case Field::REQ:
-            return "Req";
+        case Field::PKTS_AVG: return "Pkts/s";
+        case Field::PORT: return "Port";
+        case Field::PROTO: return "Proto";
+        case Field::TLS_VERSION: return "TLS Version";
+        case Field::CIPHER_SUITE: return "Cipher Suite";
+        case Field::REQ: return "Req";
         case Field::REQ_RATE:
-        case Field::REQ_AVG:
-            return "Req/s";
-        case Field::RST:
-            return "RST";
+        case Field::REQ_AVG: return "Req/s";
+        case Field::RST: return "RST";
         case Field::RST_RATE:
-        case Field::RST_AVG:
-            return "RST/s";
-        case Field::SRT:
-            return "Srt";
+        case Field::RST_AVG: return "RST/s";
+        case Field::SRT: return "Srt";
         case Field::SRT_RATE:
-        case Field::SRT_AVG:
-            return "Srt/s";
+        case Field::SRT_AVG: return "Srt/s";
 
-        case Field::TOP_CLIENT_IPS_IP:
-            return "ClientIP";
-        case Field::TOP_CLIENT_IPS_PKTS:
-            return "ClientPackets";
-        case Field::TOP_CLIENT_IPS_BYTES:
-            return "ClientBytes";
-        case Field::TOP_CLIENT_IPS_REQUESTS:
-            return "ClientRequests";
+        case Field::TOP_CLIENT_IPS_IP: return "ClientIP";
+        case Field::TOP_CLIENT_IPS_PKTS: return "ClientPackets";
+        case Field::TOP_CLIENT_IPS_BYTES: return "ClientBytes";
+        case Field::TOP_CLIENT_IPS_REQUESTS: return "ClientRequests";
 
-        case Field::SRT_P95:
-            return "Srt95 (1s)";
-        case Field::SRT_P99:
-            return "Srt99 (1s)";
-        case Field::SRT_MAX:
-            return "SrtMax (1s)";
+        case Field::SRT_P95: return "Srt95 (1s)";
+        case Field::SRT_P99: return "Srt99 (1s)";
+        case Field::SRT_MAX: return "SrtMax (1s)";
 
-        case Field::SRT_TOTAL_P95:
-            return "Srt95";
-        case Field::SRT_TOTAL_P99:
-            return "Srt99";
-        case Field::SRT_TOTAL_MAX:
-            return "SrtMax";
+        case Field::SRT_TOTAL_P95: return "Srt95";
+        case Field::SRT_TOTAL_P99: return "Srt99";
+        case Field::SRT_TOTAL_MAX: return "SrtMax";
 
-        case Field::DS_P95:
-            return "Ds95 (1s)";
-        case Field::DS_P99:
-            return "Ds99 (1s)";
-        case Field::DS_MAX:
-            return "DsMax (1s)";
+        case Field::RR_A: return "A";
+        case Field::RR_AAAA: return "AAAA";
+        case Field::RR_CNAME: return "CNAME";
+        case Field::RR_PTR: return "PTR";
+        case Field::RR_TXT: return "TXT";
+        case Field::RR_OTHER: return "OTHER";
 
-        case Field::DS_TOTAL_P95:
-            return "Ds95";
-        case Field::DS_TOTAL_P99:
-            return "Ds99";
-        case Field::DS_TOTAL_MAX:
-            return "DsMax";
+        case Field::RR_TOTAL_A: return "A";
+        case Field::RR_TOTAL_AAAA: return "AAAA";
+        case Field::RR_TOTAL_CNAME: return "CNAME";
+        case Field::RR_TOTAL_PTR: return "PTR";
+        case Field::RR_TOTAL_TXT: return "TXT";
+        case Field::RR_TOTAL_OTHER: return "OTHER";
 
-        case Field::SYN:
-            return "SYN";
+        case Field::DS_P95: return "Ds95 (1s)";
+        case Field::DS_P99: return "Ds99 (1s)";
+        case Field::DS_MAX: return "DsMax (1s)";
+
+        case Field::DS_TOTAL_P95: return "Ds95";
+        case Field::DS_TOTAL_P99: return "Ds99";
+        case Field::DS_TOTAL_MAX: return "DsMax";
+
+        case Field::SYN: return "SYN";
         case Field::SYN_RATE:
-        case Field::SYN_AVG:
-            return "SYN/s";
-        case Field::SYNACK:
-            return "SYNACK";
+        case Field::SYN_AVG: return "SYN/s";
+        case Field::SYNACK: return "SYNACK";
         case Field::SYNACK_RATE:
-        case Field::SYNACK_AVG:
-            return "SYNACK/s";
-        case Field::TIMEOUTS:
-            return "Tmo";
+        case Field::SYNACK_AVG: return "SYNACK/s";
+        case Field::TIMEOUTS: return "Tmo";
         case Field::TIMEOUTS_RATE:
-        case Field::TIMEOUTS_AVG:
-            return "Tmo/s";
-        case Field::TRUNC:
-            return "Trunc";
-        case Field::TYPE:
-            return "Type";
-        case Field::ZWIN:
-            return "0win";
+        case Field::TIMEOUTS_AVG: return "Tmo/s";
+        case Field::TRUNC: return "Trunc";
+        case Field::TYPE: return "Type";
+        case Field::ZWIN: return "0win";
         case Field::ZWIN_RATE:
-        case Field::ZWIN_AVG:
-            return "0win/s";
+        case Field::ZWIN_AVG: return "0win/s";
         default:
             return "Unknown";
     }

@@ -8,6 +8,7 @@ namespace flowstats {
 enum DisplayType {
     DisplayRequests,
     DisplayResponses,
+    DisplayDnsResourceRecords,
     DisplayClients,
     DisplayConnections,
     DisplayConnectionTimes,

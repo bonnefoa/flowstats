@@ -16,6 +16,7 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
     setDisplayPairs({
         DisplayFieldValues(DisplayRequests, { Field::REQ, Field::REQ_AVG, Field::TIMEOUTS, Field::TIMEOUTS_AVG }),
         DisplayFieldValues(DisplayResponses, { Field::SRT, Field::SRT_AVG, Field::SRT_P95, Field::SRT_TOTAL_P95, Field::SRT_P99, Field::SRT_TOTAL_P99 }),
+        DisplayFieldValues(DisplayDnsResourceRecords, { Field::RR_A, Field::RR_AAAA, Field::RR_CNAME, Field::RR_OTHER }),
         DisplayFieldValues(DisplayClients, { Field::TOP_CLIENT_IPS_IP, Field::TOP_CLIENT_IPS_PKTS, Field::TOP_CLIENT_IPS_BYTES, Field::TOP_CLIENT_IPS_REQUESTS }, true),
         DisplayFieldValues(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });

@@ -203,7 +203,7 @@ auto Screen::updateTopMenu() -> void
         if (i == displayIndex) {
             wattron(topMenuWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
-        waddstr(topMenuWin, fmt::format("{:<14}", displayFieldValues.getDisplayTypeStr()).c_str());
+        waddstr(topMenuWin, fmt::format("{:<20}", displayFieldValues.getDisplayTypeStr()).c_str());
         if (i == displayIndex) {
             wattroff(topMenuWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
