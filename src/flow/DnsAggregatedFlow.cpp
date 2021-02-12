@@ -103,7 +103,12 @@ auto DnsAggregatedFlow::getFieldStr(Field field, Direction direction, int durati
                 case Field::PORT:
                 case Field::PROTO:
                 case Field::TYPE:
-                case Field::RCRD_AVG:
+                case Field::RR_A:
+                case Field::RR_AAAA:
+                case Field::RR_CNAME:
+                case Field::RR_PTR:
+                case Field::RR_TXT:
+                case Field::RR_OTHER:
                     return "-";
                 default: break;
             }
@@ -155,7 +160,7 @@ auto DnsAggregatedFlow::addFlow(Flow const* flow) -> void
     auto const* dnsFlow = static_cast<DnsFlow const*>(flow);
     queries++;
     truncated += dnsFlow->getTruncated();
-    records += dnsFlow->getNumberRecords();
+    resourceRecords.addResourceRecords(dnsFlow->getResourceRecords());
     timeouts += !dnsFlow->getHasResponse();
 
     auto* stats = &sourceIpToStats[dnsFlow->getCltIp()];
@@ -169,7 +174,7 @@ auto DnsAggregatedFlow::addFlow(Flow const* flow) -> void
     totalResponses += dnsFlow->getHasResponse();
     if (dnsFlow->getHasResponse()) {
         totalTruncated += dnsFlow->getTruncated();
-        totalRecords += dnsFlow->getNumberRecords();
+        totalRecords.addResourceRecords(dnsFlow->getResourceRecords());
         srts.addPoint(dnsFlow->getDeltaTv());
         totalSrts.addPoint(dnsFlow->getDeltaTv());
         totalNumSrt++;
@@ -184,7 +189,7 @@ auto DnsAggregatedFlow::addAggregatedFlow(Flow const* flow) -> void
     auto const* dnsFlow = dynamic_cast<const DnsAggregatedFlow*>(flow);
     queries += dnsFlow->queries;
     truncated += dnsFlow->truncated;
-    records += dnsFlow->records;
+    resourceRecords.addResourceRecords(dnsFlow->resourceRecords);
     timeouts += dnsFlow->timeouts;
 
     for (auto const& sourceIt : dnsFlow->sourceIpToStats) {
@@ -198,7 +203,7 @@ auto DnsAggregatedFlow::addAggregatedFlow(Flow const* flow) -> void
     totalTimeouts += dnsFlow->totalTimeouts;
     totalResponses += dnsFlow->totalResponses;
     totalTruncated += dnsFlow->totalTruncated;
-    totalRecords += dnsFlow->totalRecords;
+    totalRecords.addResourceRecords(dnsFlow->totalRecords);
     srts.addPoints(dnsFlow->srts);
     totalSrts.addPoints(dnsFlow->srts);
     totalNumSrt += dnsFlow->totalNumSrt;
@@ -212,8 +217,8 @@ void DnsAggregatedFlow::resetFlow(bool resetTotal)
     queries = 0;
     timeouts = 0;
     truncated = 0;
-    records = 0;
     numSrt = 0;
+    resourceRecords = {};
 
     if (resetTotal) {
         totalSrts.reset();
@@ -221,7 +226,7 @@ void DnsAggregatedFlow::resetFlow(bool resetTotal)
         totalQueries = 0;
         totalTimeouts = 0;
         totalTruncated = 0;
-        totalRecords = 0;
+        totalRecords = ResourceRecords();
         totalNumSrt = 0;
     }
 }
