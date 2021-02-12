@@ -145,7 +145,6 @@ auto DnsAggregatedFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::SRT_TOTAL_P95: return totalSrts.getPercentileStr(0.95);
             case Field::SRT_TOTAL_P99: return totalSrts.getPercentileStr(0.99);
             case Field::TRUNC: return std::to_string(totalTruncated);
-            case Field::RCRD_AVG: return prettyFormatNumberAverage(totalRecords, totalQueries);
             default:
                 break;
         }

@@ -153,8 +153,6 @@ auto fieldToHeader(Field field) -> char const*
             return "TLS Version";
         case Field::CIPHER_SUITE:
             return "Cipher Suite";
-        case Field::RCRD_AVG:
-            return "Rcrd";
         case Field::REQ:
             return "Req";
         case Field::REQ_RATE:
