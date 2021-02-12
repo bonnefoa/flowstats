@@ -142,8 +142,8 @@ struct DnsAggregatedFlow : Flow {
     {
         auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
         auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
-        auto& aResourceRecords = total ? aCast->resourceRecords : aCast->totalRecords;
-        auto& bResourceRecords = total ? bCast->resourceRecords : bCast->totalRecords;
+        auto& aResourceRecords = total ? aCast->resourceRecords : aCast->totalResourceRecords;
+        auto& bResourceRecords = total ? bCast->resourceRecords : bCast->totalResourceRecords;
         return aResourceRecords.getResourceRecordCount(rrType) < bResourceRecords.getResourceRecordCount(rrType);
     }
 
@@ -159,7 +159,7 @@ private:
     int totalResponses = 0;
     int totalTruncated = 0;
     int totalTimeouts = 0;
-    ResourceRecords totalRecords;
+    ResourceRecords totalResourceRecords;
 
     int queries = 0;
     int timeouts = 0;

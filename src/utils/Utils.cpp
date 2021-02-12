@@ -108,6 +108,7 @@ auto prettyFormatNumber(T num) -> std::string
     return prettyFormatGeneric(num, { "", "K", "M", "G", "P" });
 }
 template auto prettyFormatNumber(uint64_t num) -> std::string;
+template auto prettyFormatNumber(uint8_t num) -> std::string;
 
 auto prettyFormatNumberAverage(int total, int duration) -> std::string
 {

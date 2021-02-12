@@ -103,12 +103,6 @@ auto DnsAggregatedFlow::getFieldStr(Field field, Direction direction, int durati
                 case Field::PORT:
                 case Field::PROTO:
                 case Field::TYPE:
-                case Field::RR_A:
-                case Field::RR_AAAA:
-                case Field::RR_CNAME:
-                case Field::RR_PTR:
-                case Field::RR_TXT:
-                case Field::RR_OTHER:
                     return "-";
                 default: break;
             }
@@ -145,6 +139,21 @@ auto DnsAggregatedFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::SRT_TOTAL_P95: return totalSrts.getPercentileStr(0.95);
             case Field::SRT_TOTAL_P99: return totalSrts.getPercentileStr(0.99);
             case Field::TRUNC: return std::to_string(totalTruncated);
+
+            case Field::RR_A: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::A));
+            case Field::RR_AAAA: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::AAAA));
+            case Field::RR_CNAME: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::CNAME));
+            case Field::RR_PTR: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::PTR));
+            case Field::RR_TXT: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::TXT));
+            case Field::RR_OTHER: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::OTHER));
+
+            case Field::RR_TOTAL_A: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::A));
+            case Field::RR_TOTAL_AAAA: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::AAAA));
+            case Field::RR_TOTAL_CNAME: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::CNAME));
+            case Field::RR_TOTAL_PTR: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::PTR));
+            case Field::RR_TOTAL_TXT: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::TXT));
+            case Field::RR_TOTAL_OTHER: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::OTHER));
+
             default:
                 break;
         }
@@ -173,7 +182,7 @@ auto DnsAggregatedFlow::addFlow(Flow const* flow) -> void
     totalResponses += dnsFlow->getHasResponse();
     if (dnsFlow->getHasResponse()) {
         totalTruncated += dnsFlow->getTruncated();
-        totalRecords.addResourceRecords(dnsFlow->getResourceRecords());
+        totalResourceRecords.addResourceRecords(dnsFlow->getResourceRecords());
         srts.addPoint(dnsFlow->getDeltaTv());
         totalSrts.addPoint(dnsFlow->getDeltaTv());
         totalNumSrt++;
@@ -202,7 +211,7 @@ auto DnsAggregatedFlow::addAggregatedFlow(Flow const* flow) -> void
     totalTimeouts += dnsFlow->totalTimeouts;
     totalResponses += dnsFlow->totalResponses;
     totalTruncated += dnsFlow->totalTruncated;
-    totalRecords.addResourceRecords(dnsFlow->totalRecords);
+    totalResourceRecords.addResourceRecords(dnsFlow->totalResourceRecords);
     srts.addPoints(dnsFlow->srts);
     totalSrts.addPoints(dnsFlow->srts);
     totalNumSrt += dnsFlow->totalNumSrt;
@@ -225,7 +234,7 @@ void DnsAggregatedFlow::resetFlow(bool resetTotal)
         totalQueries = 0;
         totalTimeouts = 0;
         totalTruncated = 0;
-        totalRecords = ResourceRecords();
+        totalResourceRecords = ResourceRecords();
         totalNumSrt = 0;
     }
 }

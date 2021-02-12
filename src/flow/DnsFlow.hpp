@@ -6,7 +6,7 @@
 
 namespace flowstats {
 
-BETTER_ENUM(ResourceRecordType, uint8_t, A, AAAA, PTR, TXT, OTHER);
+BETTER_ENUM(ResourceRecordType, uint8_t, A, AAAA, CNAME, PTR, TXT, OTHER);
 
 class ResourceRecords {
 public:
