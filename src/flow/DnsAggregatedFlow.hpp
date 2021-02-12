@@ -138,11 +138,13 @@ struct DnsAggregatedFlow : Flow {
         return aCast->totalSrts.getPercentile(1) < bCast->totalSrts.getPercentile(1);
     }
 
-    [[nodiscard]] static auto sortByRcrdAvg(Flow const* a, Flow const* b) -> bool
+    [[nodiscard]] static auto sortByResourceRecord(Flow const* a, Flow const* b, ResourceRecordType rrType, bool total) -> bool
     {
         auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
         auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
-        return aCast->totalRecords / aCast->totalQueries < bCast->totalRecords / bCast->totalQueries;
+        auto& aResourceRecords = total ? aCast->resourceRecords : aCast->totalRecords;
+        auto& bResourceRecords = total ? bCast->resourceRecords : bCast->totalRecords;
+        return aResourceRecords.getResourceRecordCount(rrType) < bResourceRecords.getResourceRecordCount(rrType);
     }
 
 private:
@@ -157,12 +159,12 @@ private:
     int totalResponses = 0;
     int totalTruncated = 0;
     int totalTimeouts = 0;
-    int totalRecords = 0;
+    ResourceRecords totalRecords;
 
     int queries = 0;
     int timeouts = 0;
     int truncated = 0;
-    uint16_t records = 0;
+    ResourceRecords resourceRecords;
 
     int numSrt = 0;
     int totalNumSrt = 0;

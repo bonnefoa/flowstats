@@ -215,8 +215,22 @@ auto DnsStatsCollector::getSortFun(Field field) const -> sortFlowFun
             return &DnsAggregatedFlow::sortBySrtMax;
         case Field::SRT_TOTAL_MAX:
             return &DnsAggregatedFlow::sortBySrtTotalMax;
-        case Field::RCRD_AVG:
-            return &DnsAggregatedFlow::sortByRcrdAvg;
+        case Field::RR_A:
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::A, false); };
+        case Field::RR_AAAA:
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::AAAA, false); };
+        case Field::RR_PTR:
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::PTR, false); };
+        case Field::RR_OTHER:
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::OTHER, false); };
+        case Field::RR_TOTAL_A:
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::A, true); };
+        case Field::RR_TOTAL_AAAA:
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::AAAA, true); };
+        case Field::RR_TOTAL_PTR:
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::PTR, true); };
+        case Field::RR_TOTAL_OTHER:
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::OTHER, true); };
         default:
             return nullptr;
     }
