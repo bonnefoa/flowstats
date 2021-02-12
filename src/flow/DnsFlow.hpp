@@ -6,6 +6,20 @@
 
 namespace flowstats {
 
+BETTER_ENUM(ResourceRecordType, uint8_t, A, AAAA, PTR, TXT, OTHER);
+
+class ResourceRecords {
+public:
+    ResourceRecords() = default;
+    [[nodiscard]] auto& getResourceRecords() const { return resourceRecords; };
+    [[nodiscard]] auto& getResourceRecordCount(ResourceRecordType rrType) const { return resourceRecords[rrType]; };
+    auto addResourceRecords(Tins::DNS const& dns) -> void;
+    auto addResourceRecords(ResourceRecords const& rr) -> void;
+
+private:
+    uint8_t resourceRecords[ResourceRecordType::_size()] = {};
+};
+
 class DnsFlow : public Flow {
 
 public:
@@ -20,7 +34,7 @@ public:
     [[nodiscard]] auto getHasResponse() const { return hasResponse; };
     [[nodiscard]] auto getType() const { return type; };
     [[nodiscard]] auto getResponseCode() const { return responseCode; };
-    [[nodiscard]] auto getNumberRecords() const { return numberRecords; };
+    [[nodiscard]] auto& getResourceRecords() const { return resourceRecords; };
     [[nodiscard]] auto getDeltaTv() const { return getTimevalDeltaMs(startTv, endTv); };
     [[nodiscard]] auto getStartTv() const { return startTv; };
 
@@ -29,7 +43,7 @@ private:
     bool hasResponse = false;
     bool truncated = false;
     enum Tins::DNS::QueryType type = Tins::DNS::A;
-    uint16_t numberRecords = 0;
+    ResourceRecords resourceRecords;
     uint8_t responseCode = 0;
 
     timeval startTv = {};

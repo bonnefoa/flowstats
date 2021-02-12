@@ -21,12 +21,41 @@ auto DnsFlow::processDnsResponse(Tins::Packet const& packet,
     addPacket(packet, FROM_SERVER);
     endTv = packetToTimeval(packet);
     hasResponse = true;
+    resourceRecords.addResourceRecords(dns);
     truncated = dns.truncated();
-    numberRecords = dns.answers_count();
     responseCode = dns.rcode();
-    SPDLOG_DEBUG("Dns tid {}, {}, {} finished, {}", dns.id(),
-        getTransport()._to_string(), fqdn, numberRecords);
+    SPDLOG_DEBUG("Dns tid {}, {} finished, {}", dns.id(),
+        getTransport()._to_string(), fqdn);
 }
+
+auto ResourceRecords::addResourceRecords(Tins::DNS const& dns) -> void
+{
+    for (auto rr : dns.answers()) {
+        switch (rr.query_type()) {
+            case Tins::DNS::A:
+                resourceRecords[ResourceRecordType::A]++;
+                break;
+            case Tins::DNS::AAAA:
+                resourceRecords[ResourceRecordType::AAAA]++;
+                break;
+            case Tins::DNS::PTR:
+                resourceRecords[ResourceRecordType::PTR]++;
+                break;
+            case Tins::DNS::TXT:
+                resourceRecords[ResourceRecordType::TXT]++;
+                break;
+            default:
+                resourceRecords[ResourceRecordType::OTHER]++;
+                break;
+        }
+    }
+}
+
+auto ResourceRecords::addResourceRecords(ResourceRecords const& rr) -> void {
+    for (auto &rrType : ResourceRecordType::_values()) {
+        resourceRecords[rrType] += rr.getResourceRecords()[rrType];
+    }
+};
 
 auto dnsTypeToString(Tins::DNS::QueryType dnsType) -> std::string
 {
