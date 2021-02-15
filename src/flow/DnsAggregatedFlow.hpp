@@ -96,46 +96,14 @@ struct DnsAggregatedFlow : Flow {
         return aCast->numSrt < bCast->numSrt;
     }
 
-    [[nodiscard]] static auto sortBySrtP95(Flow const* a, Flow const* b) -> bool
+    [[nodiscard]] static auto sortBySrtPercentile(Flow const* a, Flow const* b,
+            float percentile, bool total) -> bool
     {
         auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
         auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
-        return aCast->srts.getPercentile(0.95) < bCast->srts.getPercentile(0.95);
-    }
-
-    [[nodiscard]] static auto sortBySrtTotalP95(Flow const* a, Flow const* b) -> bool
-    {
-        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
-        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
-        return aCast->totalSrts.getPercentile(0.95) < bCast->totalSrts.getPercentile(0.95);
-    }
-
-    [[nodiscard]] static auto sortBySrtP99(Flow const* a, Flow const* b) -> bool
-    {
-        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
-        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
-        return aCast->srts.getPercentile(0.99) < bCast->srts.getPercentile(0.99);
-    }
-
-    [[nodiscard]] static auto sortBySrtTotalP99(Flow const* a, Flow const* b) -> bool
-    {
-        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
-        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
-        return aCast->totalSrts.getPercentile(0.99) < bCast->totalSrts.getPercentile(0.99);
-    }
-
-    [[nodiscard]] static auto sortBySrtMax(Flow const* a, Flow const* b) -> bool
-    {
-        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
-        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
-        return aCast->srts.getPercentile(1) < bCast->srts.getPercentile(1);
-    }
-
-    [[nodiscard]] static auto sortBySrtTotalMax(Flow const* a, Flow const* b) -> bool
-    {
-        auto const* aCast = static_cast<DnsAggregatedFlow const*>(a);
-        auto const* bCast = static_cast<DnsAggregatedFlow const*>(b);
-        return aCast->totalSrts.getPercentile(1) < bCast->totalSrts.getPercentile(1);
+        auto& aPercentile = total? aCast->totalSrts : aCast->srts;
+        auto& bPercentile = total? bCast->totalSrts : bCast->srts;
+        return aPercentile.getPercentile(percentile) < bPercentile.getPercentile(percentile);
     }
 
     [[nodiscard]] static auto sortByResourceRecord(Flow const* a, Flow const* b, ResourceRecordType rrType, bool total) -> bool

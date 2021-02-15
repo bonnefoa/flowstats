@@ -242,39 +242,39 @@ auto TcpStatsCollector::getSortFun(Field field) const -> sortFlowFun
             return &TcpAggregatedFlow::sortByMtu;
 
         case Field::CT_P95:
-            return &TcpAggregatedFlow::sortByCtP95;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortByCt(a, b, 0.95, false); };
         case Field::CT_TOTAL_P95:
-            return &TcpAggregatedFlow::sortByCtTotalP95;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortByCt(a, b, 0.95, true); };
         case Field::CT_P99:
-            return &TcpAggregatedFlow::sortByCtP99;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortByCt(a, b, 0.99, false); };
         case Field::CT_TOTAL_P99:
-            return &TcpAggregatedFlow::sortByCtTotalP99;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortByCt(a, b, 0.99, true); };
 
         case Field::SRT_P95:
-            return &TcpAggregatedFlow::sortBySrtP95;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortBySrt(a, b, 0.95, false); };
         case Field::SRT_TOTAL_P95:
-            return &TcpAggregatedFlow::sortBySrtTotalP95;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortBySrt(a, b, 0.95, true); };
         case Field::SRT_P99:
-            return &TcpAggregatedFlow::sortBySrtP99;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortBySrt(a, b, 0.99, false); };
         case Field::SRT_TOTAL_P99:
-            return &TcpAggregatedFlow::sortBySrtTotalP99;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortBySrt(a, b, 0.99, false); };
         case Field::SRT_MAX:
-            return &TcpAggregatedFlow::sortBySrtMax;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortBySrt(a, b, 1, false); };
         case Field::SRT_TOTAL_MAX:
-            return &TcpAggregatedFlow::sortBySrtTotalMax;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortBySrt(a, b, 1, true); };
 
         case Field::DS_P95:
-            return &TcpAggregatedFlow::sortByDsP95;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortByDs(a, b, 0.95, false); };
         case Field::DS_TOTAL_P95:
-            return &TcpAggregatedFlow::sortByDsTotalP95;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortByDs(a, b, 0.95, true); };
         case Field::DS_P99:
-            return &TcpAggregatedFlow::sortByDsP99;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortByDs(a, b, 0.99, false); };
         case Field::DS_TOTAL_P99:
-            return &TcpAggregatedFlow::sortByDsTotalP99;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortByDs(a, b, 0.99, true); };
         case Field::DS_MAX:
-            return &TcpAggregatedFlow::sortByDsMax;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortByDs(a, b, 1, false); };
         case Field::DS_TOTAL_MAX:
-            return &TcpAggregatedFlow::sortByDsTotalMax;
+            return [](Flow const* a, Flow const* b) { return TcpAggregatedFlow::sortByDs(a, b, 1, true); };
         default:
             return nullptr;
     }

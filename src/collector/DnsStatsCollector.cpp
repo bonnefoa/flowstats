@@ -205,17 +205,17 @@ auto DnsStatsCollector::getSortFun(Field field) const -> sortFlowFun
         case Field::SRT_RATE:
             return &DnsAggregatedFlow::sortBySrtRate;
         case Field::SRT_TOTAL_P95:
-            return &DnsAggregatedFlow::sortBySrtTotalP95;
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortBySrtPercentile(a, b, 0.95, true); };
         case Field::SRT_P95:
-            return &DnsAggregatedFlow::sortBySrtP95;
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortBySrtPercentile(a, b, 0.95, false); };
         case Field::SRT_P99:
-            return &DnsAggregatedFlow::sortBySrtP99;
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortBySrtPercentile(a, b, 0.99, false); };
         case Field::SRT_TOTAL_P99:
-            return &DnsAggregatedFlow::sortBySrtTotalP99;
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortBySrtPercentile(a, b, 0.99, true); };
         case Field::SRT_MAX:
-            return &DnsAggregatedFlow::sortBySrtMax;
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortBySrtPercentile(a, b, 1, false); };
         case Field::SRT_TOTAL_MAX:
-            return &DnsAggregatedFlow::sortBySrtTotalMax;
+            return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortBySrtPercentile(a, b, 1, true); };
         case Field::RR_A_RATE:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::A, false); };
         case Field::RR_AAAA_RATE:
