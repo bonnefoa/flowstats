@@ -38,6 +38,9 @@ auto ResourceRecords::addResourceRecords(Tins::DNS const& dns) -> void
             case Tins::DNS::AAAA:
                 resourceRecords[ResourceRecordType::AAAA]++;
                 break;
+            case Tins::DNS::CNAME:
+                resourceRecords[ResourceRecordType::CNAME]++;
+                break;
             case Tins::DNS::PTR:
                 resourceRecords[ResourceRecordType::PTR]++;
                 break;

@@ -140,19 +140,19 @@ auto DnsAggregatedFlow::getFieldStr(Field field, Direction direction, int durati
             case Field::SRT_TOTAL_P99: return totalSrts.getPercentileStr(0.99);
             case Field::TRUNC: return std::to_string(totalTruncated);
 
-            case Field::RR_A: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::A));
-            case Field::RR_AAAA: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::AAAA));
-            case Field::RR_CNAME: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::CNAME));
-            case Field::RR_PTR: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::PTR));
-            case Field::RR_TXT: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::TXT));
-            case Field::RR_OTHER: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::OTHER));
+            case Field::RR_A_RATE: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::A));
+            case Field::RR_AAAA_RATE: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::AAAA));
+            case Field::RR_CNAME_RATE: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::CNAME));
+            case Field::RR_PTR_RATE: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::PTR));
+            case Field::RR_TXT_RATE: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::TXT));
+            case Field::RR_OTHER_RATE: return prettyFormatNumber(resourceRecords.getResourceRecordCount(ResourceRecordType::OTHER));
 
-            case Field::RR_TOTAL_A: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::A));
-            case Field::RR_TOTAL_AAAA: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::AAAA));
-            case Field::RR_TOTAL_CNAME: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::CNAME));
-            case Field::RR_TOTAL_PTR: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::PTR));
-            case Field::RR_TOTAL_TXT: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::TXT));
-            case Field::RR_TOTAL_OTHER: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::OTHER));
+            case Field::RR_A_AVG: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::A));
+            case Field::RR_AAAA_AVG: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::AAAA));
+            case Field::RR_CNAME_AVG: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::CNAME));
+            case Field::RR_PTR_AVG: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::PTR));
+            case Field::RR_TXT_AVG: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::TXT));
+            case Field::RR_OTHER_AVG: return prettyFormatNumber(totalResourceRecords.getResourceRecordCount(ResourceRecordType::OTHER));
 
             default:
                 break;

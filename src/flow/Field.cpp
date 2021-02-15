@@ -75,6 +75,19 @@ auto fieldWithRateMode(RateMode rateMode, Field field) -> Field
                 return Field::FIN_AVG;
             case Field::TIMEOUTS_RATE:
                 return Field::TIMEOUTS_AVG;
+
+            case Field::RR_A_RATE:
+                return Field::RR_A_AVG;
+            case Field::RR_AAAA_RATE:
+                return Field::RR_AAAA_AVG;
+            case Field::RR_CNAME_RATE:
+                return Field::RR_CNAME_AVG;
+            case Field::RR_PTR_RATE:
+                return Field::RR_PTR_AVG;
+            case Field::RR_TXT_RATE:
+                return Field::RR_TXT_AVG;
+            case Field::RR_OTHER_RATE:
+                return Field::RR_OTHER_AVG;
             default:
                 break;
         }
@@ -151,19 +164,19 @@ auto fieldToHeader(Field field) -> char const*
         case Field::SRT_TOTAL_P99: return "Srt99";
         case Field::SRT_TOTAL_MAX: return "SrtMax";
 
-        case Field::RR_A: return "A";
-        case Field::RR_AAAA: return "AAAA";
-        case Field::RR_CNAME: return "CNAME";
-        case Field::RR_PTR: return "PTR";
-        case Field::RR_TXT: return "TXT";
-        case Field::RR_OTHER: return "OTHER";
+        case Field::RR_A_RATE: return "A";
+        case Field::RR_AAAA_RATE: return "AAAA";
+        case Field::RR_CNAME_RATE: return "CNAME";
+        case Field::RR_PTR_RATE: return "PTR";
+        case Field::RR_TXT_RATE: return "TXT";
+        case Field::RR_OTHER_RATE: return "OTHER";
 
-        case Field::RR_TOTAL_A: return "A";
-        case Field::RR_TOTAL_AAAA: return "AAAA";
-        case Field::RR_TOTAL_CNAME: return "CNAME";
-        case Field::RR_TOTAL_PTR: return "PTR";
-        case Field::RR_TOTAL_TXT: return "TXT";
-        case Field::RR_TOTAL_OTHER: return "OTHER";
+        case Field::RR_A_AVG: return "A";
+        case Field::RR_AAAA_AVG: return "AAAA";
+        case Field::RR_CNAME_AVG: return "CNAME";
+        case Field::RR_PTR_AVG: return "PTR";
+        case Field::RR_TXT_AVG: return "TXT";
+        case Field::RR_OTHER_AVG: return "OTHER";
 
         case Field::DS_P95: return "Ds95 (1s)";
         case Field::DS_P99: return "Ds99 (1s)";

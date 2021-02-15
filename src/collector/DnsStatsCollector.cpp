@@ -16,7 +16,7 @@ DnsStatsCollector::DnsStatsCollector(FlowstatsConfiguration const& conf,
     setDisplayPairs({
         DisplayFieldValues(DisplayRequests, { Field::REQ, Field::REQ_AVG, Field::TIMEOUTS, Field::TIMEOUTS_AVG }),
         DisplayFieldValues(DisplayResponses, { Field::SRT, Field::SRT_AVG, Field::SRT_P95, Field::SRT_TOTAL_P95, Field::SRT_P99, Field::SRT_TOTAL_P99 }),
-        DisplayFieldValues(DisplayDnsResourceRecords, { Field::RR_A, Field::RR_AAAA, Field::RR_CNAME, Field::RR_OTHER }),
+        DisplayFieldValues(DisplayDnsResourceRecords, { Field::RR_A_RATE, Field::RR_AAAA_RATE, Field::RR_CNAME_RATE, Field::RR_OTHER_RATE }),
         DisplayFieldValues(DisplayClients, { Field::TOP_CLIENT_IPS_IP, Field::TOP_CLIENT_IPS_PKTS, Field::TOP_CLIENT_IPS_BYTES, Field::TOP_CLIENT_IPS_REQUESTS }, true),
         DisplayFieldValues(DisplayTraffic, { Field::PKTS, Field::PKTS_RATE, Field::BYTES, Field::BYTES_RATE }),
     });
@@ -216,25 +216,25 @@ auto DnsStatsCollector::getSortFun(Field field) const -> sortFlowFun
             return &DnsAggregatedFlow::sortBySrtMax;
         case Field::SRT_TOTAL_MAX:
             return &DnsAggregatedFlow::sortBySrtTotalMax;
-        case Field::RR_A:
+        case Field::RR_A_RATE:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::A, false); };
-        case Field::RR_AAAA:
+        case Field::RR_AAAA_RATE:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::AAAA, false); };
-        case Field::RR_CNAME:
+        case Field::RR_CNAME_RATE:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::CNAME, false); };
-        case Field::RR_PTR:
+        case Field::RR_PTR_RATE:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::PTR, false); };
-        case Field::RR_OTHER:
+        case Field::RR_OTHER_RATE:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::OTHER, false); };
-        case Field::RR_TOTAL_A:
+        case Field::RR_A_AVG:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::A, true); };
-        case Field::RR_TOTAL_AAAA:
+        case Field::RR_AAAA_AVG:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::AAAA, true); };
-        case Field::RR_TOTAL_CNAME:
+        case Field::RR_CNAME_AVG:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::CNAME, true); };
-        case Field::RR_TOTAL_PTR:
+        case Field::RR_PTR_AVG:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::PTR, true); };
-        case Field::RR_TOTAL_OTHER:
+        case Field::RR_OTHER_AVG:
             return [](Flow const* a, Flow const* b) { return DnsAggregatedFlow::sortByResourceRecord(a, b, ResourceRecordType::OTHER, true); };
         default:
             return nullptr;
