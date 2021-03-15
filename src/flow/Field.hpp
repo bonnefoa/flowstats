@@ -12,6 +12,14 @@ BETTER_ENUM(RateMode, uint8_t,
     AVG);
 
 // NOLINTNEXTLINE
+BETTER_ENUM(Header, char,
+    PROTOCOL_KEY,
+    PROTOCOL_VALUE,
+    DISPLAY_KEY,
+    DISPLAY_VALUE
+    );
+
+// NOLINTNEXTLINE
 BETTER_ENUM(Field, char,
     DIR,
     DOMAIN,
@@ -110,9 +118,12 @@ BETTER_ENUM(Field, char,
 
 auto fieldToSortable(Field field) -> bool;
 auto fieldToHeader(Field field) -> char const*;
-auto fieldWithRateMode(RateMode rateMode, Field field) -> Field;
 auto fieldWithSubfields(Field field) -> bool;
-auto rateModeToDescription(RateMode rateMode) -> std::string;
 auto fieldToInitialSize(Field field) -> int;
+
+auto fieldWithRateMode(RateMode rateMode, Field field) -> Field;
+auto rateModeToDescription(RateMode rateMode) -> std::string;
+
+auto headerToSize(Header header) -> int;
 
 } // namespace flowstats

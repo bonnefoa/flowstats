@@ -255,4 +255,13 @@ auto rateModeToDescription(RateMode rateMode) -> std::string
     }
 }
 
+auto headerToSize(Header header) -> int {
+    switch (header) {
+        case Header::PROTOCOL_KEY: return 10;
+        case Header::DISPLAY_KEY: return 10;
+        case Header::PROTOCOL_VALUE: return 20;
+        case Header::DISPLAY_VALUE: return 20;
+    };
+}
+
 } // namespace flowstats

@@ -177,20 +177,20 @@ auto Screen::updateRateMode() -> void
 auto Screen::updateTopMenu() -> void
 {
     werase(topMenuWin);
-    waddstr(topMenuWin, fmt::format("{:<10} ", "Protocol:").c_str());
+    waddstr(topMenuWin, fmt::format("{:<{}} ", "Protocol:", headerToSize(Header::PROTOCOL_KEY)).c_str());
     for (int i = 0; i < ARRAY_SIZE(protocols); ++i) {
         auto proto = protocols[i];
         if (selectedProtocolIndex == i) {
             wattron(topMenuWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }
-        waddstr(topMenuWin, fmt::format("{}: {:<11}", i + 1, proto._to_string()).c_str());
+        waddstr(topMenuWin, fmt::format("{}: {:<{}}", i + 1, proto._to_string(), headerToSize(Header::PROTOCOL_VALUE) - 3).c_str());
         if (selectedProtocolIndex == i) {
             wattroff(topMenuWin, COLOR_PAIR(SELECTED_STATUS_COLOR));
         }
     }
     waddstr(topMenuWin, "\n");
 
-    waddstr(topMenuWin, fmt::format("{:<10} ", "Display:").c_str());
+    waddstr(topMenuWin, fmt::format("{:<{}} ", "Display:", headerToSize(Header::DISPLAY_KEY)).c_str());
     int i = 0;
     int displayIndex;
     displayIndex = protocolToDisplayIndex[selectedProtocolIndex];
@@ -198,7 +198,7 @@ auto Screen::updateTopMenu() -> void
         if (i == displayIndex) {
             wattron(topMenuWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
-        waddstr(topMenuWin, fmt::format("{:<20}", displayFieldValues.getDisplayTypeStr()).c_str());
+        waddstr(topMenuWin, fmt::format("{:<{}}", displayFieldValues.getDisplayTypeStr(), headerToSize(Header::DISPLAY_VALUE)).c_str());
         if (i == displayIndex) {
             wattroff(topMenuWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
