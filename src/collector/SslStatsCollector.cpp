@@ -122,13 +122,13 @@ auto SslStatsCollector::getSortFun(Field field) const -> sortFlowFun
         case Field::TLS_VERSION:
             return SslAggregatedFlow::sortByTlsVersion;
         case Field::CT_P95:
-            return SslAggregatedFlow::sortByConnectionP95;
+            return [](Flow const* a, Flow const* b) { return SslAggregatedFlow::sortByConnectionPercentile(a, b, 0.95, false); };
         case Field::CT_TOTAL_P95:
-            return SslAggregatedFlow::sortByConnectionTotalP95;
+            return [](Flow const* a, Flow const* b) { return SslAggregatedFlow::sortByConnectionPercentile(a, b, 0.95, true); };
         case Field::CT_P99:
-            return SslAggregatedFlow::sortByConnectionP99;
+            return [](Flow const* a, Flow const* b) { return SslAggregatedFlow::sortByConnectionPercentile(a, b, 0.99, false); };
         case Field::CT_TOTAL_P99:
-            return SslAggregatedFlow::sortByConnectionTotalP99;
+            return [](Flow const* a, Flow const* b) { return SslAggregatedFlow::sortByConnectionPercentile(a, b, 0.99, true); };
         default:
             return nullptr;
     }

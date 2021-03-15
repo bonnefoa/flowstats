@@ -40,32 +40,14 @@ public:
         return aCast->numConnections < bCast->numConnections;
     }
 
-    [[nodiscard]] static auto sortByConnectionP95(Flow const* a, Flow const* b) -> bool
+    [[nodiscard]] static auto sortByConnectionPercentile(Flow const* a, Flow const* b,
+            float percentile, bool total) -> bool
     {
         auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
         auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
-        return aCast->connectionTimes.getPercentile(.95) < bCast->connectionTimes.getPercentile(.95);
-    }
-
-    [[nodiscard]] static auto sortByConnectionTotalP95(Flow const* a, Flow const* b) -> bool
-    {
-        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
-        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
-        return aCast->totalConnectionTimes.getPercentile(.95) < bCast->totalConnectionTimes.getPercentile(.95);
-    }
-
-    [[nodiscard]] static auto sortByConnectionP99(Flow const* a, Flow const* b) -> bool
-    {
-        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
-        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
-        return aCast->connectionTimes.getPercentile(.99) < bCast->connectionTimes.getPercentile(.99);
-    }
-
-    [[nodiscard]] static auto sortByConnectionTotalP99(Flow const* a, Flow const* b) -> bool
-    {
-        auto const* aCast = static_cast<SslAggregatedFlow const*>(a);
-        auto const* bCast = static_cast<SslAggregatedFlow const*>(b);
-        return aCast->totalConnectionTimes.getPercentile(.99) < bCast->totalConnectionTimes.getPercentile(.99);
+        auto& aPercentile = total? aCast->totalConnectionTimes : aCast->connectionTimes;
+        auto& bPercentile = total? bCast->totalConnectionTimes : bCast->connectionTimes;
+        return aPercentile.getPercentile(percentile) < bPercentile.getPercentile(percentile);
     }
 
     [[nodiscard]] static auto sortByDomain(Flow const* a, Flow const* b) -> bool
