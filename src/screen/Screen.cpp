@@ -29,6 +29,7 @@
 // Sizes
 #define DEFAULT_COLUMNS 200
 #define LEFT_WIN_COLUMNS 28
+#define LEFT_WIN_KEY 14
 
 #define STATUS_LINES 3
 #define TOP_MENU_LINES 2
@@ -121,7 +122,7 @@ auto Screen::updateResizeWin() -> void
         if (i == selectedResizeField) {
             wattron(leftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
-        waddstr(leftWin, fmt::format("{:<14} {:>{}}", fieldToHeader(field), fieldToSize[field], LEFT_WIN_COLUMNS - 16).c_str());
+        waddstr(leftWin, fmt::format("{:<{}} {:>{}}", fieldToHeader(field), LEFT_WIN_KEY, fieldToSize[field], LEFT_WIN_COLUMNS - (LEFT_WIN_KEY + 2)).c_str());
         if (i == selectedResizeField) {
             wattroff(leftWin, COLOR_PAIR(SELECTED_VALUE_COLOR));
         }
