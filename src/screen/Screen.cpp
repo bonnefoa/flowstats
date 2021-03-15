@@ -48,12 +48,7 @@
 
 namespace flowstats {
 
-int lastKey = 0;
 std::array<CollectorProtocol, 3> protocols = { CollectorProtocol::DNS, CollectorProtocol::TCP, CollectorProtocol::SSL };
-
-std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
-std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
-int selectedResizeField = 0;
 
 auto Screen::updateDisplay(timeval tv, bool updateOutput,
     std::optional<CaptureStat> const& captureStat) -> void

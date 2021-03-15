@@ -67,6 +67,10 @@ private:
     int selectedLine = 0;
     int verticalScroll = 0;
     int selectedProtocolIndex = 0;
+    int selectedResizeField = 0;
+    int lastKey = 0;
+    std::array<int, 3> protocolToDisplayIndex = { 0, 0, 0 };
+    std::array<int, 3> protocolToSortIndex = { 0, 0, 0 };
 
     std::atomic_bool* shouldStop;
     bool shouldFreeze = false;
