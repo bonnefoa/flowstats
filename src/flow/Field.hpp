@@ -113,5 +113,6 @@ auto fieldToHeader(Field field) -> char const*;
 auto fieldWithRateMode(RateMode rateMode, Field field) -> Field;
 auto fieldWithSubfields(Field field) -> bool;
 auto rateModeToDescription(RateMode rateMode) -> std::string;
+auto fieldToInitialSize(Field field) -> int;
 
 } // namespace flowstats

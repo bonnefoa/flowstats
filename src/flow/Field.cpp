@@ -219,6 +219,32 @@ auto fieldToHeader(Field field) -> char const*
     }
 }
 
+auto fieldToInitialSize(Field field) -> int
+{
+    switch (field) {
+        case Field::FQDN: return 42;
+        case Field::TRUNC: return 6;
+        case Field::TYPE: return 6;
+        case Field::DIR: return 6;
+
+        case Field::DOMAIN: return 34;
+        case Field::CIPHER_SUITE: return 38;
+
+        case Field::BYTES: return 12;
+
+        case Field::TOP_CLIENT_IPS_IP: return 24;
+        case Field::TOP_CLIENT_IPS_PKTS: return 18;
+        case Field::TOP_CLIENT_IPS_BYTES: return 18;
+        case Field::TOP_CLIENT_IPS_REQUESTS: return 18;
+
+        case Field::IP: return 16;
+
+        case Field::PORT: return 5;
+        case Field::PROTO: return 5;
+        default: return 12;
+    }
+}
+
 auto rateModeToDescription(RateMode rateMode) -> std::string
 {
     switch (rateMode) {
