@@ -26,6 +26,19 @@ auto fieldToSortable(Field field) -> bool
         case Field::DS_P95:
         case Field::DS_P99:
 
+        case Field::RR_A_RATE:
+        case Field::RR_AAAA_RATE:
+        case Field::RR_CNAME_RATE:
+        case Field::RR_PTR_RATE:
+        case Field::RR_TXT_RATE:
+        case Field::RR_OTHER_RATE:
+        case Field::RR_A_AVG:
+        case Field::RR_AAAA_AVG:
+        case Field::RR_CNAME_AVG:
+        case Field::RR_PTR_AVG:
+        case Field::RR_TXT_AVG:
+        case Field::RR_OTHER_AVG:
+
         case Field::REQ_AVG:
         case Field::FIN_AVG:
         case Field::RST_AVG:
@@ -38,6 +51,7 @@ auto fieldToSortable(Field field) -> bool
         case Field::CLOSE_AVG:
         case Field::SYNACK_AVG:
         case Field::TIMEOUTS_AVG:
+        case Field::TOP_CLIENT_IPS_IP:
         case Field::TOP_CLIENT_IPS_PKTS:
         case Field::TOP_CLIENT_IPS_BYTES:
         case Field::TOP_CLIENT_IPS_REQUESTS:
