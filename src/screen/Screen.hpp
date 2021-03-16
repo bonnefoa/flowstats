@@ -100,6 +100,19 @@ private:
         SORT
     } editMode
         = NONE;
+
+    enum lineColor {
+        SELECTED_STATUS_COLOR = 1,
+        MENU_COLOR,
+
+        SELECTED_LINE_COLOR,
+        UNSELECTED_LINE_STRIP_COLOR,
+        SELECTED_VALUE_COLOR,
+
+        KEY_HEADER_COLOR,
+        VALUE_HEADER_COLOR,
+    };
+
     bool reversedSort = false;
 
     std::mutex screenMutex;

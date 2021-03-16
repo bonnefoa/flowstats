@@ -39,14 +39,6 @@
 
 #define SORT_LINES 300
 
-// Colors
-#define SELECTED_STATUS_COLOR 1
-#define SELECTED_LINE_COLOR 2
-#define MENU_COLOR 3
-#define SELECTED_VALUE_COLOR 4
-#define KEY_HEADER_COLOR 5
-#define VALUE_HEADER_COLOR 6
-
 namespace flowstats {
 
 std::array<CollectorProtocol, 3> protocols = { CollectorProtocol::DNS, CollectorProtocol::TCP, CollectorProtocol::SSL };
