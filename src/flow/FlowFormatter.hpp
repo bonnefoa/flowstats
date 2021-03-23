@@ -18,7 +18,7 @@ public:
     FlowFormatter() = default;
     virtual ~FlowFormatter() = default;
 
-    auto outputBody(Flow const* flow, std::vector<std::string>* accumulator,
+    auto outputBody(Flow const* flow, std::vector<std::vector<std::string>>* accumulator,
         int duration, DisplayConfiguration const& displayConf) const -> void;
 
     [[nodiscard]] auto outputHeaders(DisplayConfiguration const& displayConf) const -> std::string;
@@ -40,10 +40,11 @@ public:
     };
 
     [[nodiscard]] auto outputFlow(std::vector<Flow const*> const& aggregatedFlows,
-        int duration, DisplayConfiguration const& displayConf) const -> std::vector<std::string>;
+        int duration, DisplayConfiguration const& displayConf) const -> std::vector<std::vector<std::string>>;
 
 private:
-    auto outputBodyWithSubfields(Flow const* flow, std::vector<std::string>* accumulator,
+    auto outputBodyWithSubfields(Flow const* flow,
+        std::vector<std::vector<std::string>>* accumulator,
         int duration, DisplayConfiguration const& displayConf) const -> void;
     auto outputLine(Flow const* flow, int duration, DisplayConfiguration const& displayConf,
         int index, int numSubfields, std::vector<Field> const& displayFields,

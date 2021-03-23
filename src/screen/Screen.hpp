@@ -62,10 +62,13 @@ private:
 
     WINDOW* leftWin = nullptr;
 
-    int maxElements = 0;
-    int numberElements = 0;
+    int startLine = 0;
+    int endLine = 0;
     int selectedLine = 0;
-    int verticalScroll = 0;
+    int availableLines = 0;
+
+    int numberElements = 0;
+
     int selectedProtocolIndex = 0;
     int selectedResizeField = 0;
     int lastKey = 0;

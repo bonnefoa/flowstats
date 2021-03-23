@@ -36,9 +36,10 @@ auto FlowFormatter::outputLine(Flow const* flow,
 }
 
 auto FlowFormatter::outputBodyWithSubfields(Flow const* flow,
-    std::vector<std::string>* accumulator, int duration,
+    std::vector<std::vector<std::string>>* accumulator, int duration,
     DisplayConfiguration const& displayConf) const -> void
 {
+    std::vector<std::string> lineGroup;
     int numSubfields = 0;
     for (auto const& field : displayFields) {
         auto size = flow->getSubfieldSize(field);
@@ -48,22 +49,25 @@ auto FlowFormatter::outputBodyWithSubfields(Flow const* flow,
     }
     for (int i = 0; i < numSubfields; ++i) {
         auto line = outputLine(flow, duration, displayConf, i, numSubfields, displayFields, MERGED);
-        accumulator->push_back(line);
+        lineGroup.push_back(line);
     }
+    accumulator->push_back(lineGroup);
 }
 
-auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::string>* accumulator,
+auto FlowFormatter::outputBody(Flow const* flow, std::vector<std::vector<std::string>>* accumulator,
     int duration, DisplayConfiguration const& displayConf) const -> void
 {
+    std::vector<std::string> lineGroup;
     if (displayConf.getMergeDirection()) {
         auto line = outputLine(flow, duration, displayConf, 0, 0, displayFields, MERGED);
-        accumulator->push_back(line);
-        return;
+        lineGroup.push_back(line);
+    } else {
+        auto clientLine = outputLine(flow, duration, displayConf, 0, 0, displayFields, FROM_CLIENT);
+        auto serverLine = outputLine(flow, duration, displayConf, 0, 0, displayFields, FROM_SERVER);
+        lineGroup.push_back(clientLine);
+        lineGroup.push_back(serverLine);
     }
-    auto clientLine = outputLine(flow, duration, displayConf, 0, 0, displayFields, FROM_CLIENT);
-    auto serverLine = outputLine(flow, duration, displayConf, 0, 0, displayFields, FROM_SERVER);
-    accumulator->push_back(clientLine);
-    accumulator->push_back(serverLine);
+    accumulator->push_back(lineGroup);
 }
 
 auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const -> std::string
@@ -81,9 +85,9 @@ auto FlowFormatter::outputHeaders(DisplayConfiguration const& displayConf) const
 }
 
 auto FlowFormatter::outputFlow(std::vector<Flow const*> const& aggregatedFlows,
-    int duration, DisplayConfiguration const& displayConf) const -> std::vector<std::string>
+    int duration, DisplayConfiguration const& displayConf) const -> std::vector<std::vector<std::string>>
 {
-    std::vector<std::string> res;
+    std::vector<std::vector<std::string>> res;
     int i = 0;
     for (auto const* flow : aggregatedFlows) {
         if (i++ > displayConf.getMaxResults()) {

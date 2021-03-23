@@ -82,18 +82,31 @@ auto Screen::updateBody() -> void
 {
     werase(bodyWin);
 
-    auto const& values = collectorOutput.getValues();
-    auto numKeys = values.size();
-    int coefficient = displayConf->getMergeDirection() ? 1 : 2;
-    numberElements = int(numKeys / coefficient);
-    for (int i = 0; i < numKeys; ++i) {
-        int line = i / coefficient;
-        if (line == selectedLine) {
+    auto const& lineGroups = collectorOutput.getValues();
+    bool strip = false;
+    int screenLine = 0;
+    numberElements = lineGroups.size();
+    availableLines = (LINES - (STATUS_LINES + TOP_MENU_LINES + HEADER_LINES + BOTTOM_LINES));
+    endLine = lineGroups.size();
+    for (int lineGroupIndex = startLine; lineGroupIndex < lineGroups.size(); ++lineGroupIndex) {
+        if (lineGroupIndex == selectedLine) {
             wattron(bodyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
+        } else if (strip) {
+            wattron(bodyWin, COLOR_PAIR(UNSELECTED_LINE_STRIP_COLOR));
         }
-        mvwprintw(bodyWin, i, 0, fmt::format("{:<" STR(DEFAULT_COLUMNS) "}", values[i]).c_str());
-        if (line == selectedLine) {
+        for (auto& line : lineGroups[lineGroupIndex]) {
+            mvwprintw(bodyWin, screenLine++, 0, fmt::format("{:<" STR(DEFAULT_COLUMNS) "}", line).c_str());
+        }
+        if (lineGroupIndex == selectedLine) {
             wattroff(bodyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
+        } else if (strip) {
+            wattroff(bodyWin, COLOR_PAIR(UNSELECTED_LINE_STRIP_COLOR));
+        }
+        strip = !strip;
+
+        if (screenLine >= availableLines) {
+            endLine = lineGroupIndex;
+            return;
         }
     }
 }
@@ -207,7 +220,7 @@ auto Screen::updateTopLeftStatus(std::optional<CaptureStat> const& captureStat) 
     if (shouldFreeze) {
         freezeStr = ", Update frozen";
     }
-    waddstr(statusLeftWin, fmt::format("Running time: {}s{}\n", lastTv.tv_sec - firstTv.tv_sec, freezeStr).c_str());
+    waddstr(statusLeftWin, fmt::format("Running time: {}s, selectedLine {}, startLine {}, endLine {}, availableLines {}{}\n", lastTv.tv_sec - firstTv.tv_sec, selectedLine, startLine, endLine, availableLines, freezeStr).c_str());
 
     if (captureStat.has_value()) {
         stagingCaptureStat = captureStat.value();
@@ -349,6 +362,7 @@ Screen::Screen(std::atomic_bool* shouldStop,
 
     init_pair(SELECTED_STATUS_COLOR, COLOR_BLACK, COLOR_WHITE);
     init_pair(SELECTED_LINE_COLOR, COLOR_BLACK, COLOR_CYAN);
+    init_pair(UNSELECTED_LINE_STRIP_COLOR, COLOR_WHITE, -1);
 
     init_pair(MENU_COLOR, COLOR_BLACK, COLOR_CYAN);
     init_pair(KEY_HEADER_COLOR, COLOR_BLACK, COLOR_GREEN);
@@ -416,7 +430,7 @@ auto Screen::refreshPads() -> void
         STATUS_LINES + TOP_MENU_LINES + HEADER_LINES, displayedColumn);
 
     pnoutrefresh(bodyWin,
-        verticalScroll, 0,
+        0, 0,
         STATUS_LINES + TOP_MENU_LINES + HEADER_LINES, deltaValues,
         LINES - (HEADER_LINES + BOTTOM_LINES), displayedColumn);
 
@@ -570,35 +584,35 @@ auto Screen::displayLoop() -> void
                 continue;
             }
 
-            int coefficient = displayConf->getMergeDirection() ? 1 : 2;
-            maxElements = (LINES - (STATUS_LINES + TOP_MENU_LINES + HEADER_LINES + BOTTOM_LINES)) / coefficient - 1;
-
             const std::lock_guard<std::mutex> lock(screenMutex);
             switch (c) {
                 case KEY_LETTER_F:
                     shouldFreeze = !shouldFreeze;
                     break;
                 case KEY_UP:
-                    selectedLine -= 1;
-                    selectedLine = std::max(selectedLine, 0);
+                    selectedLine = std::max(selectedLine - 1, 0);
+                    if (selectedLine < startLine) {
+                        startLine = selectedLine;
+                    }
                     break;
                 case KEY_DOWN:
-                    selectedLine += 1;
-                    selectedLine = std::min(selectedLine, numberElements - 1);
+                    selectedLine = std::min(selectedLine + 1, numberElements - 1);
+                    if (selectedLine > endLine) {
+                        startLine = selectedLine - availableLines + 1;
+                    }
                     break;
                 case KEY_PPAGE:
-                    selectedLine -= maxElements;
-                    selectedLine = std::max(selectedLine, 0);
+                    selectedLine = std::max(selectedLine - 20, 0);
+                    if (selectedLine < startLine) {
+                        startLine = selectedLine;
+                    }
                     break;
                 case KEY_NPAGE:
-                    selectedLine += maxElements;
-                    selectedLine = std::min(selectedLine, numberElements - 1);
+                    selectedLine = std::min(selectedLine + 20, numberElements - 1);
+                    if (selectedLine > endLine) {
+                        startLine = selectedLine - availableLines + 1;
+                    }
                     break;
-            }
-            if (selectedLine * coefficient < verticalScroll) {
-                verticalScroll = selectedLine * coefficient;
-            } else if (selectedLine * coefficient > (maxElements * coefficient + verticalScroll)) {
-                verticalScroll += selectedLine * coefficient - (maxElements * coefficient + verticalScroll);
             }
         }
         updateDisplay(lastTv, false, {});

@@ -10,7 +10,7 @@ struct CollectorOutput {
     CollectorOutput() = default;
     CollectorOutput(std::string name,
         std::string headers,
-        std::vector<std::string> values)
+        std::vector<std::vector<std::string>> values)
         : name(std::move(name))
         , headers(std::move(headers))
         , values(std::move(values)) {};
@@ -18,11 +18,11 @@ struct CollectorOutput {
     auto print() const -> void;
 
     [[nodiscard]] auto getHeaders() const& -> std::string { return headers; };
-    [[nodiscard]] auto getValues() const& -> std::vector<std::string> { return values; };
+    [[nodiscard]] auto getValues() const& -> std::vector<std::vector<std::string>> { return values; };
 
 private:
     std::string name;
     std::string headers;
-    std::vector<std::string> values;
+    std::vector<std::vector<std::string>> values;
 };
 } // namespace flowstats
