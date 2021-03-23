@@ -88,6 +88,7 @@ auto Screen::updateBody() -> void
     numberElements = lineGroups.size();
     availableLines = (LINES - (STATUS_LINES + TOP_MENU_LINES + HEADER_LINES + BOTTOM_LINES));
     endLine = lineGroups.size();
+    displayedElements = endLine - startLine;
     for (int lineGroupIndex = startLine; lineGroupIndex < lineGroups.size(); ++lineGroupIndex) {
         if (lineGroupIndex == selectedLine) {
             wattron(bodyWin, COLOR_PAIR(SELECTED_LINE_COLOR));
@@ -106,6 +107,7 @@ auto Screen::updateBody() -> void
 
         if (screenLine >= availableLines) {
             endLine = lineGroupIndex;
+            displayedElements = endLine - startLine;
             return;
         }
     }
@@ -598,7 +600,7 @@ auto Screen::displayLoop() -> void
                 case KEY_DOWN:
                     selectedLine = std::min(selectedLine + 1, numberElements - 1);
                     if (selectedLine > endLine) {
-                        startLine = selectedLine - availableLines + 1;
+                        startLine++;
                     }
                     break;
                 case KEY_PPAGE:
@@ -610,7 +612,7 @@ auto Screen::displayLoop() -> void
                 case KEY_NPAGE:
                     selectedLine = std::min(selectedLine + 20, numberElements - 1);
                     if (selectedLine > endLine) {
-                        startLine = selectedLine - availableLines + 1;
+                        startLine = selectedLine - displayedElements;
                     }
                     break;
             }

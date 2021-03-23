@@ -66,6 +66,7 @@ private:
     int endLine = 0;
     int selectedLine = 0;
     int availableLines = 0;
+    int displayedElements = 0;
 
     int numberElements = 0;
 
